@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="3.0.6" />
     <PackageReference Include="NServiceBus.Serverless" Version="0.1.0-*" />
-		<PackageReference Include="Particular.Packaging" Version="0.3.0" />
+		<PackageReference Include="Particular.Packaging" Version="0.3.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
