@@ -4,6 +4,7 @@
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Transports.WindowsAzureStorageQueues;
     using Extensibility;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
@@ -21,7 +22,7 @@
 		public static Task Process(this ServerlessEndpoint endpoint, CloudQueueMessage message)
         {
             var serializer = new JsonSerializer();
-            var msg = serializer.Deserialize<ASQMessageWrapper>(
+            var msg = serializer.Deserialize<MessageWrapper>(
                 new JsonTextReader(new StreamReader(new MemoryStream(message.AsBytes))));
 
             var messageContext = new MessageContext(
