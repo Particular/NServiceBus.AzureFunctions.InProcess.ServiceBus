@@ -6,7 +6,7 @@
     using System.Threading.Tasks;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
-	using NServiceBus.Serverless;
+	using Serverless;
     using Transport;
 
 	/// <summary>

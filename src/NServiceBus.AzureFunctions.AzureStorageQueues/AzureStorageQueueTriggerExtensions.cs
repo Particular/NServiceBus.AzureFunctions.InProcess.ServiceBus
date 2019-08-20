@@ -8,7 +8,7 @@
     using Extensibility;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
-	using NServiceBus.Serverless;
+	using Serverless;
     using Transport;
 
 	/// <summary>

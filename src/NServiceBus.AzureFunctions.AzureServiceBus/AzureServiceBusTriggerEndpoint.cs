@@ -1,6 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.AzureServiceBus
 {
-	using NServiceBus.Serverless;
+	using Serverless;
 
 	/// <summary>
 	/// Represents a serverless NServiceBus endpoint running within an AzureServiceBus trigger.

@@ -1,6 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.AzureStorageQueues
 {
-	using NServiceBus.Serverless;
+	using Serverless;
 
 	/// <summary>
 	/// Represents a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
