@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="3.0.6" />
-    <ProjectReference Include="..\NServiceBus.Serverless\NServiceBus.Serverless.csproj" />
+    <PackageReference Include="NServiceBus.Serverless" Version="0.1.0-*" />
   </ItemGroup>
 
 </Project>

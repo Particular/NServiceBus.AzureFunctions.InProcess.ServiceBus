@@ -3,17 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29025.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Serverless", "NServiceBus.Serverless\NServiceBus.Serverless.csproj", "{E07C0882-FE87-44F5-A349-0202B5816D1E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureFunctionsDemo", "..\Demos\AzureFunctionsDemo\AzureFunctionsDemo.csproj", "{B81F9A93-9993-4E5E-86FF-D8D6E5E5A281}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{DA965FE3-CF25-4AA0-B241-D62F50CA26C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBus.Serverless.AzureServiceBusTrigger", "NServiceBus.Serverless.AzureServiceBusTrigger\NServiceBus.Serverless.AzureServiceBusTrigger.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Serverless.AzureServiceBusTrigger", "NServiceBus.Serverless.AzureServiceBusTrigger\NServiceBus.Serverless.AzureServiceBusTrigger.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBus.Serverless.AzureStorageQueueTrigger", "NServiceBus.Serverless.AzureStorageQueueTrigger\NServiceBus.Serverless.AzureStorageQueueTrigger.csproj", "{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Serverless.HttpTrigger", "NServiceBus.Serverless.HttpTrigger\NServiceBus.Serverless.HttpTrigger.csproj", "{3B23548C-F15B-469C-AAE9-394F404206B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Serverless.AzureStorageQueueTrigger", "NServiceBus.Serverless.AzureStorageQueueTrigger\NServiceBus.Serverless.AzureStorageQueueTrigger.csproj", "{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E07C0882-FE87-44F5-A349-0202B5816D1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E07C0882-FE87-44F5-A349-0202B5816D1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E07C0882-FE87-44F5-A349-0202B5816D1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E07C0882-FE87-44F5-A349-0202B5816D1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B81F9A93-9993-4E5E-86FF-D8D6E5E5A281}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B81F9A93-9993-4E5E-86FF-D8D6E5E5A281}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B81F9A93-9993-4E5E-86FF-D8D6E5E5A281}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B81F9A93-9993-4E5E-86FF-D8D6E5E5A281}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -37,19 +23,13 @@ Global
 		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B23548C-F15B-469C-AAE9-394F404206B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B23548C-F15B-469C-AAE9-394F404206B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B23548C-F15B-469C-AAE9-394F404206B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B23548C-F15B-469C-AAE9-394F404206B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B81F9A93-9993-4E5E-86FF-D8D6E5E5A281} = {DA965FE3-CF25-4AA0-B241-D62F50CA26C2}
 		{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98} = {DA965FE3-CF25-4AA0-B241-D62F50CA26C2}
 		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6} = {DA965FE3-CF25-4AA0-B241-D62F50CA26C2}
-		{3B23548C-F15B-469C-AAE9-394F404206B6} = {DA965FE3-CF25-4AA0-B241-D62F50CA26C2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B344CD1-037D-452C-9268-B99296A966A8}

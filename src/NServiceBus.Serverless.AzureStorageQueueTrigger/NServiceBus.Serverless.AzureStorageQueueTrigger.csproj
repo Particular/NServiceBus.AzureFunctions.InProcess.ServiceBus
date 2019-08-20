@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.Serverless\NServiceBus.Serverless.csproj" />
-    <PackageReference Include="NServiceBus.Azure.Transports.WindowsAzureStorageQueues" Version="8.1.4" />
+		<PackageReference Include="NServiceBus.Azure.Transports.WindowsAzureStorageQueues" Version="8.1.4" />
+		<PackageReference Include="NServiceBus.Serverless" Version="0.1.0-*" />
   </ItemGroup>
 
 </Project>
