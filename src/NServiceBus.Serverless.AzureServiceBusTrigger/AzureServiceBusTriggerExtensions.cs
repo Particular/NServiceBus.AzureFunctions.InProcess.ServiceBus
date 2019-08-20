@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.Serverless.AzureServiceBusTrigger
+﻿namespace NServiceBus.AzureFunctions.AzureServiceBus
 {
     using System;
     using System.Linq;
@@ -6,10 +6,17 @@
     using System.Threading.Tasks;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
+	using NServiceBus.Serverless;
     using Transport;
 
+	/// <summary>
+	/// Extension methods for a ServerlessEndpoint when using AzureServiceBus triggers.
+	/// </summary>
     public static class AzureServiceBusTriggerExtensions
     {
+		/// <summary>
+		/// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
+		/// </summary>
         public static Task Process(this ServerlessEndpoint endpoint, Message message)
         {
             var context = new MessageContext(

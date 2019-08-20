@@ -1,18 +1,24 @@
-﻿namespace NServiceBus.Serverless.AzureStorageQueueTrigger
+﻿namespace NServiceBus.AzureFunctions.AzureStorageQueues
 {
     using System;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
-    using AzureFunctionsDemo;
     using Extensibility;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
+	using NServiceBus.Serverless;
     using Transport;
 
-    public static class AzureStorageQueueTriggerExtensions
+	/// <summary>
+	/// Extension methods for a ServerlessEndpoint when using AzureStorageQueue triggers.
+	/// </summary>
+	public static class AzureStorageQueueTriggerExtensions
     {
-        public static Task Process(this ServerlessEndpoint endpoint, CloudQueueMessage message)
+		/// <summary>
+		/// Processes a message received from an AzureStorageQueue trigger using the NServiceBus message pipeline.
+		/// </summary>
+		public static Task Process(this ServerlessEndpoint endpoint, CloudQueueMessage message)
         {
             var serializer = new JsonSerializer();
             var msg = serializer.Deserialize<ASQMessageWrapper>(

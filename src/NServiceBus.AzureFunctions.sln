@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29025.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{DA965FE3-CF25-4AA0-B241-D62F50CA26C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Serverless.AzureServiceBusTrigger", "NServiceBus.Serverless.AzureServiceBusTrigger\NServiceBus.Serverless.AzureServiceBusTrigger.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.AzureServiceBus", "NServiceBus.Serverless.AzureServiceBusTrigger\NServiceBus.AzureFunctions.AzureServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.Serverless.AzureStorageQueueTrigger", "NServiceBus.Serverless.AzureStorageQueueTrigger\NServiceBus.Serverless.AzureStorageQueueTrigger.csproj", "{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.AzureStorageQueues", "NServiceBus.Serverless.AzureStorageQueueTrigger\NServiceBus.AzureFunctions.AzureStorageQueues.csproj", "{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

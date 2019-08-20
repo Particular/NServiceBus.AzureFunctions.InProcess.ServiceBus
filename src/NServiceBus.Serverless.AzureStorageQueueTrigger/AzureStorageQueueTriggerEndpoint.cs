@@ -1,8 +1,17 @@
-﻿namespace NServiceBus.Serverless.AzureStorageQueueTrigger
+﻿namespace NServiceBus.AzureFunctions.AzureStorageQueues
 {
-    public class AzureStorageQueueTriggerEndpoint : ServerlessEndpointConfiguration
+	using NServiceBus.Serverless;
+
+	/// <summary>
+	/// Represents a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
+	/// </summary>
+	public class AzureStorageQueueTriggerEndpoint : ServerlessEndpointConfiguration
     {
-        public AzureStorageQueueTriggerEndpoint(string endpointName) : base(endpointName)
+		/// <summary>
+		/// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
+		/// </summary>
+		/// <param name="endpointName"></param>
+		public AzureStorageQueueTriggerEndpoint(string endpointName) : base(endpointName)
         {
             //handle retries by native queue capabilities
             InMemoryRetries(0);
