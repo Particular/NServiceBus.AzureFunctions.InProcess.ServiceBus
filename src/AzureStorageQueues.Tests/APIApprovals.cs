@@ -1,15 +1,18 @@
-﻿using NServiceBus.AzureFunctions.AzureStorageQueues;
-using NUnit.Framework;
-using Particular.Approvals;
-using PublicApiGenerator;
-
-[TestFixture]
-public class APIApprovals
+﻿namespace AzureStorageQueues.Tests
 {
-	[Test]
-	public void Approve()
+	using NServiceBus.AzureFunctions.AzureStorageQueues;
+	using NUnit.Framework;
+	using Particular.Approvals;
+	using PublicApiGenerator;
+
+	[TestFixture]
+	public class APIApprovals
 	{
-		var publicApi = ApiGenerator.GeneratePublicApi(typeof(AzureStorageQueueTriggerEndpoint).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
-		Approver.Verify(publicApi);
+		[Test]
+		public void Approve()
+		{
+			var publicApi = ApiGenerator.GeneratePublicApi(typeof(AzureStorageQueueTriggerEndpoint).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
+			Approver.Verify(publicApi);
+		}
 	}
 }

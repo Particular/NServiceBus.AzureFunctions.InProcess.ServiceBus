@@ -1,15 +1,18 @@
-﻿using NServiceBus.AzureFunctions.AzureServiceBus;
-using NUnit.Framework;
-using Particular.Approvals;
-using PublicApiGenerator;
-
-[TestFixture]
-public class APIApprovals
+﻿namespace AzureServiceBus.Tests
 {
-	[Test]
-	public void Approve()
+	using NServiceBus.AzureFunctions.AzureServiceBus;
+	using NUnit.Framework;
+	using Particular.Approvals;
+	using PublicApiGenerator;
+
+	[TestFixture]
+	public class APIApprovals
 	{
-		var publicApi = ApiGenerator.GeneratePublicApi(typeof(AzureServiceBusTriggerEndpoint).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
-		Approver.Verify(publicApi);
+		[Test]
+		public void Approve()
+		{
+			var publicApi = ApiGenerator.GeneratePublicApi(typeof(AzureServiceBusTriggerEndpoint).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
+			Approver.Verify(publicApi);
+		}
 	}
 }
