@@ -1,0 +1,11 @@
+namespace NServiceBus.AzureFunctions.AzureStorageQueues
+{
+    public class AzureStorageQueueTriggerEndpoint : NServiceBus.Serverless.ServerlessEndpointConfiguration
+    {
+        public AzureStorageQueueTriggerEndpoint(string endpointName) { }
+    }
+    public class static AzureStorageQueueTriggerExtensions
+    {
+        public static System.Threading.Tasks.Task Process(this NServiceBus.Serverless.ServerlessEndpoint endpoint, Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage message) { }
+    }
+}
