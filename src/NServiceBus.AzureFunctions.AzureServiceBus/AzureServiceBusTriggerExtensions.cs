@@ -6,17 +6,17 @@
     using System.Threading.Tasks;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
-	using Serverless;
+    using Serverless;
     using Transport;
 
-	/// <summary>
-	/// Extension methods for a ServerlessEndpoint when using AzureServiceBus triggers.
-	/// </summary>
+    /// <summary>
+    /// Extension methods for a ServerlessEndpoint when using AzureServiceBus triggers.
+    /// </summary>
     public static class AzureServiceBusTriggerExtensions
     {
-		/// <summary>
-		/// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-		/// </summary>
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
+        /// </summary>
         public static Task Process(this ServerlessEndpoint endpoint, Message message)
         {
             var context = new MessageContext(
