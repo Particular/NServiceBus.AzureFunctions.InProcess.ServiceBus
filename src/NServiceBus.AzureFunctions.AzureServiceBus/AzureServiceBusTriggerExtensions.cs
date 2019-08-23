@@ -6,8 +6,8 @@
     using System.Threading.Tasks;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
-    using Serverless;
     using Transport;
+    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     /// <summary>
     /// Extension methods for a ServerlessEndpoint when using AzureServiceBus triggers.
@@ -17,7 +17,7 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public static Task Process(this ServerlessEndpoint endpoint, Message message)
+        public static Task Process(this AzureFunctionEndpoint endpoint, Message message, ExecutionContext executionContext)
         {
             var context = new MessageContext(
                 Guid.NewGuid().ToString("N"),
@@ -27,7 +27,7 @@
                 new CancellationTokenSource(),
                 new ContextBag());
 
-            return endpoint.Process(context);
+            return endpoint.Process(context, executionContext);
         }
     }
 }

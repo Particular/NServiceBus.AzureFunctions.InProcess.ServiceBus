@@ -8,8 +8,8 @@
     using Extensibility;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
-    using Serverless;
     using Transport;
+    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     /// <summary>
     /// Extension methods for a ServerlessEndpoint when using AzureStorageQueue triggers.
@@ -19,7 +19,7 @@
         /// <summary>
         /// Processes a message received from an AzureStorageQueue trigger using the NServiceBus message pipeline.
         /// </summary>
-        public static Task Process(this ServerlessEndpoint endpoint, CloudQueueMessage message)
+        public static Task Process(this AzureFunctionEndpoint endpoint, CloudQueueMessage message, ExecutionContext executionContext)
         {
             var serializer = new JsonSerializer();
             var msg = serializer.Deserialize<MessageWrapper>(
@@ -33,7 +33,7 @@
                 new CancellationTokenSource(),
                 new ContextBag());
 
-            return endpoint.Process(messageContext);
+            return endpoint.Process(messageContext, executionContext);
         }
     }
 }
