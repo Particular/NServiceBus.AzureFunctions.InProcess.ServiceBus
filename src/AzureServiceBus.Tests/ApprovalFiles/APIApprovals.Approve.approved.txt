@@ -10,6 +10,6 @@ namespace NServiceBus.AzureFunctions.AzureServiceBus
     }
     public class static AzureServiceBusTriggerExtensions
     {
-        public static System.Threading.Tasks.Task Process(this NServiceBus.Serverless.ServerlessEndpoint<Microsoft.Azure.WebJobs.ExecutionContext> endpoint, Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
+        public static System.Threading.Tasks.Task Process(this NServiceBus.AzureFunctions.AzureServiceBus.AzureFunctionEndpoint endpoint, Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
     }
 }

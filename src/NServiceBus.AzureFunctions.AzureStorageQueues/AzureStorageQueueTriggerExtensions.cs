@@ -5,10 +5,10 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Azure.Transports.WindowsAzureStorageQueues;
+    using AzureServiceBus;
     using Extensibility;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
-    using Serverless;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -20,7 +20,7 @@
         /// <summary>
         /// Processes a message received from an AzureStorageQueue trigger using the NServiceBus message pipeline.
         /// </summary>
-        public static Task Process(this ServerlessEndpoint<ExecutionContext> endpoint, CloudQueueMessage message, ExecutionContext executionContext)
+        public static Task Process(this AzureFunctionEndpoint endpoint, CloudQueueMessage message, ExecutionContext executionContext)
         {
             var serializer = new JsonSerializer();
             var msg = serializer.Deserialize<MessageWrapper>(
