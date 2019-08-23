@@ -11,7 +11,7 @@
         [Test]
         public void Approve()
         {
-            var publicApi = ApiGenerator.GeneratePublicApi(typeof(AzureStorageQueueTriggeredEndpointConfiguration).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
+            var publicApi = ApiGenerator.GeneratePublicApi(typeof(StorageQueueTriggeredEndpointConfiguration).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
             Approver.Verify(publicApi);
         }
     }

@@ -1,15 +1,15 @@
 namespace NServiceBus.AzureFunctions.AzureServiceBus
 {
-    public class AzureFunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<Microsoft.Azure.WebJobs.ExecutionContext>
+    public class FunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<Microsoft.Azure.WebJobs.ExecutionContext>
     {
-        public AzureFunctionEndpoint(System.Func<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.Serverless.ServerlessEndpointConfiguration> configurationFactory) { }
+        public FunctionEndpoint(System.Func<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.Serverless.ServerlessEndpointConfiguration> configurationFactory) { }
     }
-    public class AzureServiceBusTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
+    public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
-        public AzureServiceBusTriggeredEndpointConfiguration(string endpointName) { }
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
     }
-    public class static AzureServiceBusTriggerExtensions
+    public class static ServiceBusTriggerExtensions
     {
-        public static System.Threading.Tasks.Task Process(this NServiceBus.AzureFunctions.AzureServiceBus.AzureFunctionEndpoint endpoint, Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
+        public static System.Threading.Tasks.Task Process(this NServiceBus.AzureFunctions.AzureServiceBus.FunctionEndpoint endpoint, Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
     }
 }
