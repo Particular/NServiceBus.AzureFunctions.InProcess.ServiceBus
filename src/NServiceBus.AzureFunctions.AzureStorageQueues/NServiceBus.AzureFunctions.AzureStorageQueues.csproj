@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\NServiceBus.AzureFunctions.AzureServiceBus\AzureFunctionEndpoint.cs" Link="AzureFunctionEndpoint.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="NServiceBus.Azure.Transports.WindowsAzureStorageQueues" Version="8.1.4" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.6" />
     <PackageReference Include="NServiceBus.Serverless" Version="0.1.0-*" />
