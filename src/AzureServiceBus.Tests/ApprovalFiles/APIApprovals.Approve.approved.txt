@@ -4,9 +4,9 @@ namespace NServiceBus.AzureFunctions.AzureServiceBus
     {
         public AzureFunctionEndpoint(System.Func<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.Serverless.ServerlessEndpointConfiguration> configurationFactory) { }
     }
-    public class AzureServiceBusTriggerEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
+    public class AzureServiceBusTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
-        public AzureServiceBusTriggerEndpointConfiguration(string endpointName) { }
+        public AzureServiceBusTriggeredEndpointConfiguration(string endpointName) { }
     }
     public class static AzureServiceBusTriggerExtensions
     {

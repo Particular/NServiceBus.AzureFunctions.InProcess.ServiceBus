@@ -7,9 +7,9 @@ namespace NServiceBus.AzureFunctions.AzureServiceBus
 }
 namespace NServiceBus.AzureFunctions.AzureStorageQueues
 {
-    public class AzureStorageQueueTriggerEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
+    public class AzureStorageQueueTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
-        public AzureStorageQueueTriggerEndpointConfiguration(string endpointName) { }
+        public AzureStorageQueueTriggeredEndpointConfiguration(string endpointName) { }
     }
     public class static AzureStorageQueueTriggerExtensions
     {
