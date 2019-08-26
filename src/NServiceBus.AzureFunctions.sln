@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29025.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.AzureServiceBus", "NServiceBus.AzureFunctions.AzureServiceBus\NServiceBus.AzureFunctions.AzureServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.ServiceBus", "NServiceBus.AzureFunctions.ServiceBus\NServiceBus.AzureFunctions.ServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.AzureStorageQueues", "NServiceBus.AzureFunctions.AzureStorageQueues\NServiceBus.AzureFunctions.AzureStorageQueues.csproj", "{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.StorageQueues", "NServiceBus.AzureFunctions.StorageQueues\NServiceBus.AzureFunctions.StorageQueues.csproj", "{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureServiceBus.Tests", "AzureServiceBus.Tests\AzureServiceBus.Tests.csproj", "{7F90FF66-48AD-47C4-AB5C-34137D07B62B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.Tests", "ServiceBus.Tests\ServiceBus.Tests.csproj", "{7F90FF66-48AD-47C4-AB5C-34137D07B62B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureStorageQueues.Tests", "AzureStorageQueues.Tests\AzureStorageQueues.Tests.csproj", "{B82FE3D6-4A81-401D-9AF7-817372C9DC47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageQueues.Tests", "StorageQueues.Tests\StorageQueues.Tests.csproj", "{B82FE3D6-4A81-401D-9AF7-817372C9DC47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
