@@ -28,7 +28,7 @@
         /// <summary>
         /// Processes a message received from an AzureStorageQueue trigger using the NServiceBus message pipeline.
         /// </summary>
-        public Task Process(CloudQueueMessage message, ExecutionContext executionContext)
+        public async Task Process(CloudQueueMessage message, ExecutionContext executionContext)
         {
             var serializer = new JsonSerializer();
             var msg = serializer.Deserialize<MessageWrapper>(
@@ -42,7 +42,23 @@
                 new CancellationTokenSource(),
                 new ContextBag());
 
-            return Process(messageContext, executionContext);
+            try
+            {
+                await Process(messageContext, executionContext).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                // TODO: might need to reconstruct messageContext to avoid headers mutation
+                var errorHandleResult = await ProcessFailedMessage(messageContext, exception, message.DequeueCount, executionContext).ConfigureAwait(false);
+
+                if (errorHandleResult == ErrorHandleResult.Handled)
+                {
+                    // return to signal to the Functions host it can complete the incoming message
+                    return;
+                }
+
+                throw;
+            }
         }
     }
 }
