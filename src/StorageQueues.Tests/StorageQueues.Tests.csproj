@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.AzureFunctions.AzureServiceBus\NServiceBus.AzureFunctions.AzureServiceBus.csproj" />
+    <ProjectReference Include="..\NServiceBus.AzureFunctions.StorageQueues\NServiceBus.AzureFunctions.StorageQueues.csproj" />
   </ItemGroup>
 
   <ItemGroup>
