@@ -1,6 +1,6 @@
 ﻿namespace AzureStorageQueues.Tests
 {
-    using NServiceBus.AzureFunctions.AzureStorageQueues;
+    using NServiceBus.AzureFunctions.StorageQueues;
     using NUnit.Framework;
     using Particular.Approvals;
     using PublicApiGenerator;

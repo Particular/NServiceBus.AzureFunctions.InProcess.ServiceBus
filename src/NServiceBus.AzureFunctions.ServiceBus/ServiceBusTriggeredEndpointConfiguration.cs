@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.AzureServiceBus
+﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
     using Serverless;
 

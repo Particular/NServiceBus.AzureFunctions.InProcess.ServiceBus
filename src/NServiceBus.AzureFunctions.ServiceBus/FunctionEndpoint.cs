@@ -1,12 +1,12 @@
-﻿namespace NServiceBus.AzureFunctions.AzureServiceBus
+﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    using Serverless;
     using System;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
+    using Serverless;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
