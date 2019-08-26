@@ -3,13 +3,10 @@ namespace NServiceBus.AzureFunctions.AzureServiceBus
     public class FunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<Microsoft.Azure.WebJobs.ExecutionContext>
     {
         public FunctionEndpoint(System.Func<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.Serverless.ServerlessEndpointConfiguration> configurationFactory) { }
+        public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
     }
     public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
         public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
-    }
-    public class static ServiceBusTriggerExtensions
-    {
-        public static System.Threading.Tasks.Task Process(this NServiceBus.AzureFunctions.AzureServiceBus.FunctionEndpoint endpoint, Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
     }
 }
