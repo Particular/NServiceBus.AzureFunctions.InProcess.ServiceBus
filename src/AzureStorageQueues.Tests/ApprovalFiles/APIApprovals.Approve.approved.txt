@@ -3,13 +3,10 @@ namespace NServiceBus.AzureFunctions.AzureStorageQueues
     public class FunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<Microsoft.Azure.WebJobs.ExecutionContext>
     {
         public FunctionEndpoint(System.Func<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.Serverless.ServerlessEndpointConfiguration> configurationFactory) { }
+        public System.Threading.Tasks.Task Process(Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
     }
     public class StorageQueueTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
         public StorageQueueTriggeredEndpointConfiguration(string endpointName) { }
-    }
-    public class static StorageQueueTriggerExtensions
-    {
-        public static System.Threading.Tasks.Task Process(this NServiceBus.AzureFunctions.AzureStorageQueues.FunctionEndpoint endpoint, Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
     }
 }
