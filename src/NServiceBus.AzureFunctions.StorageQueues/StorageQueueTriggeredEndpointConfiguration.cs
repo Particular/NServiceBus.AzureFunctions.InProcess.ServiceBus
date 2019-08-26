@@ -13,6 +13,7 @@
         /// <param name="endpointName"></param>
         public StorageQueueTriggeredEndpointConfiguration(string endpointName) : base(endpointName)
         {
+            UseTransport<AzureStorageQueueTransport>();
         }
     }
 }

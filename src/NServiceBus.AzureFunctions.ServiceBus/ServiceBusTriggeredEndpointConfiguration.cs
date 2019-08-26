@@ -13,6 +13,7 @@
         /// <param name="endpointName"></param>
         public ServiceBusTriggeredEndpointConfiguration(string endpointName) : base(endpointName)
         {
+            UseTransport<AzureServiceBusTransport>();
         }
     }
 }
