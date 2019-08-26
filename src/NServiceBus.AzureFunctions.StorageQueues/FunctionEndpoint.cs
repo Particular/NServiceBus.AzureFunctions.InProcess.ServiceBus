@@ -1,6 +1,5 @@
-﻿namespace NServiceBus.AzureFunctions.AzureStorageQueues
+﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
-    using Serverless;
     using System;
     using System.IO;
     using System.Threading;
@@ -9,6 +8,7 @@
     using Extensibility;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
+    using Serverless;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 

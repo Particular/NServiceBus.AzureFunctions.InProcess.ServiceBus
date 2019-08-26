@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.AzureStorageQueues
+﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
     using Serverless;
 
