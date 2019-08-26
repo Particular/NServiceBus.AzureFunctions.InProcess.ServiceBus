@@ -13,8 +13,6 @@
         /// <param name="endpointName"></param>
         public ServiceBusTriggeredEndpointConfiguration(string endpointName) : base(endpointName)
         {
-            //handle retries by native queue capabilities
-            InMemoryRetries(0);
         }
     }
 }
