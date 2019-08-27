@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
@@ -29,13 +28,7 @@
         /// </summary>
         public async Task Process(Message message, ExecutionContext executionContext)
         {
-            var messageContext = new MessageContext(
-                Guid.NewGuid().ToString("N"),
-                message.UserProperties.ToDictionary(x => x.Key, x => x.Value.ToString()),
-                message.Body,
-                new TransportTransaction(),
-                new CancellationTokenSource(),
-                new ContextBag());
+            var messageContext = CreateMessageContext(message);
 
             try
             {
@@ -61,6 +54,17 @@
                 }
 
                 throw;
+            }
+
+            MessageContext CreateMessageContext(Message originalMessage)
+            {
+                return new MessageContext(
+                    originalMessage.GetMessageId(),
+                    originalMessage.GetHeaders(),
+                    originalMessage.Body,
+                    new TransportTransaction(),
+                    new CancellationTokenSource(),
+                    new ContextBag());
             }
         }
     }
