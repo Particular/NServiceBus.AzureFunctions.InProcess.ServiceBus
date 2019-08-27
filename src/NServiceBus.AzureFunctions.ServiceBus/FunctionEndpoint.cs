@@ -26,9 +26,9 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public Task Process(Message message, ExecutionContext executionContext)
+        public async Task Process(Message message, ExecutionContext executionContext)
         {
-            var context = new MessageContext(
+            var messageContext = new MessageContext(
                 Guid.NewGuid().ToString("N"),
                 message.UserProperties.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 message.Body,
@@ -36,7 +36,23 @@
                 new CancellationTokenSource(),
                 new ContextBag());
 
-            return Process(context, executionContext);
+            try
+            {
+                await Process(messageContext, executionContext).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                // TODO: might need to reconstruct messageContext to avoid headers mutation
+                var errorHandleResult = await ProcessFailedMessage(messageContext, exception, message.SystemProperties.DeliveryCount, executionContext).ConfigureAwait(false);
+
+                if (errorHandleResult == ErrorHandleResult.Handled)
+                {
+                    // return to signal to the Functions host it can complete the incoming message
+                    return;
+                }
+
+                throw;
+            }
         }
     }
 }
