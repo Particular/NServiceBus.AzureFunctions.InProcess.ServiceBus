@@ -31,8 +31,14 @@
         /// </summary>
         public async Task Process(CloudQueueMessage message, ExecutionContext executionContext)
         {
-            var serializer = new JsonSerializer();
-            var wrapper = serializer.Deserialize<MessageWrapper>(new JsonTextReader(new StreamReader(new MemoryStream(message.AsBytes))));
+            MessageWrapper wrapper;
+            // Read message content via StreamReader to handle BOM correctly.
+            using (var memoryStream = new MemoryStream(message.AsBytes))
+            using (var reader = new StreamReader(memoryStream))
+            {
+                wrapper = JsonSerializer.Deserialize<MessageWrapper>(new JsonTextReader(reader));
+            }
+
             var messageContext = CreateMessageContext(wrapper);
 
             try
@@ -46,7 +52,7 @@
                     new Dictionary<string, string>(messageContext.Headers),
                     messageContext.MessageId,
                     messageContext.Body,
-                    new TransportTransaction(), 
+                    new TransportTransaction(),
                     message.DequeueCount);
 
                 var errorHandleResult = await ProcessFailedMessage(errorContext, executionContext)
@@ -72,5 +78,7 @@
                     new ContextBag());
             }
         }
+
+        static readonly JsonSerializer JsonSerializer = new JsonSerializer();
     }
 }
