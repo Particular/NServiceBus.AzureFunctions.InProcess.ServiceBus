@@ -34,17 +34,9 @@
             var serializer = new JsonSerializer();
             var wrapper = serializer.Deserialize<MessageWrapper>(new JsonTextReader(new StreamReader(new MemoryStream(message.AsBytes))));
 
-            var messageContext = new MessageContext(
-                wrapper.GetMessageId(),
-                wrapper.GetHeaders(),
-                wrapper.Body,
-                new TransportTransaction(),
-                new CancellationTokenSource(),
-                new ContextBag());
-
             try
             {
-                await Process(messageContext, executionContext).ConfigureAwait(false);
+                await Process(CreateMessageContext(wrapper), executionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -66,6 +58,17 @@
                 }
 
                 throw;
+            }
+
+            MessageContext CreateMessageContext(MessageWrapper originalMessage)
+            {
+                return new MessageContext(
+                    originalMessage.GetMessageId(),
+                    originalMessage.GetHeaders(),
+                    originalMessage.Body,
+                    new TransportTransaction(),
+                    new CancellationTokenSource(),
+                    new ContextBag());
             }
         }
     }

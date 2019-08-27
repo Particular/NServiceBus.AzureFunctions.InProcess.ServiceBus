@@ -28,17 +28,9 @@
         /// </summary>
         public async Task Process(Message message, ExecutionContext executionContext)
         {
-            var messageContext = new MessageContext(
-                message.GetMessageId(),
-                message.GetHeaders(),
-                message.Body,
-                new TransportTransaction(),
-                new CancellationTokenSource(),
-                new ContextBag());
-
             try
             {
-                await Process(messageContext, executionContext).ConfigureAwait(false);
+                await Process(CreateMessageContext(message), executionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -60,6 +52,17 @@
                 }
 
                 throw;
+            }
+
+            MessageContext CreateMessageContext(Message originalMessage)
+            {
+                return new MessageContext(
+                    originalMessage.GetMessageId(),
+                    originalMessage.GetHeaders(),
+                    originalMessage.Body,
+                    new TransportTransaction(),
+                    new CancellationTokenSource(),
+                    new ContextBag());
             }
         }
     }
