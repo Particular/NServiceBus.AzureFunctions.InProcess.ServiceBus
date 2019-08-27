@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -42,8 +43,16 @@
             }
             catch (Exception exception)
             {
-                // TODO: might need to reconstruct messageContext to avoid headers mutation
-                var errorHandleResult = await ProcessFailedMessage(messageContext, exception, message.SystemProperties.DeliveryCount, executionContext).ConfigureAwait(false);
+                var errorContext = new ErrorContext(
+                    exception,
+                    new Dictionary<string, string>(messageContext.Headers),
+                    messageContext.MessageId,
+                    messageContext.Body,
+                    new TransportTransaction(), 
+                    message.SystemProperties.DeliveryCount);
+
+                var errorHandleResult = await ProcessFailedMessage(errorContext, executionContext)
+                    .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
                 {
