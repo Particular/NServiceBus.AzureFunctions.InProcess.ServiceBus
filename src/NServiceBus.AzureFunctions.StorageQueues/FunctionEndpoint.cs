@@ -1,7 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
@@ -49,7 +48,7 @@
             {
                 var errorContext = new ErrorContext(
                     exception,
-                    new Dictionary<string, string>(messageContext.Headers),
+                    wrapper.GetHeaders(),
                     messageContext.MessageId,
                     messageContext.Body,
                     new TransportTransaction(),

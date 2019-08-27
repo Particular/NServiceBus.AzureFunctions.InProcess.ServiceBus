@@ -1,7 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
@@ -38,7 +37,7 @@
             {
                 var errorContext = new ErrorContext(
                     exception,
-                    new Dictionary<string, string>(messageContext.Headers),
+                    message.GetHeaders(),
                     messageContext.MessageId,
                     messageContext.Body,
                     new TransportTransaction(), 
