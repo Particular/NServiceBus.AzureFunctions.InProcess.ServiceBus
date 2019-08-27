@@ -38,7 +38,7 @@
             {
                 var errorContext = new ErrorContext(
                     exception,
-                    new Dictionary<string, string>(messageContext.Headers),
+                    message.GetHeaders(),
                     messageContext.MessageId,
                     messageContext.Body,
                     new TransportTransaction(), 
