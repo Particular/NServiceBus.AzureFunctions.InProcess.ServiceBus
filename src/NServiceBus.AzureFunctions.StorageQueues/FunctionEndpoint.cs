@@ -32,13 +32,12 @@
         public async Task Process(CloudQueueMessage message, ExecutionContext executionContext)
         {
             var serializer = new JsonSerializer();
-            var msg = serializer.Deserialize<MessageWrapper>(
-                new JsonTextReader(new StreamReader(new MemoryStream(message.AsBytes))));
+            var wrapper = serializer.Deserialize<MessageWrapper>(new JsonTextReader(new StreamReader(new MemoryStream(message.AsBytes))));
 
             var messageContext = new MessageContext(
-                Guid.NewGuid().ToString("N"),
-                msg.Headers,
-                msg.Body,
+                wrapper.GetMessageId(),
+                wrapper.GetHeaders(),
+                wrapper.Body,
                 new TransportTransaction(),
                 new CancellationTokenSource(),
                 new ContextBag());

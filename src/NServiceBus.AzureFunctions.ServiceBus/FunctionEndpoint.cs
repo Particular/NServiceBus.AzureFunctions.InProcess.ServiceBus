@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Extensibility;
@@ -30,8 +29,8 @@
         public async Task Process(Message message, ExecutionContext executionContext)
         {
             var messageContext = new MessageContext(
-                Guid.NewGuid().ToString("N"),
-                message.UserProperties.ToDictionary(x => x.Key, x => x.Value.ToString()),
+                message.GetMessageId(),
+                message.GetHeaders(),
                 message.Body,
                 new TransportTransaction(),
                 new CancellationTokenSource(),
