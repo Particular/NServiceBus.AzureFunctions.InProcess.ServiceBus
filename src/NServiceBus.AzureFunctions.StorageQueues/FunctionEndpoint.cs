@@ -33,10 +33,11 @@
         {
             var serializer = new JsonSerializer();
             var wrapper = serializer.Deserialize<MessageWrapper>(new JsonTextReader(new StreamReader(new MemoryStream(message.AsBytes))));
+            var messageContext = CreateMessageContext(wrapper);
 
             try
             {
-                await Process(CreateMessageContext(wrapper), executionContext).ConfigureAwait(false);
+                await Process(messageContext, executionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {

@@ -28,9 +28,11 @@
         /// </summary>
         public async Task Process(Message message, ExecutionContext executionContext)
         {
+            var messageContext = CreateMessageContext(message);
+
             try
             {
-                await Process(CreateMessageContext(message), executionContext).ConfigureAwait(false);
+                await Process(messageContext, executionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
