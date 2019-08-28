@@ -18,10 +18,9 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
         /// </summary>
-        /// <param name="endpointName"></param>
         /// <param name="connectionStringName"></param>
         /// <param name="executionContext"></param>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName, ExecutionContext executionContext) : base(endpointName)
+        public ServiceBusTriggeredEndpointConfiguration(string connectionStringName, ExecutionContext executionContext) : base(executionContext.FunctionName)
         {
             Transport = UseTransport<AzureServiceBusTransport>();
 

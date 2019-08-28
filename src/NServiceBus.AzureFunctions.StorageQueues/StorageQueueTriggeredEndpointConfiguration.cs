@@ -17,10 +17,9 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
         /// </summary>
-        /// <param name="endpointName"></param>
         /// <param name="connectionStringName"></param>
         /// <param name="executionContext"></param>
-        public StorageQueueTriggeredEndpointConfiguration(string endpointName, string connectionStringName, ExecutionContext executionContext) : base(endpointName)
+        public StorageQueueTriggeredEndpointConfiguration(string connectionStringName, ExecutionContext executionContext) : base(executionContext.FunctionName)
         {
             Transport = UseTransport<AzureStorageQueueTransport>();
 
