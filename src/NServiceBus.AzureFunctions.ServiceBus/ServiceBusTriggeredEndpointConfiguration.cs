@@ -1,7 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Configuration;
     using Serverless;
 
     /// <summary>
@@ -9,7 +8,6 @@
     /// </summary>
     public class ServiceBusTriggeredEndpointConfiguration : ServerlessEndpointConfiguration
     {
-
         /// <summary>
         /// Azure Service Bus transport
         /// </summary>
@@ -24,11 +22,8 @@
         {
             Transport = UseTransport<AzureServiceBusTransport>();
 
-            var config = new ConfigurationBuilder()
-                .SetBasePath(executionContext.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true)
-                .Build();
-            Transport.ConnectionString(config.GetValue<string>($"Values:{connectionStringName}"));
+            var connectionString = System.Environment.GetEnvironmentVariable(connectionStringName);
+            Transport.ConnectionString(connectionString);
         }
     }
 }

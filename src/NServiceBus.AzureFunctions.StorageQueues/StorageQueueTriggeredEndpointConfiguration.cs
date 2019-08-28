@@ -1,7 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Configuration;
     using Serverless;
 
     /// <summary>
@@ -23,11 +22,8 @@
         {
             Transport = UseTransport<AzureStorageQueueTransport>();
 
-            var config = new ConfigurationBuilder()
-                .SetBasePath(executionContext.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true)
-                .Build();
-            Transport.ConnectionString(config.GetValue<string>($"Values:{connectionStringName}"));
+            var connectionString = System.Environment.GetEnvironmentVariable(connectionStringName);
+            Transport.ConnectionString(connectionString);
         }
     }
 }
