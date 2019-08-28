@@ -7,7 +7,7 @@ namespace NServiceBus.AzureFunctions.ServiceBus
     }
     public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
-        public ServiceBusTriggeredEndpointConfiguration(Microsoft.Azure.WebJobs.ExecutionContext executionContext, string connectionStringName = "AzureWebJobsServiceBus") { }
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsServiceBus") { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    using Microsoft.Azure.WebJobs;
     using Serverless;
 
     /// <summary>
@@ -16,7 +15,7 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
         /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(ExecutionContext executionContext, string connectionStringName = "AzureWebJobsServiceBus") : base(executionContext.FunctionName)
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsServiceBus") : base(endpointName)
         {
             Transport = UseTransport<AzureServiceBusTransport>();
 

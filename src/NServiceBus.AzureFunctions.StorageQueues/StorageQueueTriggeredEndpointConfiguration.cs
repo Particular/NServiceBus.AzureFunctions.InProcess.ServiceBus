@@ -1,6 +1,5 @@
 ﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
-    using Microsoft.Azure.WebJobs;
     using Serverless;
 
     /// <summary>
@@ -16,7 +15,7 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
         /// </summary>
-        public StorageQueueTriggeredEndpointConfiguration(ExecutionContext executionContext, string connectionStringName = "AzureWebJobsStorage") : base(executionContext.FunctionName)
+        public StorageQueueTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsStorage") : base(endpointName)
         {
             Transport = UseTransport<AzureStorageQueueTransport>();
 

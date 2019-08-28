@@ -7,7 +7,7 @@ namespace NServiceBus.AzureFunctions.StorageQueues
     }
     public class StorageQueueTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
-        public StorageQueueTriggeredEndpointConfiguration(Microsoft.Azure.WebJobs.ExecutionContext executionContext, string connectionStringName = "AzureWebJobsStorage") { }
+        public StorageQueueTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsStorage") { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureStorageQueueTransport> Transport { get; }
     }
 }
