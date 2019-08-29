@@ -21,6 +21,10 @@
 
             var connectionString = System.Environment.GetEnvironmentVariable(connectionStringName);
             Transport.ConnectionString(connectionString);
+
+            var recoverability = AdvancedConfiguration.Recoverability();
+            recoverability.Immediate(settings => settings.NumberOfRetries(4));
+            recoverability.Delayed(settings => settings.NumberOfRetries(3));
         }
     }
 }
