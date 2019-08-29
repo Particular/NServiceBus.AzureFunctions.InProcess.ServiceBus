@@ -1,5 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
+    using NServiceBus.Logging;
     using Serverless;
 
     /// <summary>
@@ -11,6 +12,8 @@
         /// Azure Storage Queues transport
         /// </summary>
         public TransportExtensions<AzureStorageQueueTransport> Transport { get; }
+
+        internal FunctionsLoggerFactory FunctionsLoggerFactory { get; }
 
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
@@ -25,6 +28,9 @@
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(4));
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
+
+            FunctionsLoggerFactory = new FunctionsLoggerFactory();
+            LogManager.UseFactory(FunctionsLoggerFactory);
         }
     }
 }
