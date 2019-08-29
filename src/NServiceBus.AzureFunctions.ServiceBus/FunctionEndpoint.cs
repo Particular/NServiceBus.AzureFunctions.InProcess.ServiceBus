@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Extensions.Logging;
     using Serverless;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -15,6 +16,8 @@
     /// </summary>
     public class FunctionEndpoint : ServerlessEndpoint<ExecutionContext, ServiceBusTriggeredEndpointConfiguration>
     {
+        ILogger capturedFunctionsLogger;
+
         /// <summary>
         /// Create a new endpoint hosting in Azure Function.
         /// </summary>
@@ -22,11 +25,23 @@
         {
         }
 
+        /// <summary></summary>
+        protected override Task Initialize(ServiceBusTriggeredEndpointConfiguration configuration)
+        {
+            configuration.FunctionsLoggerFactory.Logger = capturedFunctionsLogger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task Process(Message message, ExecutionContext executionContext)
+        public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
+            if (this.capturedFunctionsLogger == null)
+            {
+                this.capturedFunctionsLogger = functionsLogger;
+            }
+
             var messageContext = CreateMessageContext(message);
 
             try

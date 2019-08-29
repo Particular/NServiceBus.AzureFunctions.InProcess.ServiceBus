@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
     using Azure.Transports.WindowsAzureStorageQueues;
     using Extensibility;
+    using Microsoft.Extensions.Logging;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
     using Serverless;
@@ -18,6 +19,8 @@
     /// </summary>
     public class FunctionEndpoint : ServerlessEndpoint<ExecutionContext, StorageQueueTriggeredEndpointConfiguration>
     {
+        ILogger capturedFunctionsLogger;
+
         /// <summary>
         /// Create a new endpoint hosting in Azure Function.
         /// </summary>
@@ -25,11 +28,23 @@
         {
         }
 
+        /// <summary></summary>
+        protected override Task Initialize(StorageQueueTriggeredEndpointConfiguration configuration)
+        {
+            configuration.FunctionsLoggerFactory.Logger = capturedFunctionsLogger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Processes a message received from an AzureStorageQueue trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task Process(CloudQueueMessage message, ExecutionContext executionContext)
+        public async Task Process(CloudQueueMessage message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
+            if(this.capturedFunctionsLogger == null)
+            {
+                this.capturedFunctionsLogger = functionsLogger;
+            }
+
             MessageWrapper wrapper;
             // Read message content via StreamReader to handle BOM correctly.
             using (var memoryStream = new MemoryStream(message.AsBytes))
