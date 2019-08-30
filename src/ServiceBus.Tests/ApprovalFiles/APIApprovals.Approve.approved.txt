@@ -18,6 +18,6 @@ namespace NServiceBus.AzureFunctions.ServiceBus
     {
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Logging.ILogger logger, string connectionStringName = null) { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
-        public static NServiceBus.AzureFunctions.ServiceBus.ServiceBusTriggeredEndpointConfiguration AutoConfigure() { }
+        public static NServiceBus.AzureFunctions.ServiceBus.ServiceBusTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation() { }
     }
 }
