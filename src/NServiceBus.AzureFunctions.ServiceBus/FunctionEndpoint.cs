@@ -29,11 +29,11 @@
         public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             var messageContext = CreateMessageContext(message);
-            var context = new FunctionExecutionContext(executionContext, functionsLogger);
+            var functionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
             try
             {
-                await Process(messageContext, context).ConfigureAwait(false);
+                await Process(messageContext, functionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -45,7 +45,7 @@
                     new TransportTransaction(), 
                     message.SystemProperties.DeliveryCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, context)
+                var errorHandleResult = await ProcessFailedMessage(errorContext, functionContext)
                     .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)

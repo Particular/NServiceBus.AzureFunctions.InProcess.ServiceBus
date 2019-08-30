@@ -31,7 +31,7 @@
         /// </summary>
         public async Task Process(CloudQueueMessage message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            var context = new FunctionExecutionContext(executionContext, functionsLogger);
+            var functionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
             MessageWrapper wrapper;
             // Read message content via StreamReader to handle BOM correctly.
@@ -45,7 +45,7 @@
 
             try
             {
-                await Process(messageContext, context).ConfigureAwait(false);
+                await Process(messageContext, functionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -57,7 +57,7 @@
                     new TransportTransaction(),
                     message.DequeueCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, context)
+                var errorHandleResult = await ProcessFailedMessage(errorContext, functionContext)
                     .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
