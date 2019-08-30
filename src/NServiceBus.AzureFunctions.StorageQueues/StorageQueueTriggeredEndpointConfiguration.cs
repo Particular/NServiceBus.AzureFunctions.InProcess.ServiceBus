@@ -44,12 +44,12 @@
         /// <summary>
         /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via reflection.
         /// </summary>
-        public static StorageQueueTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation()
+        public static StorageQueueTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation(FunctionExecutionContext functionExecutionContext)
         {
             var configuration = TryGetTriggerConfiguration();
             if (configuration != null)
             {
-                return new StorageQueueTriggeredEndpointConfiguration(configuration.QueueName, NullLogger.Instance, configuration.Connection);
+                return new StorageQueueTriggeredEndpointConfiguration(configuration.QueueName, functionExecutionContext.Logger ?? NullLogger.Instance, configuration.Connection);
             }
 
             throw new Exception($"Unable to automatically derive the endpoint name from the QueueTrigger attribute. Make sure the attribute exists or create the {nameof(StorageQueueTriggeredEndpointConfiguration)} with the required parameter manually.");

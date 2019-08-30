@@ -44,12 +44,12 @@
         /// <summary>
         /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via reflection.
         /// </summary>
-        public static ServiceBusTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation()
+        public static ServiceBusTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation(FunctionExecutionContext functionExecutionContext)
         {
             var configuration = TryGetTriggerConfiguration();
             if (configuration != null)
             {
-                return new ServiceBusTriggeredEndpointConfiguration(configuration.QueueName, NullLogger.Instance, configuration.Connection);
+                return new ServiceBusTriggeredEndpointConfiguration(configuration.QueueName, functionExecutionContext.Logger ?? NullLogger.Instance, configuration.Connection);
             }
 
             throw new Exception($"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
