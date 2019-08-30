@@ -44,7 +44,7 @@
         /// <summary>
         /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via reflection.
         /// </summary>
-        public static ServiceBusTriggeredEndpointConfiguration AutoConfigure()
+        public static ServiceBusTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation()
         {
             var configuration = TryGetTriggerConfiguration();
             if (configuration != null)
