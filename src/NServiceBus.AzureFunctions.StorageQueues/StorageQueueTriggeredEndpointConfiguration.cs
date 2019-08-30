@@ -3,8 +3,6 @@
     using Logging;
     using Microsoft.Extensions.Logging;
 	using System;
-    using System.Diagnostics;
-    using System.Reflection;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging.Abstractions;
     using Serverless;
