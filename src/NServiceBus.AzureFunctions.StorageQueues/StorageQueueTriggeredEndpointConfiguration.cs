@@ -1,7 +1,7 @@
 ﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
+    using Logging;
     using Microsoft.Extensions.Logging;
-    using NServiceBus.Logging;
     using Serverless;
 
     /// <summary>
