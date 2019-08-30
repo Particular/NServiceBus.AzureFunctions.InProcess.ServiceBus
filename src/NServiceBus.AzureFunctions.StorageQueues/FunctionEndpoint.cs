@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
     using Azure.Transports.WindowsAzureStorageQueues;
     using Extensibility;
+    using Microsoft.Extensions.Logging;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
     using Serverless;
@@ -16,20 +17,22 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint : ServerlessEndpoint<ExecutionContext, StorageQueueTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : ServerlessEndpoint<FunctionExecutionContext, StorageQueueTriggeredEndpointConfiguration>
     {
         /// <summary>
         /// Create a new endpoint hosting in Azure Function.
         /// </summary>
-        public FunctionEndpoint(Func<ExecutionContext, StorageQueueTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
+        public FunctionEndpoint(Func<FunctionExecutionContext, StorageQueueTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
         {
         }
 
         /// <summary>
         /// Processes a message received from an AzureStorageQueue trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task Process(CloudQueueMessage message, ExecutionContext executionContext)
+        public async Task Process(CloudQueueMessage message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
+            var functionContext = new FunctionExecutionContext(executionContext, functionsLogger);
+
             MessageWrapper wrapper;
             // Read message content via StreamReader to handle BOM correctly.
             using (var memoryStream = new MemoryStream(message.AsBytes))
@@ -42,7 +45,7 @@
 
             try
             {
-                await Process(messageContext, executionContext).ConfigureAwait(false);
+                await Process(messageContext, functionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -54,7 +57,7 @@
                     new TransportTransaction(),
                     message.DequeueCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, executionContext)
+                var errorHandleResult = await ProcessFailedMessage(errorContext, functionContext)
                     .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
