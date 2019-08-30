@@ -2,6 +2,10 @@
 {
     using Logging;
     using Microsoft.Extensions.Logging;
+	using System;
+    using System.Diagnostics;
+    using System.Reflection;
+    using Microsoft.Azure.WebJobs;
     using Serverless;
 
     /// <summary>
@@ -9,6 +13,8 @@
     /// </summary>
     public class StorageQueueTriggeredEndpointConfiguration : ServerlessEndpointConfiguration
     {
+        const string DefaultStorageConnectionString = "AzureWebJobsStorage";
+
         /// <summary>
         /// Azure Storage Queues transport
         /// </summary>
@@ -19,11 +25,11 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
         /// </summary>
-        public StorageQueueTriggeredEndpointConfiguration(string endpointName, ILogger logger, string connectionStringName = "AzureWebJobsStorage") : base(endpointName)
+        public StorageQueueTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsStorage") : base(endpointName)
         {
             Transport = UseTransport<AzureStorageQueueTransport>();
 
-            var connectionString = System.Environment.GetEnvironmentVariable(connectionStringName);
+            var connectionString = Environment.GetEnvironmentVariable(connectionStringName ?? DefaultStorageConnectionString);
             Transport.ConnectionString(connectionString);
 
             var recoverability = AdvancedConfiguration.Recoverability();
@@ -32,6 +38,45 @@
 
             FunctionsLoggerFactory = new FunctionsLoggerFactory(logger);
             LogManager.UseFactory(FunctionsLoggerFactory);
+        }
+
+        /// <summary>
+        /// Attempts to derive the required configuration parameters automatically from the Azure functions related attributes via reflection.
+        /// </summary>
+        public static StorageQueueTriggeredEndpointConfiguration AutoConfigure()
+        {
+            var configuration = TryGetTriggerConfiguration();
+            if (configuration != null)
+            {
+                return new StorageQueueTriggeredEndpointConfiguration(configuration.QueueName, configuration.Connection);
+            }
+
+            throw new Exception($"Unable to automatically derive the endpoint name from the QueueTrigger attribute. Make sure the attribute exists or create the {nameof(StorageQueueTriggeredEndpointConfiguration)} with the required parameter manually.");
+
+            QueueTriggerAttribute TryGetTriggerConfiguration()
+            {
+                var frames = new StackTrace().GetFrames();
+                foreach (var stackFrame in frames)
+                {
+                    var method = stackFrame.GetMethod();
+                    var functionAttribute = method.GetCustomAttribute<FunctionNameAttribute>(false);
+                    if (functionAttribute != null)
+                    {
+                        foreach (var parameter in method.GetParameters())
+                        {
+                            var triggerConfiguration = parameter.GetCustomAttribute<QueueTriggerAttribute>(false);
+                            if (triggerConfiguration != null)
+                            {
+                                return triggerConfiguration;
+                            }
+                        }
+                    }
+
+                    return null;
+                }
+
+                return null;
+            }
         }
     }
 }
