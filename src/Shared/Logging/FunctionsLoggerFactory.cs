@@ -1,23 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using NServiceBus.Logging;
-
-namespace NServiceBus.AzureFunctions
+﻿namespace NServiceBus.AzureFunctions
 {
-    class FunctionsLoggerFactory : NServiceBus.Logging.ILoggerFactory
+    using System;
+    using Logging;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
+    using ILoggerFactory = Logging.ILoggerFactory;
+
+    class FunctionsLoggerFactory : ILoggerFactory
     {
+        public FunctionsLoggerFactory(ILogger logger)
+        {
+            this.logger = logger ?? NullLogger.Instance;
+        }
+
         public ILog GetLogger(Type type)
         {
-            return new Logger(this, type.Name);
+            return new Logger(logger);
         }
 
         public ILog GetLogger(string name)
         {
-            return new Logger(this, name);
+            return new Logger(logger);
         }
 
-        public Microsoft.Extensions.Logging.ILogger Logger { get; internal set; }
+        readonly ILogger logger;
     }
 }

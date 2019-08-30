@@ -14,22 +14,13 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint : ServerlessEndpoint<ExecutionContext, ServiceBusTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : ServerlessEndpoint<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration>
     {
-        ILogger capturedFunctionsLogger;
-
         /// <summary>
         /// Create a new endpoint hosting in Azure Function.
         /// </summary>
-        public FunctionEndpoint(Func<ExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
+        public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
         {
-        }
-
-        /// <summary></summary>
-        protected override Task Initialize(ServiceBusTriggeredEndpointConfiguration configuration)
-        {
-            configuration.FunctionsLoggerFactory.Logger = capturedFunctionsLogger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -37,16 +28,12 @@
         /// </summary>
         public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            if (this.capturedFunctionsLogger == null)
-            {
-                this.capturedFunctionsLogger = functionsLogger;
-            }
-
             var messageContext = CreateMessageContext(message);
+            var context = new FunctionExecutionContext(executionContext, functionsLogger);
 
             try
             {
-                await Process(messageContext, executionContext).ConfigureAwait(false);
+                await Process(messageContext, context).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -58,7 +45,7 @@
                     new TransportTransaction(), 
                     message.SystemProperties.DeliveryCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, executionContext)
+                var errorHandleResult = await ProcessFailedMessage(errorContext, context)
                     .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)

@@ -1,5 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.StorageQueues
 {
+    using Microsoft.Extensions.Logging;
     using NServiceBus.Logging;
     using Serverless;
 
@@ -18,7 +19,7 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
         /// </summary>
-        public StorageQueueTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsStorage") : base(endpointName)
+        public StorageQueueTriggeredEndpointConfiguration(string endpointName, ILogger logger, string connectionStringName = "AzureWebJobsStorage") : base(endpointName)
         {
             Transport = UseTransport<AzureStorageQueueTransport>();
 
@@ -29,7 +30,7 @@
             recoverability.Immediate(settings => settings.NumberOfRetries(4));
             recoverability.Delayed(settings => settings.NumberOfRetries(0));
 
-            FunctionsLoggerFactory = new FunctionsLoggerFactory();
+            FunctionsLoggerFactory = new FunctionsLoggerFactory(logger);
             LogManager.UseFactory(FunctionsLoggerFactory);
         }
     }
