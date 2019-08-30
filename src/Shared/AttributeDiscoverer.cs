@@ -28,8 +28,6 @@ namespace NServiceBus.AzureFunctions
                         }
                     }
                 }
-
-                return null;
             }
 
             return null;
