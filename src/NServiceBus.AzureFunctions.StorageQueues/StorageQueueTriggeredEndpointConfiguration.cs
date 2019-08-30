@@ -46,38 +46,13 @@
         /// </summary>
         public static StorageQueueTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation(FunctionExecutionContext functionExecutionContext)
         {
-            var configuration = TryGetTriggerConfiguration();
+            var configuration = TriggerDiscoverer.TryGet<QueueTriggerAttribute>();
             if (configuration != null)
             {
                 return new StorageQueueTriggeredEndpointConfiguration(configuration.QueueName, functionExecutionContext.Logger ?? NullLogger.Instance, configuration.Connection);
             }
 
             throw new Exception($"Unable to automatically derive the endpoint name from the QueueTrigger attribute. Make sure the attribute exists or create the {nameof(StorageQueueTriggeredEndpointConfiguration)} with the required parameter manually.");
-
-            QueueTriggerAttribute TryGetTriggerConfiguration()
-            {
-                var frames = new StackTrace().GetFrames();
-                foreach (var stackFrame in frames)
-                {
-                    var method = stackFrame.GetMethod();
-                    var functionAttribute = method.GetCustomAttribute<FunctionNameAttribute>(false);
-                    if (functionAttribute != null)
-                    {
-                        foreach (var parameter in method.GetParameters())
-                        {
-                            var triggerConfiguration = parameter.GetCustomAttribute<QueueTriggerAttribute>(false);
-                            if (triggerConfiguration != null)
-                            {
-                                return triggerConfiguration;
-                            }
-                        }
-                    }
-
-                    return null;
-                }
-
-                return null;
-            }
         }
     }
 }

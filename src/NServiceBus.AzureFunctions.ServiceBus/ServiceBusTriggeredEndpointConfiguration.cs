@@ -5,8 +5,6 @@
     using Microsoft.Extensions.Logging;
     using Serverless;
     using System;
-    using System.Diagnostics;
-    using System.Reflection;
     using Microsoft.Extensions.Logging.Abstractions;
 
     /// <summary>
@@ -46,38 +44,13 @@
         /// </summary>
         public static ServiceBusTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation(FunctionExecutionContext functionExecutionContext)
         {
-            var configuration = TryGetTriggerConfiguration();
+            var configuration = TriggerDiscoverer.TryGet<ServiceBusTriggerAttribute>();
             if (configuration != null)
             {
                 return new ServiceBusTriggeredEndpointConfiguration(configuration.QueueName, functionExecutionContext.Logger ?? NullLogger.Instance, configuration.Connection);
             }
 
             throw new Exception($"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
-
-            ServiceBusTriggerAttribute TryGetTriggerConfiguration()
-            {
-                var frames = new StackTrace().GetFrames();
-                foreach (var stackFrame in frames)
-                {
-                    var method = stackFrame.GetMethod();
-                    var functionAttribute = method.GetCustomAttribute<FunctionNameAttribute>(false);
-                    if (functionAttribute != null)
-                    {
-                        foreach (var parameter in method.GetParameters())
-                        {
-                            var triggerConfiguration = parameter.GetCustomAttribute<ServiceBusTriggerAttribute>(false);
-                            if (triggerConfiguration != null)
-                            {
-                                return triggerConfiguration;
-                            }
-                        }
-                    }
-
-                    return null;
-                }
-
-                return null;
-            }
         }
     }
 }
