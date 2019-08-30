@@ -1,13 +1,22 @@
+namespace NServiceBus.AzureFunctions
+{
+    public class FunctionExecutionContext
+    {
+        public FunctionExecutionContext(Microsoft.Azure.WebJobs.ExecutionContext context, Microsoft.Extensions.Logging.ILogger logger = null) { }
+        public Microsoft.Azure.WebJobs.ExecutionContext Context { get; }
+        public Microsoft.Extensions.Logging.ILogger Logger { get; }
+    }
+}
 namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    public class FunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.AzureFunctions.ServiceBus.ServiceBusTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.AzureFunctions.ServiceBus.ServiceBusTriggeredEndpointConfiguration>
     {
-        public FunctionEndpoint(System.Func<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.AzureFunctions.ServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
-        public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
+        public FunctionEndpoint(System.Func<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.AzureFunctions.ServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
+        public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
     }
     public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsServiceBus") { }
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Logging.ILogger logger, string connectionStringName = "AzureWebJobsServiceBus") { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
     }
 }

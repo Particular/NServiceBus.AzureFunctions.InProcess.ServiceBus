@@ -1,13 +1,22 @@
+namespace NServiceBus.AzureFunctions
+{
+    public class FunctionExecutionContext
+    {
+        public FunctionExecutionContext(Microsoft.Azure.WebJobs.ExecutionContext context, Microsoft.Extensions.Logging.ILogger logger = null) { }
+        public Microsoft.Azure.WebJobs.ExecutionContext Context { get; }
+        public Microsoft.Extensions.Logging.ILogger Logger { get; }
+    }
+}
 namespace NServiceBus.AzureFunctions.StorageQueues
 {
-    public class FunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.AzureFunctions.StorageQueues.StorageQueueTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : NServiceBus.Serverless.ServerlessEndpoint<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.AzureFunctions.StorageQueues.StorageQueueTriggeredEndpointConfiguration>
     {
-        public FunctionEndpoint(System.Func<Microsoft.Azure.WebJobs.ExecutionContext, NServiceBus.AzureFunctions.StorageQueues.StorageQueueTriggeredEndpointConfiguration> configurationFactory) { }
-        public System.Threading.Tasks.Task Process(Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext) { }
+        public FunctionEndpoint(System.Func<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.AzureFunctions.StorageQueues.StorageQueueTriggeredEndpointConfiguration> configurationFactory) { }
+        public System.Threading.Tasks.Task Process(Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
     }
     public class StorageQueueTriggeredEndpointConfiguration : NServiceBus.Serverless.ServerlessEndpointConfiguration
     {
-        public StorageQueueTriggeredEndpointConfiguration(string endpointName, string connectionStringName = "AzureWebJobsStorage") { }
+        public StorageQueueTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Logging.ILogger logger, string connectionStringName = "AzureWebJobsStorage") { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureStorageQueueTransport> Transport { get; }
     }
 }
