@@ -5,7 +5,7 @@ namespace NServiceBus.AzureFunctions
     using System.Reflection;
     using Microsoft.Azure.WebJobs;
 
-    class TriggerDiscoverer
+    static class TriggerDiscoverer
     {
         /// <summary>
         /// Attempts to derive the required configuration information from the Azure Function and trigger attributes via reflection.
