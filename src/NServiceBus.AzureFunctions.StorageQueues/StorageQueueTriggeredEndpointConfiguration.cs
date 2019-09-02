@@ -19,6 +19,11 @@
         /// </summary>
         public TransportExtensions<AzureStorageQueueTransport> Transport { get; }
 
+        static StorageQueueTriggeredEndpointConfiguration()
+        {
+            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
+        }
+
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
         /// </summary>
@@ -32,8 +37,6 @@
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(4));
             recoverability.Delayed(settings => settings.NumberOfRetries(0));
-
-            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
         }
 
         /// <summary>

@@ -19,6 +19,11 @@
         /// </summary>
         public TransportExtensions<AzureServiceBusTransport> Transport { get; }
 
+        static ServiceBusTriggeredEndpointConfiguration()
+        {
+            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
+        }
+
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
         /// </summary>
@@ -32,8 +37,6 @@
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
-
-            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
         }
 
         /// <summary>
