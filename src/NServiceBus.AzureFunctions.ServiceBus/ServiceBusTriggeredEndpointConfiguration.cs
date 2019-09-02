@@ -42,7 +42,7 @@
         /// <summary>
         /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via reflection.
         /// </summary>
-        public static ServiceBusTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation(FunctionExecutionContext functionExecutionContext)
+        public static ServiceBusTriggeredEndpointConfiguration FromAttributes(FunctionExecutionContext functionExecutionContext)
         {
             var configuration = TriggerDiscoverer.TryGet<ServiceBusTriggerAttribute>();
             if (configuration != null)
