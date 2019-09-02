@@ -27,16 +27,12 @@
 
                 configuration.UseSerialization<XmlSerializer>();
 
-                var transport = configuration.Transport;
-
-                transport.UnwrapMessagesWith(message => new MessageWrapper
+                configuration.Transport.UnwrapMessagesWith(message => new MessageWrapper
                 {
                     Id = message.Id,
                     Body = message.AsBytes,
                     Headers = new Dictionary<string, string>()
                 });
-
-                transport.DelayedDelivery().DisableDelayedDelivery();
 
                 return configuration;
             });
