@@ -31,6 +31,8 @@
             var messageContext = CreateMessageContext(message);
             var functionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
             try
             {
                 await Process(messageContext, functionContext).ConfigureAwait(false);

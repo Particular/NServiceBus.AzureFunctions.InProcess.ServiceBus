@@ -19,8 +19,6 @@
         /// </summary>
         public TransportExtensions<AzureStorageQueueTransport> Transport { get; }
 
-        internal FunctionsLoggerFactory FunctionsLoggerFactory { get; }
-
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.
         /// </summary>
@@ -35,11 +33,7 @@
             recoverability.Immediate(settings => settings.NumberOfRetries(4));
             recoverability.Delayed(settings => settings.NumberOfRetries(0));
 
-            // disable polling for delayed messages
-            Transport.DelayedDelivery().DisableDelayedDelivery();
-
-            FunctionsLoggerFactory = new FunctionsLoggerFactory(logger);
-            LogManager.UseFactory(FunctionsLoggerFactory);
+            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
         }
 
         /// <summary>

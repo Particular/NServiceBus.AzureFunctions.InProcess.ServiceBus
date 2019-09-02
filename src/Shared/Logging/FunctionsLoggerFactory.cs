@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.AzureFunctions
 {
     using System;
+    using System.Threading;
     using Logging;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -8,21 +9,27 @@
 
     class FunctionsLoggerFactory : ILoggerFactory
     {
-        public FunctionsLoggerFactory(ILogger logger)
+        public static FunctionsLoggerFactory Instance { get; } = new FunctionsLoggerFactory();
+
+        AsyncLocal<ILogger> logger = new AsyncLocal<ILogger>();
+
+        FunctionsLoggerFactory()
         {
-            this.logger = logger ?? NullLogger.Instance;
+        }
+
+        public void SetCurrentLogger(ILogger currentLogger)
+        {
+            logger.Value = currentLogger;
         }
 
         public ILog GetLogger(Type type)
         {
-            return new Logger(logger);
+            return new Logger(logger.Value ?? NullLogger.Instance);
         }
 
         public ILog GetLogger(string name)
         {
-            return new Logger(logger);
+            return new Logger(logger.Value ?? NullLogger.Instance);
         }
-
-        readonly ILogger logger;
     }
 }
