@@ -24,13 +24,19 @@
                 var configuration = new StorageQueueTriggeredEndpointConfiguration("asq", NullLogger.Instance);
 
                 configuration.AdvancedConfiguration.RegisterComponents(components => components.RegisterSingleton(testContext));
+
                 configuration.UseSerialization<XmlSerializer>();
-                configuration.Transport.UnwrapMessagesWith(message => new MessageWrapper
+
+                var transport = configuration.Transport;
+
+                transport.UnwrapMessagesWith(message => new MessageWrapper
                 {
                     Id = message.Id,
                     Body = message.AsBytes,
                     Headers = new Dictionary<string, string>()
                 });
+
+                transport.DelayedDelivery().DisableDelayedDelivery();
 
                 return configuration;
             });
