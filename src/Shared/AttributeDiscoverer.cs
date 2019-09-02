@@ -27,6 +27,8 @@ namespace NServiceBus.AzureFunctions
                             return triggerConfiguration;
                         }
                     }
+
+                    return null;
                 }
             }
 
