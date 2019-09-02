@@ -1,4 +1,4 @@
-﻿namespace AzureStorageQueues.Tests
+﻿namespace StorageQueues.Tests
 {
     using NServiceBus.AzureFunctions.StorageQueues;
     using NUnit.Framework;
