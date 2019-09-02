@@ -42,7 +42,7 @@
         /// <summary>
         /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via reflection.
         /// </summary>
-        public static StorageQueueTriggeredEndpointConfiguration CreateUsingFunctionAndTriggerAttributesInformation(FunctionExecutionContext functionExecutionContext)
+        public static StorageQueueTriggeredEndpointConfiguration FromAttributes(FunctionExecutionContext functionExecutionContext)
         {
             var configuration = TriggerDiscoverer.TryGet<QueueTriggerAttribute>();
             if (configuration != null)
