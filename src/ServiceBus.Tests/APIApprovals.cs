@@ -1,4 +1,4 @@
-﻿namespace AzureServiceBus.Tests
+﻿namespace ServiceBus.Tests
 {
     using NServiceBus.AzureFunctions.ServiceBus;
     using NUnit.Framework;
