@@ -2,10 +2,8 @@
 {
     using Logging;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Logging;
     using Serverless;
     using System;
-    using Microsoft.Extensions.Logging.Abstractions;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint running within an AzureServiceBus trigger.
@@ -19,12 +17,15 @@
         /// </summary>
         public TransportExtensions<AzureServiceBusTransport> Transport { get; }
 
-        internal FunctionsLoggerFactory FunctionsLoggerFactory { get; }
+        static ServiceBusTriggeredEndpointConfiguration()
+        {
+            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
+        }
 
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
         /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, ILogger logger, string connectionStringName = null) : base(endpointName)
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) : base(endpointName)
         {
             Transport = UseTransport<AzureServiceBusTransport>();
 
@@ -34,20 +35,17 @@
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
-
-            FunctionsLoggerFactory = new FunctionsLoggerFactory(logger);
-            LogManager.UseFactory(FunctionsLoggerFactory);
         }
 
         /// <summary>
         /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via reflection.
         /// </summary>
-        public static ServiceBusTriggeredEndpointConfiguration FromAttributes(FunctionExecutionContext functionExecutionContext)
+        public static ServiceBusTriggeredEndpointConfiguration FromAttributes()
         {
             var configuration = TriggerDiscoverer.TryGet<ServiceBusTriggerAttribute>();
             if (configuration != null)
             {
-                return new ServiceBusTriggeredEndpointConfiguration(configuration.QueueName, functionExecutionContext.Logger ?? NullLogger.Instance, configuration.Connection);
+                return new ServiceBusTriggeredEndpointConfiguration(configuration.QueueName, configuration.Connection);
             }
 
             throw new Exception($"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");

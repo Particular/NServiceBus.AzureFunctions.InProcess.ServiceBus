@@ -4,7 +4,6 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
-    using Microsoft.Extensions.Logging.Abstractions;
     using NServiceBus;
     using NServiceBus.AzureFunctions.ServiceBus;
     using NUnit.Framework;
@@ -18,7 +17,7 @@
 
             var endpoint = new FunctionEndpoint(functionExecutionContext =>
             {
-                var configuration = new ServiceBusTriggeredEndpointConfiguration("asb", NullLogger.Instance);
+                var configuration = new ServiceBusTriggeredEndpointConfiguration("asb");
 
                 configuration.AdvancedConfiguration.RegisterComponents(components => components.RegisterSingleton(testContext));
 
