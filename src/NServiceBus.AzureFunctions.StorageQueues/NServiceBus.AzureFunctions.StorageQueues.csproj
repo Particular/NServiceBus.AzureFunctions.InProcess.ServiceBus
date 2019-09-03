@@ -18,4 +18,8 @@
     <Compile Include="..\Shared\**\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="..\Shared\FunctionExecutionContext.cs" />
+  </ItemGroup>
+
 </Project>

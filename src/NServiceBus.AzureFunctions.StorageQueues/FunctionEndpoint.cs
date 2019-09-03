@@ -17,12 +17,12 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint : ServerlessEndpoint<FunctionExecutionContext, StorageQueueTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : ServerlessEndpoint<ExecutionContext, StorageQueueTriggeredEndpointConfiguration>
     {
         /// <summary>
         /// Create a new endpoint hosting in Azure Function.
         /// </summary>
-        public FunctionEndpoint(Func<FunctionExecutionContext, StorageQueueTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
+        public FunctionEndpoint(Func<ExecutionContext, StorageQueueTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
         {
         }
 
@@ -31,7 +31,7 @@
         /// </summary>
         public async Task Process(CloudQueueMessage message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            var functionContext = new FunctionExecutionContext(executionContext, functionsLogger);
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
             MessageWrapper wrapper;
             // Read message content via StreamReader to handle BOM correctly.
@@ -45,7 +45,7 @@
 
             try
             {
-                await Process(messageContext, functionContext).ConfigureAwait(false);
+                await Process(messageContext, executionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -57,7 +57,7 @@
                     new TransportTransaction(),
                     message.DequeueCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, functionContext)
+                var errorHandleResult = await ProcessFailedMessage(errorContext, executionContext)
                     .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
