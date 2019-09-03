@@ -35,6 +35,8 @@
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(4));
             recoverability.Delayed(settings => settings.NumberOfRetries(0));
+
+            Transport.DelayedDelivery().DisableDelayedDelivery();
         }
 
         /// <summary>

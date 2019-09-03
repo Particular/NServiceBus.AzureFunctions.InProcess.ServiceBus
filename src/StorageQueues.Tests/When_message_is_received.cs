@@ -4,7 +4,6 @@
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
     using NServiceBus;
@@ -21,7 +20,7 @@
 
             var endpoint = new FunctionEndpoint(functionExecutionContext =>
             {
-                var configuration = new StorageQueueTriggeredEndpointConfiguration("asq", NullLogger.Instance);
+                var configuration = new StorageQueueTriggeredEndpointConfiguration("asq");
 
                 configuration.AdvancedConfiguration.RegisterComponents(components => components.RegisterSingleton(testContext));
 

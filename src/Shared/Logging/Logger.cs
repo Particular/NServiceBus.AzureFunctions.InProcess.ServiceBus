@@ -20,7 +20,7 @@
         public bool IsInfoEnabled => CurrentLogger.IsEnabled(LogLevel.Information);
         public bool IsWarnEnabled => CurrentLogger.IsEnabled(LogLevel.Warning);
         public bool IsErrorEnabled => CurrentLogger.IsEnabled(LogLevel.Error);
-        public bool IsFatalEnabled => CurrentLogger.IsEnabled(LogLevel.Error);
+        public bool IsFatalEnabled => CurrentLogger.IsEnabled(LogLevel.Critical);
 
         public void Debug(string message)
         {
@@ -84,17 +84,17 @@
 
         public void Fatal(string message)
         {
-            CurrentLogger.Log(LogLevel.Error, message);
+            CurrentLogger.Log(LogLevel.Critical, message);
         }
 
         public void Fatal(string message, Exception exception)
         {
-            CurrentLogger.Log(LogLevel.Error, exception, message);
+            CurrentLogger.Log(LogLevel.Critical, exception, message);
         }
 
         public void FatalFormat(string format, params object[] args)
         {
-            CurrentLogger.Log(LogLevel.Error, format, args);
+            CurrentLogger.Log(LogLevel.Critical, format, args);
         }
 
         AsyncLocal<ILogger> logger;
