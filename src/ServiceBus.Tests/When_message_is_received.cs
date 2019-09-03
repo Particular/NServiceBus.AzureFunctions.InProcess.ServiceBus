@@ -38,31 +38,31 @@
                 return message;
             }
         }
-    }
 
-    public class TestContext
-    {
-        public int HandlerInvocationCount => count;
-
-        public void HandlerInvoked() => Interlocked.Increment(ref count);
-
-        int count;
-    }
-
-    class HappyDayMessage : IMessage {}
-
-    class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
-    {
-        TestContext testContext;
-
-        public HappyDayMessageHandler(TestContext testContext)
+        public class TestContext
         {
-            this.testContext = testContext;
+            public int HandlerInvocationCount => count;
+
+            public void HandlerInvoked() => Interlocked.Increment(ref count);
+
+            int count;
         }
-        public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
+
+        class HappyDayMessage : IMessage { }
+
+        class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
         {
-            testContext.HandlerInvoked();
-            return Task.CompletedTask;
+            TestContext testContext;
+
+            public HappyDayMessageHandler(TestContext testContext)
+            {
+                this.testContext = testContext;
+            }
+            public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
+            {
+                testContext.HandlerInvoked();
+                return Task.CompletedTask;
+            }
         }
     }
 }
