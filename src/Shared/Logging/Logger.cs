@@ -1,98 +1,102 @@
 ﻿namespace NServiceBus.AzureFunctions
 {
     using System;
+    using System.Threading;
     using Logging;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
     using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
     class Logger : ILog
     {
-        public Logger(ILogger logger)
+        public Logger(AsyncLocal<ILogger> logger)
         {
             this.logger = logger;
         }
 
-        public bool IsDebugEnabled => logger.IsEnabled(LogLevel.Debug);
-        public bool IsInfoEnabled => logger.IsEnabled(LogLevel.Information);
-        public bool IsWarnEnabled => logger.IsEnabled(LogLevel.Warning);
-        public bool IsErrorEnabled => logger.IsEnabled(LogLevel.Error);
-        public bool IsFatalEnabled => logger.IsEnabled(LogLevel.Critical);
+        ILogger CurrentLogger => logger.Value ?? NullLogger.Instance;
+
+        public bool IsDebugEnabled => CurrentLogger.IsEnabled(LogLevel.Debug);
+        public bool IsInfoEnabled => CurrentLogger.IsEnabled(LogLevel.Information);
+        public bool IsWarnEnabled => CurrentLogger.IsEnabled(LogLevel.Warning);
+        public bool IsErrorEnabled => CurrentLogger.IsEnabled(LogLevel.Error);
+        public bool IsFatalEnabled => CurrentLogger.IsEnabled(LogLevel.Error);
 
         public void Debug(string message)
         {
-            logger.Log(LogLevel.Debug, message);
+            CurrentLogger.Log(LogLevel.Debug, message);
         }
 
         public void Debug(string message, Exception exception)
         {
-            logger.Log(LogLevel.Debug, exception, message);
+            CurrentLogger.Log(LogLevel.Debug, exception, message);
         }
 
         public void DebugFormat(string format, params object[] args)
         {
-            logger.Log(LogLevel.Debug, format, args);
+            CurrentLogger.Log(LogLevel.Debug, format, args);
         }
 
         public void Info(string message)
         {
-            logger.Log(LogLevel.Information, message);
+            CurrentLogger.Log(LogLevel.Information, message);
         }
 
         public void Info(string message, Exception exception)
         {
-            logger.Log(LogLevel.Information, exception, message);
+            CurrentLogger.Log(LogLevel.Information, exception, message);
         }
 
         public void InfoFormat(string format, params object[] args)
         {
-            logger.Log(LogLevel.Information, format, args);
+            CurrentLogger.Log(LogLevel.Information, format, args);
         }
 
         public void Warn(string message)
         {
-            logger.Log(LogLevel.Warning, message);
+            CurrentLogger.Log(LogLevel.Warning, message);
         }
 
         public void Warn(string message, Exception exception)
         {
-            logger.Log(LogLevel.Warning, exception, message);
+            CurrentLogger.Log(LogLevel.Warning, exception, message);
         }
 
         public void WarnFormat(string format, params object[] args)
         {
-            logger.Log(LogLevel.Warning, format, args);
+            CurrentLogger.Log(LogLevel.Warning, format, args);
         }
 
         public void Error(string message)
         {
-            logger.Log(LogLevel.Error, message);
+            CurrentLogger.Log(LogLevel.Error, message);
         }
 
         public void Error(string message, Exception exception)
         {
-            logger.Log(LogLevel.Error, exception, message);
+            CurrentLogger.Log(LogLevel.Error, exception, message);
         }
 
         public void ErrorFormat(string format, params object[] args)
         {
-            logger.Log(LogLevel.Error, format, args);
+            CurrentLogger.Log(LogLevel.Error, format, args);
         }
 
         public void Fatal(string message)
         {
-            logger.Log(LogLevel.Critical, message);
+            CurrentLogger.Log(LogLevel.Error, message);
         }
 
         public void Fatal(string message, Exception exception)
         {
-            logger.Log(LogLevel.Critical, exception, message);
+            CurrentLogger.Log(LogLevel.Error, exception, message);
         }
 
         public void FatalFormat(string format, params object[] args)
         {
-            logger.Log(LogLevel.Critical, format, args);
+            CurrentLogger.Log(LogLevel.Error, format, args);
         }
 
-        ILogger logger;
+        AsyncLocal<ILogger> logger;
     }
 }

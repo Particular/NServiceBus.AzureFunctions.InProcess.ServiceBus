@@ -4,17 +4,19 @@
     using System.Threading;
     using Logging;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Abstractions;
     using ILoggerFactory = Logging.ILoggerFactory;
 
     class FunctionsLoggerFactory : ILoggerFactory
     {
         public static FunctionsLoggerFactory Instance { get; } = new FunctionsLoggerFactory();
 
+        ILog log;
+
         AsyncLocal<ILogger> logger = new AsyncLocal<ILogger>();
 
         FunctionsLoggerFactory()
         {
+            log = new Logger(logger);
         }
 
         public void SetCurrentLogger(ILogger currentLogger)
@@ -24,12 +26,12 @@
 
         public ILog GetLogger(Type type)
         {
-            return new Logger(logger.Value ?? NullLogger.Instance);
+            return log;
         }
 
         public ILog GetLogger(string name)
         {
-            return new Logger(logger.Value ?? NullLogger.Instance);
+            return log;
         }
     }
 }
