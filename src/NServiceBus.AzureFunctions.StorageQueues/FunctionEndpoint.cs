@@ -17,12 +17,12 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint : ServerlessEndpoint<ExecutionContext, StorageQueueTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : ServerlessEndpoint<FunctionExecutionContext, StorageQueueTriggeredEndpointConfiguration>
     {
         /// <summary>
         /// Create a new endpoint hosting in Azure Function.
         /// </summary>
-        public FunctionEndpoint(Func<ExecutionContext, StorageQueueTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
+        public FunctionEndpoint(Func<FunctionExecutionContext, StorageQueueTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
         {
         }
 
@@ -42,10 +42,11 @@
             }
 
             var messageContext = CreateMessageContext(wrapper);
+            var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
             try
             {
-                await Process(messageContext, executionContext).ConfigureAwait(false);
+                await Process(messageContext, functionExecutionContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -57,7 +58,7 @@
                     new TransportTransaction(),
                     message.DequeueCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, executionContext)
+                var errorHandleResult = await ProcessFailedMessage(errorContext, functionExecutionContext)
                     .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
