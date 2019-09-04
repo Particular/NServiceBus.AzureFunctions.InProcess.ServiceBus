@@ -4,13 +4,13 @@ namespace NServiceBus.AzureFunctions
     using Microsoft.Extensions.Logging;
 
     /// <summary>
+    /// Contains specific context information of the current function invocation.
     /// </summary>
     public class FunctionExecutionContext
     {
         /// <summary>
+        /// Creates a new <see cref="FunctionExecutionContext"/>.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="executionContext"></param>
         public FunctionExecutionContext(ExecutionContext executionContext, ILogger logger)
         {
             Logger = logger;
@@ -18,10 +18,12 @@ namespace NServiceBus.AzureFunctions
         }
 
         /// <summary>
+        /// The <see cref="ExecutionContext"/> associated with the current function invocation.
         /// </summary>
         public ExecutionContext ExecutionContext { get; }
 
         /// <summary>
+        /// The <see cref="ILogger"/> associated with the current function invocation.
         /// </summary>
         public ILogger Logger { get; }
     }
