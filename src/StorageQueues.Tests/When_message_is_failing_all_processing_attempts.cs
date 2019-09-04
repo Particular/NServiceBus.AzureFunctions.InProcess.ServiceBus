@@ -71,7 +71,6 @@
 
         public class TestContext
         {
-            TaskCompletionSource<bool> tcs;
             public int HandlerInvocationCount => count;
             public int SentToErrorQueueCount => sentToErrorQueue;
 
@@ -84,7 +83,8 @@
 
             int count;
             int sentToErrorQueue;
-
+            TaskCompletionSource<bool> tcs;
+            
             public TestContext(TaskCompletionSource<bool> tcs)
             {
                 this.tcs = tcs;

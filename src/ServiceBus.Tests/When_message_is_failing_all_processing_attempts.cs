@@ -14,9 +14,11 @@
     public class When_message_is_failing_all_processing_attempts
     {
         [Test]
-        public async Task Should_be_moved_to_the_error_queue()
+        public Task Should_be_moved_to_the_error_queue()
         {
-            var testContext = new TestContext();
+            // The transport will try to talk to the service when a message is moved to the error queue. We only care about the fact that it will be sent to the error queue, so don't wait.
+            var tcs = new TaskCompletionSource<bool>();
+            var testContext = new TestContext(tcs);
             var testRecoverabilityPolicy = new TestRecoverabilityPolicy(testContext);
 
             var endpoint = new FunctionEndpoint(functionExecutionContext =>
@@ -33,7 +35,7 @@
                 return configuration;
             });
 
-            await endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext());
+            Task.WaitAny(endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext()), tcs.Task);
 
             Assert.AreEqual(1, testContext.HandlerInvocationCount);
             Assert.AreEqual(1, testContext.SentToErrorQueueCount);
@@ -57,6 +59,8 @@
 
                 return message;
             }
+
+            return Task.CompletedTask;
         }
 
         public class TestContext
@@ -65,10 +69,20 @@
             public int SentToErrorQueueCount => sentToErrorQueue;
 
             public void HandlerInvoked() => Interlocked.Increment(ref count);
-            public void SentToErrorQueue() => Interlocked.Increment(ref sentToErrorQueue);
+            public void SentToErrorQueue()
+            {
+                Interlocked.Increment(ref sentToErrorQueue);
+                tcs.TrySetResult(true);
+            }
 
             int count;
             int sentToErrorQueue;
+            TaskCompletionSource<bool> tcs;
+
+            public TestContext(TaskCompletionSource<bool> tcs)
+            {
+                this.tcs = tcs;
+            }
         }
 
         class HappyDayMessage : IMessage { }
