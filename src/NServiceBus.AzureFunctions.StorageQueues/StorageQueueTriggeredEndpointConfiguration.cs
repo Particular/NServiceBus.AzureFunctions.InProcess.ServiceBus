@@ -3,7 +3,6 @@
     using Logging;
     using System;
     using Microsoft.Azure.WebJobs;
-    using Serverless;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint running within an AzureStorageQueue trigger.

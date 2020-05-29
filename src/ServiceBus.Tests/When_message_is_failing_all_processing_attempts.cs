@@ -7,7 +7,6 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
     using NServiceBus;
-    using NServiceBus.AzureFunctions.ServiceBus;
     using NServiceBus.Transport;
     using NUnit.Framework;
 
@@ -98,7 +97,7 @@
             public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
             {
                 testContext.HandlerInvoked();
-                
+
                 throw new Exception("boom");
             }
         }

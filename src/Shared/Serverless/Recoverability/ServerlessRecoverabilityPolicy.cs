@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.Serverless.Recoverability
+﻿namespace NServiceBus.AzureFunctions
 {
     using System;
     using Transport;

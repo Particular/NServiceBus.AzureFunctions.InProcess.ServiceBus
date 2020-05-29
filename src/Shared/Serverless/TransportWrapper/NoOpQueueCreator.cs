@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.Serverless
+﻿namespace NServiceBus.AzureFunctions
 {
     using System.Threading.Tasks;
     using Transport;

@@ -9,7 +9,6 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.WindowsAzure.Storage.Queue;
     using Newtonsoft.Json;
-    using Serverless;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 

@@ -1,6 +1,5 @@
-﻿namespace NServiceBus.Serverless
+﻿namespace NServiceBus.AzureFunctions
 {
-    using Recoverability;
     using Serialization;
     using Transport;
 

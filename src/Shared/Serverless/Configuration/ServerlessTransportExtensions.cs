@@ -1,7 +1,6 @@
-﻿namespace NServiceBus
+﻿namespace NServiceBus.AzureFunctions
 {
     using Configuration.AdvancedExtensibility;
-    using Serverless;
     using Transport;
 
     static class ServerlessTransportExtensions
