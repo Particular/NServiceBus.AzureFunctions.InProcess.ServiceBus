@@ -1,6 +1,6 @@
 ﻿namespace ServiceBus.Tests
 {
-    using NServiceBus.AzureFunctions.ServiceBus;
+    using NServiceBus;
     using NUnit.Framework;
     using Particular.Approvals;
     using PublicApiGenerator;
