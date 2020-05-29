@@ -9,7 +9,6 @@
     using Newtonsoft.Json;
     using NServiceBus;
     using NServiceBus.Azure.Transports.WindowsAzureStorageQueues;
-    using NServiceBus.AzureFunctions.StorageQueues;
     using NServiceBus.Transport;
     using NUnit.Framework;
 
@@ -22,7 +21,7 @@
             var tcs = new TaskCompletionSource<bool>();
             var testContext = new TestContext(tcs);
             var testRecoverabilityPolicy = new TestRecoverabilityPolicy(testContext);
-            
+
             var endpoint = new FunctionEndpoint(functionExecutionContext =>
             {
                 var configuration = new StorageQueueTriggeredEndpointConfiguration("asq");
@@ -84,7 +83,7 @@
             int count;
             int sentToErrorQueue;
             TaskCompletionSource<bool> tcs;
-            
+
             public TestContext(TaskCompletionSource<bool> tcs)
             {
                 this.tcs = tcs;
@@ -104,7 +103,7 @@
             public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
             {
                 testContext.HandlerInvoked();
-                
+
                 throw new Exception("boom");
             }
         }

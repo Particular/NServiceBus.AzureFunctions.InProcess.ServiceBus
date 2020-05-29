@@ -8,7 +8,6 @@
     using Newtonsoft.Json;
     using NServiceBus;
     using NServiceBus.Azure.Transports.WindowsAzureStorageQueues;
-    using NServiceBus.AzureFunctions.StorageQueues;
     using NUnit.Framework;
 
     public class When_function_receives_a_message
