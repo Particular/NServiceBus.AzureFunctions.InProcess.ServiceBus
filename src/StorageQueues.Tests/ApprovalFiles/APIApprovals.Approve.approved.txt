@@ -26,17 +26,17 @@ namespace NServiceBus.AzureFunctions
         protected System.Threading.Tasks.Task<NServiceBus.Transport.ErrorHandleResult> ProcessFailedMessage(NServiceBus.Transport.ErrorContext errorContext, TExecutionContext executionContext) { }
     }
 }
-namespace NServiceBus.AzureFunctions.StorageQueues
+namespace NServiceBus
 {
-    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServerlessEndpoint<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.AzureFunctions.StorageQueues.StorageQueueTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServerlessEndpoint<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.StorageQueueTriggeredEndpointConfiguration>
     {
-        public FunctionEndpoint(System.Func<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.AzureFunctions.StorageQueues.StorageQueueTriggeredEndpointConfiguration> configurationFactory) { }
+        public FunctionEndpoint(System.Func<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.StorageQueueTriggeredEndpointConfiguration> configurationFactory) { }
         public System.Threading.Tasks.Task Process(Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
     }
     public class StorageQueueTriggeredEndpointConfiguration : NServiceBus.AzureFunctions.ServerlessEndpointConfiguration
     {
         public StorageQueueTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureStorageQueueTransport> Transport { get; }
-        public static NServiceBus.AzureFunctions.StorageQueues.StorageQueueTriggeredEndpointConfiguration FromAttributes() { }
+        public static NServiceBus.StorageQueueTriggeredEndpointConfiguration FromAttributes() { }
     }
 }

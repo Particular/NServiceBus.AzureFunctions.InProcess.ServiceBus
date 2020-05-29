@@ -1,10 +1,12 @@
-﻿namespace NServiceBus.AzureFunctions.StorageQueues
+﻿namespace NServiceBus
 {
     using System;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using Azure.Transports.WindowsAzureStorageQueues;
+    using AzureFunctions;
+    using AzureFunctions.StorageQueues;
     using Extensibility;
     using Microsoft.Extensions.Logging;
     using Microsoft.WindowsAzure.Storage.Queue;
@@ -81,6 +83,6 @@
             }
         }
 
-        static readonly JsonSerializer JsonSerializer = new JsonSerializer();
+        static readonly Newtonsoft.Json.JsonSerializer JsonSerializer = new Newtonsoft.Json.JsonSerializer();
     }
 }

@@ -1,7 +1,8 @@
-﻿namespace NServiceBus.AzureFunctions.StorageQueues
+﻿namespace NServiceBus
 {
     using Logging;
     using System;
+    using AzureFunctions;
     using Microsoft.Azure.WebJobs;
 
     /// <summary>
