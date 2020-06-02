@@ -1,12 +1,13 @@
-﻿namespace NServiceBus.AzureFunctions.ServiceBus
+﻿namespace NServiceBus
 {
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using AzureFunctions;
+    using AzureFunctions.ServiceBus;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Extensions.Logging;
-    using Serverless;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -44,7 +45,7 @@
                     message.GetHeaders(),
                     messageContext.MessageId,
                     messageContext.Body,
-                    new TransportTransaction(), 
+                    new TransportTransaction(),
                     message.SystemProperties.DeliveryCount);
 
                 var errorHandleResult = await ProcessFailedMessage(errorContext, functionExecutionContext)

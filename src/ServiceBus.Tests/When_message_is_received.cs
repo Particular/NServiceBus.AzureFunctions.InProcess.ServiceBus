@@ -5,7 +5,6 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
     using NServiceBus;
-    using NServiceBus.AzureFunctions.ServiceBus;
     using NUnit.Framework;
 
     public class When_function_receives_a_message

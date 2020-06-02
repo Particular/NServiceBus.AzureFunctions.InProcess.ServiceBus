@@ -1,9 +1,9 @@
-﻿namespace NServiceBus.AzureFunctions.ServiceBus
+﻿namespace NServiceBus
 {
     using Logging;
     using Microsoft.Azure.WebJobs;
-    using Serverless;
     using System;
+    using AzureFunctions;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint running within an AzureServiceBus trigger.
