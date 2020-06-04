@@ -7,7 +7,7 @@
     using NServiceBus;
     using NUnit.Framework;
 
-    public class When_function_receives_a_message
+    public class When_function_receives_a_message : BaseTest
     {
         [Test]
         public async Task Should_invoke_the_handler_to_process_it()
@@ -23,7 +23,7 @@
                 return configuration;
             });
 
-            await endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext());
+            await endpoint.Process(GenerateMessage(), CreateExecutionContext());
 
             Assert.AreEqual(1, testContext.HandlerInvocationCount, "Handler should have been invoked once");
 

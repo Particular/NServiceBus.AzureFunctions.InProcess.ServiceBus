@@ -10,7 +10,7 @@
     using NServiceBus.Transport;
     using NUnit.Framework;
 
-    public class When_message_is_failing_all_processing_attempts
+    public class When_message_is_failing_all_processing_attempts : BaseTest
     {
         [Test]
         public Task Should_be_moved_to_the_error_queue()
@@ -34,7 +34,7 @@
                 return configuration;
             });
 
-            Task.WaitAny(endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext()), tcs.Task);
+            Task.WaitAny(endpoint.Process(GenerateMessage(), CreateExecutionContext()), tcs.Task);
 
             Assert.AreEqual(1, testContext.HandlerInvocationCount);
             Assert.AreEqual(1, testContext.SentToErrorQueueCount);

@@ -47,17 +47,39 @@
         }
 
         /// <summary>
-        /// Thread-safe initialization method that allows to get access to the strongly typed configuration.
+        /// Allows to forcefully initialize the endpoint if it hasn't been initialized yet.
         /// </summary>
-        /// <remarks>Will only be called once either when <see cref="Process"/>, <see cref="ProcessFailedMessage"/> or <see cref="InitializeEndpointIfNecessary"/> is called.</remarks>
-        /// <param name="executionContext">The exection context.</param>
-        /// <param name="configuration">The fully initialized configuration.</param>
-        protected virtual Task Initialize(TExecutionContext executionContext, TConfiguration configuration)
+        /// <param name="executionContext">The execution context.</param>
+        /// <param name="token">The cancellation token or default cancellation token.</param>
+        // ReSharper disable once MemberCanBePrivate.Global
+        protected async Task InitializeEndpointIfNecessary(TExecutionContext executionContext, CancellationToken token = default)
         {
-            //TODO: also support exe files like core?
+            if (pipeline == null)
+            {
+                await semaphoreLock.WaitAsync(token).ConfigureAwait(false);
+                try
+                {
+                    if (pipeline == null)
+                    {
+                        var configuration = configurationFactory(executionContext);
+                        LoadAssemblies(executionContext);
+                        await Endpoint.Start(configuration.EndpointConfiguration).ConfigureAwait(false);
+
+                        pipeline = configuration.PipelineInvoker;
+                    }
+                }
+                finally
+                {
+                    semaphoreLock.Release();
+                }
+            }
+        }
+
+        static void LoadAssemblies(TExecutionContext executionContext)
+        {
             var binFiles = Directory.EnumerateFiles(
-                Path.Combine(executionContext.ExecutionContext.FunctionAppDirectory, "bin"), 
-                "*.dll", 
+                pathFunc(executionContext),
+                "*.dll",
                 SearchOption.TopDirectoryOnly);
 
             var assemblyLoadContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
@@ -78,37 +100,6 @@
                 catch (Exception e)
                 {
                     executionContext.Logger.LogDebug(e, "Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.", binFile);
-                }
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Allows to forcefully initialize the endpoint if it hasn't been initialized yet.
-        /// </summary>
-        /// <param name="executionContext">The execution context.</param>
-        /// <param name="token">The cancellation token or default cancellation token.</param>
-        // ReSharper disable once MemberCanBePrivate.Global
-        protected async Task InitializeEndpointIfNecessary(TExecutionContext executionContext, CancellationToken token = default)
-        {
-            if (pipeline == null)
-            {
-                await semaphoreLock.WaitAsync(token).ConfigureAwait(false);
-                try
-                {
-                    if (pipeline == null)
-                    {
-                        var configuration = configurationFactory(executionContext);
-                        await Initialize(executionContext, configuration).ConfigureAwait(false);
-                        await Endpoint.Start(configuration.EndpointConfiguration).ConfigureAwait(false);
-
-                        pipeline = configuration.PipelineInvoker;
-                    }
-                }
-                finally
-                {
-                    semaphoreLock.Release();
                 }
             }
         }
@@ -157,5 +148,7 @@
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         PipelineInvoker pipeline;
+
+        internal static Func<FunctionExecutionContext, string> pathFunc = functionExecutionContext => Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
     }
 }
