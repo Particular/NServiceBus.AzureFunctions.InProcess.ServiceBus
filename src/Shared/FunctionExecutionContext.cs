@@ -1,4 +1,4 @@
-namespace NServiceBus.AzureFunctions
+namespace NServiceBus
 {
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
