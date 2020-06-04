@@ -1,11 +1,5 @@
 namespace NServiceBus.AzureFunctions
 {
-    public class FunctionExecutionContext
-    {
-        public FunctionExecutionContext(Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger logger) { }
-        public Microsoft.Azure.WebJobs.ExecutionContext ExecutionContext { get; }
-        public Microsoft.Extensions.Logging.ILogger Logger { get; }
-    }
     public abstract class ServerlessEndpointConfiguration
     {
         protected ServerlessEndpointConfiguration(string endpointName) { }
@@ -28,10 +22,16 @@ namespace NServiceBus.AzureFunctions
 }
 namespace NServiceBus
 {
-    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServerlessEndpoint<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.ServiceBusTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServerlessEndpoint<NServiceBus.FunctionExecutionContext, NServiceBus.ServiceBusTriggeredEndpointConfiguration>
     {
-        public FunctionEndpoint(System.Func<NServiceBus.AzureFunctions.FunctionExecutionContext, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
+        public FunctionEndpoint(System.Func<NServiceBus.FunctionExecutionContext, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
+    }
+    public class FunctionExecutionContext
+    {
+        public FunctionExecutionContext(Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger logger) { }
+        public Microsoft.Azure.WebJobs.ExecutionContext ExecutionContext { get; }
+        public Microsoft.Extensions.Logging.ILogger Logger { get; }
     }
     public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.AzureFunctions.ServerlessEndpointConfiguration
     {
