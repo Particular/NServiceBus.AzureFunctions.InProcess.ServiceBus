@@ -1,3 +1,4 @@
+[assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute(@"ServiceBus.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100dde965e6172e019ac82c2639ffe494dd2e7dd16347c34762a05732b492e110f2e4e2e1b5ef2d85c848ccfb671ee20a47c8d1376276708dc30a90ff1121b647ba3b7259a6bc383b2034938ef0e275b58b920375ac605076178123693c6c4f1331661a62eba28c249386855637780e3ff5f23a6d854700eaa6803ef48907513b92")]
 namespace NServiceBus.AzureFunctions
 {
     public abstract class ServerlessEndpointConfiguration
@@ -11,10 +12,11 @@ namespace NServiceBus.AzureFunctions
             where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
     }
     public abstract class ServerlessEndpoint<TExecutionContext, TConfiguration>
+        where TExecutionContext : NServiceBus.FunctionExecutionContext
         where TConfiguration : NServiceBus.AzureFunctions.ServerlessEndpointConfiguration
     {
+        protected System.Func<NServiceBus.FunctionExecutionContext, string> AssemblyDirectoryResolver;
         protected ServerlessEndpoint(System.Func<TExecutionContext, TConfiguration> configurationFactory) { }
-        protected virtual System.Threading.Tasks.Task Initialize(TConfiguration configuration) { }
         protected System.Threading.Tasks.Task InitializeEndpointIfNecessary(TExecutionContext executionContext, System.Threading.CancellationToken token = null) { }
         protected System.Threading.Tasks.Task Process(NServiceBus.Transport.MessageContext messageContext, TExecutionContext executionContext) { }
         protected System.Threading.Tasks.Task<NServiceBus.Transport.ErrorHandleResult> ProcessFailedMessage(NServiceBus.Transport.ErrorContext errorContext, TExecutionContext executionContext) { }
