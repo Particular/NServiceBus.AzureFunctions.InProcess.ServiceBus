@@ -1,18 +1,15 @@
-﻿namespace StorageQueues.Tests
+﻿namespace ServiceBus.Tests
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Loader;
     using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.WindowsAzure.Storage.Queue;
-    using Newtonsoft.Json;
     using NServiceBus;
-    using NServiceBus.Azure.Transports.WindowsAzureStorageQueues;
     using NServiceBus.Configuration.AdvancedExtensibility;
     using NServiceBus.Settings;
     using NServiceBus.Unicast;
@@ -29,12 +26,17 @@
             SettingsHolder settings = null;
             var endpoint = new TestableFunctionEndpoint(configuration =>
             {
-                var endpoint = new StorageQueueTriggeredEndpointConfiguration("assemblyTest");
+                var endpoint = new ServiceBusTriggeredEndpointConfiguration("assemblyTest");
                 endpoint.UseSerialization<XmlSerializer>();
+
                 settings = endpoint.AdvancedConfiguration.GetSettings();
                 return endpoint;
-            });
-            endpoint.AssemblyDirectoryResolver = _ => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers");
+
+            })
+            {
+                AssemblyDirectoryResolver = _ => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers")
+            };
+
 
             // we need to process an actual message to have the endpoint being created
             await endpoint.Process(GenerateMessage(), new ExecutionContext());
@@ -53,13 +55,12 @@
             Assert.AreEqual(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()), AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly));
         }
 
-        CloudQueueMessage GenerateMessage()
+        Message GenerateMessage()
         {
-            var messageWrapper = new MessageWrapper();
-            messageWrapper.Body = Encoding.UTF8.GetBytes("<DummyMessage/>");
-            messageWrapper.Headers = new Dictionary<string, string> { { "NServiceBus.EnclosedMessageTypes", "Testing.Handlers.DummyMessage" } };
+            var bytes = Encoding.UTF8.GetBytes("<DummyMessage/>");
+            var message = new Message(bytes);
+            message.UserProperties["NServiceBus.EnclosedMessageTypes"] = "Testing.Handlers.DummyMessage";
 
-            var message = new CloudQueueMessage(JsonConvert.SerializeObject(messageWrapper));
             return message;
         }
     }

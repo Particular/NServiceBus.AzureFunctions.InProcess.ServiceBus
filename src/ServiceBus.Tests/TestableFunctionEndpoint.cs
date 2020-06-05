@@ -9,5 +9,10 @@
         {
             AssemblyDirectoryResolver = _ => AppDomain.CurrentDomain.BaseDirectory;
         }
+
+        public new Func<FunctionExecutionContext, string> AssemblyDirectoryResolver
+        {
+            set => base.AssemblyDirectoryResolver = value;
+        }
     }
 }
