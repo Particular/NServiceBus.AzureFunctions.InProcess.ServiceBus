@@ -11,20 +11,19 @@ namespace NServiceBus.AzureFunctions
         protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
             where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
     }
-    public abstract class ServerlessEndpoint<TExecutionContext, TConfiguration>
-        where TExecutionContext : NServiceBus.FunctionExecutionContext
+    public abstract class ServerlessEndpoint<TConfiguration>
         where TConfiguration : NServiceBus.AzureFunctions.ServerlessEndpointConfiguration
     {
         protected System.Func<NServiceBus.FunctionExecutionContext, string> AssemblyDirectoryResolver;
-        protected ServerlessEndpoint(System.Func<TExecutionContext, TConfiguration> configurationFactory) { }
-        protected System.Threading.Tasks.Task InitializeEndpointIfNecessary(TExecutionContext executionContext, System.Threading.CancellationToken token = null) { }
-        protected System.Threading.Tasks.Task Process(NServiceBus.Transport.MessageContext messageContext, TExecutionContext executionContext) { }
-        protected System.Threading.Tasks.Task<NServiceBus.Transport.ErrorHandleResult> ProcessFailedMessage(NServiceBus.Transport.ErrorContext errorContext, TExecutionContext executionContext) { }
+        protected ServerlessEndpoint(System.Func<NServiceBus.FunctionExecutionContext, TConfiguration> configurationFactory) { }
+        protected System.Threading.Tasks.Task InitializeEndpointIfNecessary(NServiceBus.FunctionExecutionContext executionContext, System.Threading.CancellationToken token = null) { }
+        protected System.Threading.Tasks.Task Process(NServiceBus.Transport.MessageContext messageContext, NServiceBus.FunctionExecutionContext executionContext) { }
+        protected System.Threading.Tasks.Task<NServiceBus.Transport.ErrorHandleResult> ProcessFailedMessage(NServiceBus.Transport.ErrorContext errorContext, NServiceBus.FunctionExecutionContext executionContext) { }
     }
 }
 namespace NServiceBus
 {
-    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServerlessEndpoint<NServiceBus.FunctionExecutionContext, NServiceBus.StorageQueueTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServerlessEndpoint<NServiceBus.StorageQueueTriggeredEndpointConfiguration>
     {
         public FunctionEndpoint(System.Func<NServiceBus.FunctionExecutionContext, NServiceBus.StorageQueueTriggeredEndpointConfiguration> configurationFactory) { }
         public System.Threading.Tasks.Task Process(Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
