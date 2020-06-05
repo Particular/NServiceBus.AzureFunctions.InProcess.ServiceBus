@@ -15,7 +15,7 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint : ServerlessEndpoint<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : ServerlessEndpoint<ServiceBusTriggeredEndpointConfiguration>
     {
         /// <summary>
         /// Create a new endpoint hosting in Azure Function.
