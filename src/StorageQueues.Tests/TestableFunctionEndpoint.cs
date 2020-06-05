@@ -7,7 +7,12 @@
     {
         public TestableFunctionEndpoint(Func<FunctionExecutionContext, StorageQueueTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
         {
-            AssemblyDirectoryResolver = _ => AppDomain.CurrentDomain.BaseDirectory;
+            base.AssemblyDirectoryResolver = _ => AppDomain.CurrentDomain.BaseDirectory;
+        }
+
+        public new Func<FunctionExecutionContext, string> AssemblyDirectoryResolver
+        {
+            set => base.AssemblyDirectoryResolver = value;
         }
     }
 }

@@ -20,4 +20,10 @@
     <PackageReference Include="PublicApiGenerator" Version="9.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ExternalHandlers\Testing.Handlers.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
