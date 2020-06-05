@@ -75,10 +75,10 @@
             }
         }
 
-        static void LoadAssemblies(TExecutionContext executionContext)
+        void LoadAssemblies(TExecutionContext executionContext)
         {
             var binFiles = Directory.EnumerateFiles(
-                pathFunc(executionContext),
+                AssemblyDirectoryResolver(executionContext),
                 "*.dll",
                 SearchOption.TopDirectoryOnly);
 
@@ -149,6 +149,9 @@
 
         PipelineInvoker pipeline;
 
-        internal static Func<FunctionExecutionContext, string> pathFunc = functionExecutionContext => Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
+        /// <summary>
+        /// TODO.
+        /// </summary>
+        protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext => Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
     }
 }

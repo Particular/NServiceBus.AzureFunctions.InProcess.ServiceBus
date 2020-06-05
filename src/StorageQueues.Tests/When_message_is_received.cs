@@ -9,6 +9,7 @@
     using NServiceBus;
     using NServiceBus.Azure.Transports.WindowsAzureStorageQueues;
     using NUnit.Framework;
+    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     public class When_function_receives_a_message
     {
@@ -17,7 +18,7 @@
         {
             var testContext = new TestContext();
 
-            var endpoint = new FunctionEndpoint(functionExecutionContext =>
+            var endpoint = new TestableFunctionEndpoint(functionExecutionContext =>
             {
                 var configuration = new StorageQueueTriggeredEndpointConfiguration("asq");
 
@@ -35,7 +36,7 @@
                 return configuration;
             });
 
-            await endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext());
+            await endpoint.Process(GenerateMessage(), new ExecutionContext());
 
             Assert.AreEqual(1, testContext.HandlerInvocationCount, "Handler should have been invoked once");
 
@@ -59,9 +60,11 @@
             int count;
         }
 
-        class HappyDayMessage : IMessage { }
+        public class HappyDayMessage : IMessage
+        {
+        }
 
-        class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
+        public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
         {
             TestContext testContext;
 
