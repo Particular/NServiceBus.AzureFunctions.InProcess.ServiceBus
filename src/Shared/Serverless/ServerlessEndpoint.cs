@@ -93,8 +93,6 @@
                         continue;
                     }
 
-                    //TODO: skip Particular signed assemblies too?
-
                     // LoadFromAssemblyName works when actually running inside a function as FunctionAssemblyLoadContext probes the "bin" folder for the assembly name
                     // this doesn't work when running with a different AssemblyLoadContext (e.g. tests) and the assembly needs to be loaded by the full path instead.
                     assemblyLoadContext.LoadFromAssemblyPath(binFile);
