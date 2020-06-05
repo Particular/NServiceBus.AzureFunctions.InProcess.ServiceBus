@@ -6,6 +6,7 @@
     using Microsoft.Azure.ServiceBus;
     using NServiceBus;
     using NUnit.Framework;
+    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     public class When_function_receives_a_message
     {
@@ -14,7 +15,7 @@
         {
             var testContext = new TestContext();
 
-            var endpoint = new FunctionEndpoint(functionExecutionContext =>
+            var endpoint = new TestableFunctionEndpoint(functionExecutionContext =>
             {
                 var configuration = new ServiceBusTriggeredEndpointConfiguration("asb");
 
@@ -23,7 +24,7 @@
                 return configuration;
             });
 
-            await endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext());
+            await endpoint.Process(GenerateMessage(), new ExecutionContext());
 
             Assert.AreEqual(1, testContext.HandlerInvocationCount, "Handler should have been invoked once");
 

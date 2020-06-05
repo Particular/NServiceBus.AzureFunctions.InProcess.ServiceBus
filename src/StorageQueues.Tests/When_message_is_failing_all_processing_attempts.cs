@@ -22,7 +22,7 @@
             var testContext = new TestContext(tcs);
             var testRecoverabilityPolicy = new TestRecoverabilityPolicy(testContext);
 
-            var endpoint = new FunctionEndpoint(functionExecutionContext =>
+            var endpoint = new TestableFunctionEndpoint(functionExecutionContext =>
             {
                 var configuration = new StorageQueueTriggeredEndpointConfiguration("asq");
 

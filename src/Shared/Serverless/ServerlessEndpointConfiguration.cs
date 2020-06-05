@@ -40,7 +40,7 @@
             where TTransport : TransportDefinition, new()
         {
             var serverlessTransport = EndpointConfiguration.UseTransport<ServerlessTransport<TTransport>>();
-            //TODO improve
+
             PipelineInvoker = serverlessTransport.PipelineAccess();
             return serverlessTransport.BaseTransportConfiguration();
         }

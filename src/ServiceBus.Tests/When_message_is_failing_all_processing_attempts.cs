@@ -9,6 +9,7 @@
     using NServiceBus;
     using NServiceBus.Transport;
     using NUnit.Framework;
+    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     public class When_message_is_failing_all_processing_attempts
     {
@@ -20,7 +21,7 @@
             var testContext = new TestContext(tcs);
             var testRecoverabilityPolicy = new TestRecoverabilityPolicy(testContext);
 
-            var endpoint = new FunctionEndpoint(functionExecutionContext =>
+            var endpoint = new TestableFunctionEndpoint(functionExecutionContext =>
             {
                 var configuration = new ServiceBusTriggeredEndpointConfiguration("asb");
 
@@ -34,7 +35,7 @@
                 return configuration;
             });
 
-            Task.WaitAny(endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext()), tcs.Task);
+            Task.WaitAny(endpoint.Process(GenerateMessage(), new ExecutionContext()), tcs.Task);
 
             Assert.AreEqual(1, testContext.HandlerInvocationCount);
             Assert.AreEqual(1, testContext.SentToErrorQueueCount);

@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing.Handlers", "Testing.Handlers\Testing.Handlers.csproj", "{F922CF8D-9012-4D04-84FF-3C923F79A075}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{B82FE3D6-4A81-401D-9AF7-817372C9DC47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B82FE3D6-4A81-401D-9AF7-817372C9DC47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B82FE3D6-4A81-401D-9AF7-817372C9DC47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
