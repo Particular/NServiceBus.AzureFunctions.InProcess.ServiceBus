@@ -10,7 +10,7 @@
     /// </summary>
     public class ServiceBusTriggeredEndpointConfiguration : ServerlessEndpointConfiguration
     {
-        const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
+        internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
 
         /// <summary>
         /// Azure Service Bus transport

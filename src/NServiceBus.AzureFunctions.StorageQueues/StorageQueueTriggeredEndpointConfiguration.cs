@@ -10,7 +10,7 @@
     /// </summary>
     public class StorageQueueTriggeredEndpointConfiguration : ServerlessEndpointConfiguration
     {
-        const string DefaultStorageConnectionString = "AzureWebJobsStorage";
+        internal const string DefaultStorageConnectionString = "AzureWebJobsStorage";
 
         /// <summary>
         /// Azure Storage Queues transport
