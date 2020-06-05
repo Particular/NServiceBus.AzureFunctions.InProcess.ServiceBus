@@ -143,15 +143,16 @@
             return false;
         }
 
+        /// <summary>
+        /// Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
+        /// When using functions, assemblies are moved to a 'bin' folder within ExecutionContext.FunctionAppDirectory.
+        /// </summary>
+        protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext => Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
+
         readonly Func<TExecutionContext, TConfiguration> configurationFactory;
 
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         PipelineInvoker pipeline;
-
-        /// <summary>
-        /// TODO.
-        /// </summary>
-        protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext => Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
     }
 }
