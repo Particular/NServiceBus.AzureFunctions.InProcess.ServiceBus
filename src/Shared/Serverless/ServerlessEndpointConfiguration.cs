@@ -1,5 +1,8 @@
 ﻿namespace NServiceBus.AzureFunctions
 {
+    using System;
+    using System.Security.Cryptography;
+    using System.Text;
     using Serialization;
     using Transport;
 
@@ -17,11 +20,16 @@
 
             EndpointConfiguration.UsePersistence<InMemoryPersistence>();
 
-            //make sure a call to "onError" will move the message to the error queue.
             EndpointConfiguration.Recoverability().Delayed(c => c.NumberOfRetries(0));
-            // send failed messages to the error queue
+
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             EndpointConfiguration.Recoverability().CustomPolicy(recoverabilityPolicy.Invoke);
+
+            // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
+            var functionAppName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? Environment.MachineName;
+            EndpointConfiguration.UniquelyIdentifyRunningInstance()
+                .UsingCustomDisplayName(functionAppName)
+                .UsingCustomIdentifier(DeterministicGuid.Create(functionAppName));
         }
 
         internal EndpointConfiguration EndpointConfiguration { get; }
@@ -62,5 +70,20 @@
         }
 
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
+    }
+
+    static class DeterministicGuid
+    {
+        public static Guid Create(string data)
+        {
+            // use MD5 hash to get a 16-byte hash of the string
+            using (var provider = new MD5CryptoServiceProvider())
+            {
+                var inputBytes = Encoding.Default.GetBytes(data);
+                var hashBytes = provider.ComputeHash(inputBytes);
+                // generate a guid from the hash:
+                return new Guid(hashBytes);
+            }
+        }
     }
 }
