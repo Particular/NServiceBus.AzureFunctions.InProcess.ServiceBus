@@ -25,6 +25,7 @@
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             EndpointConfiguration.Recoverability().CustomPolicy(recoverabilityPolicy.Invoke);
 
+            //  'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
             var functionAppName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME", EnvironmentVariableTarget.Process) ?? Environment.MachineName;
             EndpointConfiguration.UniquelyIdentifyRunningInstance()
                 .UsingCustomDisplayName(functionAppName)
