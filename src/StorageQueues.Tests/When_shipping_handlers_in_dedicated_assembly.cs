@@ -27,12 +27,12 @@
             Assert.False(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
 
             SettingsHolder settings = null;
-            var endpoint = new TestableFunctionEndpoint(configuration =>
+            var endpoint = new TestableFunctionEndpoint(context =>
             {
-                var endpoint = new StorageQueueTriggeredEndpointConfiguration("assemblyTest");
-                endpoint.UseSerialization<XmlSerializer>();
-                settings = endpoint.AdvancedConfiguration.GetSettings();
-                return endpoint;
+                var configuration = new StorageQueueTriggeredEndpointConfiguration("assemblyTest");
+                configuration.UseSerialization<XmlSerializer>();
+                settings = configuration.AdvancedConfiguration.GetSettings();
+                return configuration;
             });
             endpoint.AssemblyDirectoryResolver = _ => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers");
 

@@ -24,13 +24,13 @@
             Assert.False(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
 
             SettingsHolder settings = null;
-            var endpoint = new TestableFunctionEndpoint(configuration =>
+            var endpoint = new TestableFunctionEndpoint(context =>
             {
-                var endpoint = new ServiceBusTriggeredEndpointConfiguration("assemblyTest");
-                endpoint.UseSerialization<XmlSerializer>();
+                var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest");
+                configuration.UseSerialization<XmlSerializer>();
 
-                settings = endpoint.AdvancedConfiguration.GetSettings();
-                return endpoint;
+                settings = configuration.AdvancedConfiguration.GetSettings();
+                return configuration;
 
             })
             {
