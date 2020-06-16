@@ -1,44 +1,25 @@
 ﻿namespace ServiceBus.Tests
 {
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.ServiceBus;
     using NServiceBus;
+    using NServiceBus.AcceptanceTesting;
     using NUnit.Framework;
-    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     public class When_function_receives_a_message
     {
         [Test]
         public async Task Should_invoke_the_handler_to_process_it()
         {
-            var testContext = new TestContext();
+            var context = await Scenario.Define<Context>()
+                .WithComponent(new FunctionHandler(new HappyDayMessage()))
+                .Done(c => c.HandlerInvocationCount > 0)
+                .Run();
 
-            var endpoint = new TestableFunctionEndpoint(functionExecutionContext =>
-            {
-                var configuration = new ServiceBusTriggeredEndpointConfiguration("asb");
-
-                configuration.AdvancedConfiguration.RegisterComponents(components => components.RegisterSingleton(testContext));
-
-                return configuration;
-            });
-
-            await endpoint.Process(GenerateMessage(), new ExecutionContext());
-
-            Assert.AreEqual(1, testContext.HandlerInvocationCount, "Handler should have been invoked once");
-
-            Message GenerateMessage()
-            {
-                var bytes = Encoding.UTF8.GetBytes("<HappyDayMessage/>");
-                var message = new Message(bytes);
-                message.UserProperties["NServiceBus.EnclosedMessageTypes"] = typeof(HappyDayMessage).FullName;
-
-                return message;
-            }
+            Assert.AreEqual(1, context.HandlerInvocationCount);
         }
 
-        public class TestContext
+        public class Context : ScenarioContext
         {
             public int HandlerInvocationCount => count;
 
@@ -47,21 +28,31 @@
             int count;
         }
 
-        class HappyDayMessage : IMessage { }
-
-        class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
+        class FunctionHandler : FunctionEndpointComponent
         {
-            TestContext testContext;
+            public FunctionHandler(object triggerMessage) : base(triggerMessage)
+            {
+            }
 
-            public HappyDayMessageHandler(TestContext testContext)
+            public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
             {
-                this.testContext = testContext;
+                Context testContext;
+
+                public HappyDayMessageHandler(Context testContext)
+                {
+                    this.testContext = testContext;
+                }
+
+                public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
+                {
+                    testContext.HandlerInvoked();
+                    return Task.CompletedTask;
+                }
             }
-            public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
-            {
-                testContext.HandlerInvoked();
-                return Task.CompletedTask;
-            }
+        }
+
+        class HappyDayMessage : IMessage
+        {
         }
     }
 }
