@@ -75,7 +75,7 @@
                                     });
                                 return Task.CompletedTask;
                             }));
-                    
+
                     endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
 
                     configurationCustomization(functionEndpointConfiguration);
