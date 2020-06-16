@@ -7,11 +7,13 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.WindowsAzure.Storage.Queue;
+    using Mono.Collections.Generic;
     using Newtonsoft.Json;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Support;
     using NServiceBus.Azure.Transports.WindowsAzureStorageQueues;
+    using NServiceBus.Faults;
     using NServiceBus.MessageInterfaces.MessageMapper.Reflection;
     using NServiceBus.Serialization;
     using NServiceBus.Settings;
@@ -55,21 +57,25 @@
                 endpoint = new TestableFunctionEndpoint(context =>
                 {
                     var functionEndpointConfiguration = new StorageQueueTriggeredEndpointConfiguration(Name);
-                    var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
-
                     functionEndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
+
+                    var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
 
                     endpointConfiguration.Recoverability()
                         .Immediate(i => i.NumberOfRetries(0))
                         .Failed(c => c
+                            // track messages sent to the error queue to fail the test
                             .OnMessageSentToErrorQueue(failedMessage =>
                             {
-                                scenarioContext.FailedMessages.AddOrUpdate(Name, new[] { failedMessage }, (_, fm) =>
-                                {
-                                    var messages = fm.ToList();
-                                    messages.Add(failedMessage);
-                                    return messages;
-                                });
+                                scenarioContext.FailedMessages.AddOrUpdate(
+                                    Name,
+                                    new[] {failedMessage},
+                                    (_, fm) =>
+                                    {
+                                        var messages = fm.ToList();
+                                        messages.Add(failedMessage);
+                                        return messages;
+                                    });
                                 return Task.CompletedTask;
                             }));
                     
