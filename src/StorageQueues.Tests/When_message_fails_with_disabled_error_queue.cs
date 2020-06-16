@@ -8,7 +8,6 @@
 
     public class When_message_fails_with_disabled_error_queue
     {
-        //TODO: if sending to error queue is enabled (default), the acceptance tests will pass instead of failing as regular acceptance tests
         [Test]
         public void Should_throw_exception()
         {

@@ -16,7 +16,7 @@
                 .WithEndpoint<ReceivingEndpoint>()
                 .WithComponent(new SendingFunction(new TriggerMessage()))
                 .Done(c => c.HandlerReceivedMessage)
-                .Run(TimeSpan.FromSeconds(20));
+                .Run();
         }
 
         class Context : ScenarioContext
@@ -28,7 +28,7 @@
         {
             public ReceivingEndpoint()
             {
-                EndpointSetup<EndpointTemplate>();
+                EndpointSetup<DefaultEndpoint>();
             }
 
             class OutgoingMessageHandler : IHandleMessages<FollowupMessage>

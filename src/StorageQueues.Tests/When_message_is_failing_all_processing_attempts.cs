@@ -1,138 +1,61 @@
 ﻿namespace StorageQueues.Tests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.Threading;
+    using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.WindowsAzure.Storage.Queue;
-    using Newtonsoft.Json;
     using NServiceBus;
-    using NServiceBus.Azure.Transports.WindowsAzureStorageQueues;
-    using NServiceBus.Transport;
+    using NServiceBus.AcceptanceTesting;
+    using NServiceBus.AcceptanceTesting.Support;
     using NUnit.Framework;
 
     public class When_message_is_failing_all_processing_attempts
     {
         [Test]
-        public Task Should_be_moved_to_the_error_queue()
+        public void Should_be_moved_to_the_error_queue()
         {
-            // The transport will try to talk to the service when a message is moved to the error queue. We only care about the fact that it will be sent to the error queue, so don't wait.
-            var tcs = new TaskCompletionSource<bool>();
-            var testContext = new TestContext(tcs);
-            var testRecoverabilityPolicy = new TestRecoverabilityPolicy(testContext);
-
-            var endpoint = new TestableFunctionEndpoint(functionExecutionContext =>
+            Context testContext = null;
+            var exception = Assert.ThrowsAsync<MessageFailedException>(() =>
             {
-                var configuration = new StorageQueueTriggeredEndpointConfiguration("asq");
-
-                configuration.AdvancedConfiguration.RegisterComponents(components => components.RegisterSingleton(testContext));
-
-                configuration.UseSerialization<XmlSerializer>();
-
-                configuration.Transport.UnwrapMessagesWith(message => new MessageWrapper
-                {
-                    Id = message.Id,
-                    Body = message.AsBytes,
-                    Headers = new Dictionary<string, string>()
-                });
-
-                var recoverability = configuration.AdvancedConfiguration.Recoverability();
-                recoverability.Immediate(settings => settings.NumberOfRetries(1));
-                recoverability.Delayed(settings => settings.NumberOfRetries(0));
-                recoverability.CustomPolicy(testRecoverabilityPolicy.Invoke);
-
-                return configuration;
+                return Scenario.Define<Context>(c => testContext = c)
+                    .WithComponent(new FailingFunction(new TriggerMessage()))
+                    .Done(c => c.EndpointsStarted)
+                    .Run();
             });
 
-            Task.WaitAny(endpoint.Process(GenerateMessage(), new Microsoft.Azure.WebJobs.ExecutionContext()), tcs.Task);
-
-            Assert.AreEqual(1, testContext.HandlerInvocationCount);
-            Assert.AreEqual(1, testContext.SentToErrorQueueCount);
-
-            CloudQueueMessage GenerateMessage()
-            {
-                var messageWrapper = new MessageWrapper();
-                messageWrapper.Body = Encoding.UTF8.GetBytes("<HappyDayMessage/>");
-                messageWrapper.Headers = new Dictionary<string, string> { { "NServiceBus.EnclosedMessageTypes", typeof(HappyDayMessage).FullName } };
-
-                var message = new CloudQueueMessage(JsonConvert.SerializeObject(messageWrapper));
-
-                // assign test message mocked dequeue count
-                var property = typeof(CloudQueueMessage).GetProperty("DequeueCount");
-                property.SetValue(message, 2);
-
-                return message;
-            }
-
-            return Task.CompletedTask;
+            Assert.AreEqual(1, testContext.HandlerInvocations, "the handler should only be invoked once");
+            Assert.IsInstanceOf<SimulatedException>(exception.InnerException, "it should be the exception from the handler");
+            Assert.AreEqual(1, testContext.FailedMessages.Single().Value.Count, "there should be only one failed message");
         }
 
-        public class TestContext
+        class Context : ScenarioContext
         {
-            public int HandlerInvocationCount => count;
-            public int SentToErrorQueueCount => sentToErrorQueue;
-
-            public void HandlerInvoked() => Interlocked.Increment(ref count);
-            public void SentToErrorQueue()
-            {
-                Interlocked.Increment(ref sentToErrorQueue);
-                tcs.TrySetResult(true);
-            }
-
-            int count;
-            int sentToErrorQueue;
-            TaskCompletionSource<bool> tcs;
-
-            public TestContext(TaskCompletionSource<bool> tcs)
-            {
-                this.tcs = tcs;
-            }
+            public int HandlerInvocations { get; set; }
         }
 
-        class HappyDayMessage : IMessage { }
-
-        class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
+        class FailingFunction : FunctionEndpointComponent
         {
-            TestContext testContext;
-
-            public HappyDayMessageHandler(TestContext testContext)
+            public FailingFunction(object triggerMessage) : base(triggerMessage)
             {
-                this.testContext = testContext;
-            }
-            public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
-            {
-                testContext.HandlerInvoked();
-
-                throw new Exception("boom");
-            }
-        }
-
-        class TestRecoverabilityPolicy
-        {
-            readonly TestContext testContext;
-
-            public TestRecoverabilityPolicy(TestContext testContext)
-            {
-                this.testContext = testContext;
             }
 
-            public RecoverabilityAction Invoke(RecoverabilityConfig config, ErrorContext errorContext)
+            public class FailingHandler : IHandleMessages<TriggerMessage>
             {
-                var action = DefaultRecoverabilityPolicy.Invoke(config, errorContext);
+                Context testContext;
 
-                if (action is MoveToError)
+                public FailingHandler(Context testContext)
                 {
-                        testContext.SentToErrorQueue();
+                    this.testContext = testContext;
                 }
 
-                if (action is MoveToError)
+                public Task Handle(TriggerMessage message, IMessageHandlerContext context)
                 {
-                    return action;
+                    testContext.HandlerInvocations++;
+                    throw new SimulatedException();
                 }
-
-                return action;
             }
+        }
+
+        class TriggerMessage : IMessage
+        {
         }
     }
 }
