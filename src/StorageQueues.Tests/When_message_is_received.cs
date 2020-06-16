@@ -1,57 +1,25 @@
 ﻿namespace StorageQueues.Tests
 {
-    using System.Collections.Generic;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.WindowsAzure.Storage.Queue;
-    using Newtonsoft.Json;
     using NServiceBus;
-    using NServiceBus.Azure.Transports.WindowsAzureStorageQueues;
+    using NServiceBus.AcceptanceTesting;
     using NUnit.Framework;
-    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     public class When_function_receives_a_message
     {
         [Test]
         public async Task Should_invoke_the_handler_to_process_it()
         {
-            var testContext = new TestContext();
+            var context = await Scenario.Define<Context>()
+                .WithComponent(new FunctionHandler(new HappyDayMessage()))
+                .Done(c => c.HandlerInvocationCount > 0)
+                .Run();
 
-            var endpoint = new TestableFunctionEndpoint(functionExecutionContext =>
-            {
-                var configuration = new StorageQueueTriggeredEndpointConfiguration("asq");
-
-                configuration.AdvancedConfiguration.RegisterComponents(components => components.RegisterSingleton(testContext));
-
-                configuration.UseSerialization<XmlSerializer>();
-
-                configuration.Transport.UnwrapMessagesWith(message => new MessageWrapper
-                {
-                    Id = message.Id,
-                    Body = message.AsBytes,
-                    Headers = new Dictionary<string, string>()
-                });
-
-                return configuration;
-            });
-
-            await endpoint.Process(GenerateMessage(), new ExecutionContext());
-
-            Assert.AreEqual(1, testContext.HandlerInvocationCount, "Handler should have been invoked once");
-
-            CloudQueueMessage GenerateMessage()
-            {
-                var messageWrapper = new MessageWrapper();
-                messageWrapper.Body = Encoding.UTF8.GetBytes("<HappyDayMessage/>");
-                messageWrapper.Headers = new Dictionary<string, string> {{"NServiceBus.EnclosedMessageTypes", typeof(HappyDayMessage).FullName}};
-
-                var message = new CloudQueueMessage(JsonConvert.SerializeObject(messageWrapper));
-                return message;
-            }
+            Assert.AreEqual(1, context.HandlerInvocationCount);
         }
 
-        public class TestContext
+        public class Context : ScenarioContext
         {
             public int HandlerInvocationCount => count;
 
@@ -60,23 +28,31 @@
             int count;
         }
 
-        public class HappyDayMessage : IMessage
+        class FunctionHandler : FunctionEndpointComponent
         {
+            public FunctionHandler(object triggerMessage) : base(triggerMessage)
+            {
+            }
+
+            public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
+            {
+                Context testContext;
+
+                public HappyDayMessageHandler(Context testContext)
+                {
+                    this.testContext = testContext;
+                }
+
+                public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
+                {
+                    testContext.HandlerInvoked();
+                    return Task.CompletedTask;
+                }
+            }
         }
 
-        public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
+        class HappyDayMessage : IMessage
         {
-            TestContext testContext;
-
-            public HappyDayMessageHandler(TestContext testContext)
-            {
-                this.testContext = testContext;
-            }
-            public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
-            {
-                testContext.HandlerInvoked();
-                return Task.CompletedTask;
-            }
         }
     }
 }
