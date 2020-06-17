@@ -5,11 +5,7 @@ VisualStudioVersion = 16.0.29025.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.ServiceBus", "NServiceBus.AzureFunctions.ServiceBus\NServiceBus.AzureFunctions.ServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.StorageQueues", "NServiceBus.AzureFunctions.StorageQueues\NServiceBus.AzureFunctions.StorageQueues.csproj", "{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.Tests", "ServiceBus.Tests\ServiceBus.Tests.csproj", "{7F90FF66-48AD-47C4-AB5C-34137D07B62B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StorageQueues.Tests", "StorageQueues.Tests\StorageQueues.Tests.csproj", "{B82FE3D6-4A81-401D-9AF7-817372C9DC47}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{93BBDA95-B60E-4BF2-BCFE-4D756E7EC78C}"
 	ProjectSection(SolutionItems) = preProject
@@ -28,18 +24,10 @@ Global
 		{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}.Release|Any CPU.Build.0 = Release|Any CPU
-		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{34C2EDEC-261B-4F6C-8CAB-81E6D094FEA6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7F90FF66-48AD-47C4-AB5C-34137D07B62B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7F90FF66-48AD-47C4-AB5C-34137D07B62B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F90FF66-48AD-47C4-AB5C-34137D07B62B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F90FF66-48AD-47C4-AB5C-34137D07B62B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B82FE3D6-4A81-401D-9AF7-817372C9DC47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B82FE3D6-4A81-401D-9AF7-817372C9DC47}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B82FE3D6-4A81-401D-9AF7-817372C9DC47}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B82FE3D6-4A81-401D-9AF7-817372C9DC47}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Release|Any CPU.ActiveCfg = Release|Any CPU
