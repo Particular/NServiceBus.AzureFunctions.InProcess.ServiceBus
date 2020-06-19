@@ -14,7 +14,7 @@
             var exception = Assert.ThrowsAsync<Exception>(() =>
             {
                 return Scenario.Define<ScenarioContext>()
-                    .WithComponent(new FailingFunction(new TriggerMessage()))
+                    .WithComponent(new FailingFunction())
                     .Done(c => c.EndpointsStarted)
                     .Run();
             });
@@ -25,10 +25,12 @@
 
         class FailingFunction : FunctionEndpointComponent
         {
-            public FailingFunction(object triggerMessage) : base(triggerMessage, c =>
+            public FailingFunction()
             {
-                c.DoNotSendMessagesToErrorQueue();
-            }) { }
+                CustomizeConfiguration = c => c.DoNotSendMessagesToErrorQueue();
+
+                Messages.Add(new TriggerMessage());
+            }
 
             public class FailingHandler : IHandleMessages<TriggerMessage>
             {
