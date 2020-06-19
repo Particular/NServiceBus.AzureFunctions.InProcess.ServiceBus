@@ -53,7 +53,6 @@
                 endpoint = new TestableFunctionEndpoint(context =>
                 {
                     var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name);
-                    functionEndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
 
                     var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
 

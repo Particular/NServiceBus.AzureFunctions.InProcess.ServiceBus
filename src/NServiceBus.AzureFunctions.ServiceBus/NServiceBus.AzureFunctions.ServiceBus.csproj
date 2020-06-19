@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="[2.2.0, 3)" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="[1.5.0, 2)" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="[4.1.2, 5.0.0)" />
     <PackageReference Include="Particular.CodeRules" Version="0.3.0" PrivateAssets="All" />
