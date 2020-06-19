@@ -35,6 +35,8 @@
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
+
+            EndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
         }
 
         /// <summary>
