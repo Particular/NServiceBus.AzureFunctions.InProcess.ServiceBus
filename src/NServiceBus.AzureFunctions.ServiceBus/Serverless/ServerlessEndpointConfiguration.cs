@@ -18,8 +18,6 @@
         {
             EndpointConfiguration = new EndpointConfiguration(endpointName);
 
-            EndpointConfiguration.UsePersistence<InMemoryPersistence>();
-
             EndpointConfiguration.Recoverability().Delayed(c => c.NumberOfRetries(0));
 
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
