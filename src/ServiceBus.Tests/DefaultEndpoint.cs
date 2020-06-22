@@ -20,7 +20,6 @@
             configuration.EnableInstallers();
 
             configuration.DisableFeature<TimeoutManager>();
-            configuration.UsePersistence<InMemoryPersistence>();
 
             configuration.RegisterComponents(c => c
                 .RegisterSingleton(runDescriptor.ScenarioContext.GetType(), runDescriptor.ScenarioContext));

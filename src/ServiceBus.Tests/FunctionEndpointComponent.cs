@@ -1,6 +1,7 @@
 ﻿namespace ServiceBus.Tests
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -9,6 +10,7 @@
     using Microsoft.Azure.ServiceBus;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
+    using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
     using NServiceBus.MessageInterfaces.MessageMapper.Reflection;
     using NServiceBus.Serialization;
@@ -17,36 +19,49 @@
 
     abstract class FunctionEndpointComponent : IComponentBehavior
     {
-        public FunctionEndpointComponent(object triggerMessage, Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization = null)
+        public FunctionEndpointComponent()
         {
-            this.triggerMessage = triggerMessage;
-            this.configurationCustomization = configurationCustomization ?? (_ => { });
+        }
+
+        public FunctionEndpointComponent(object triggerMessage)
+        {
+            Messages.Add(triggerMessage);
         }
 
         public Task<ComponentRunner> CreateRunner(RunDescriptor runDescriptor)
         {
-            return Task.FromResult<ComponentRunner>(new FunctionRunner(triggerMessage, configurationCustomization, runDescriptor.ScenarioContext));
+            return Task.FromResult<ComponentRunner>(
+                new FunctionRunner(
+                    Messages, 
+                    CustomizeConfiguration, 
+                    runDescriptor.ScenarioContext,
+                    GetType()));
         }
 
-        readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
-        object triggerMessage;
+        public IList<object> Messages { get; } = new List<object>();
+
+        public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { set; private get; } = (_ => { });
+
 
         class FunctionRunner : ComponentRunner
         {
             public FunctionRunner(
-                object triggerMessage,
+                IList<object> messages,
                 Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization,
-                ScenarioContext scenarioContext)
+                ScenarioContext scenarioContext,
+                Type functionComponentType)
             {
-                this.triggerMessage = triggerMessage;
+                this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
+                this.functionComponentType = functionComponentType;
+                this.Name = functionComponentType.FullName;
 
                 var serializer = new NewtonsoftSerializer();
                 messageSerializer = serializer.Configure(new SettingsHolder())(new MessageMapper());
             }
 
-            public override string Name => $"{triggerMessage.GetType().Name}Function";
+            public override string Name { get; }
 
             public override Task Start(CancellationToken token)
             {
@@ -55,6 +70,8 @@
                     var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name);
 
                     var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
+
+                    endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
 
                     endpointConfiguration.Recoverability()
                         .Immediate(i => i.NumberOfRetries(0))
@@ -84,11 +101,14 @@
                 return Task.CompletedTask;
             }
 
-            public override Task ComponentsStarted(CancellationToken token)
+            public override async Task ComponentsStarted(CancellationToken token)
             {
-                var message = GenerateMessage(triggerMessage);
-                var context = new ExecutionContext();
-                return endpoint.Process(message, context);
+                foreach (var message in messages)
+                {
+                    var transportMessage = GenerateMessage(message);
+                    var context = new ExecutionContext();
+                    await endpoint.Process(transportMessage, context);
+                }
             }
 
             public override Task Stop()
@@ -128,7 +148,8 @@
 
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
             readonly ScenarioContext scenarioContext;
-            object triggerMessage;
+            readonly Type functionComponentType;
+            IList<object> messages;
             FunctionEndpoint endpoint;
             IMessageSerializer messageSerializer;
         }
