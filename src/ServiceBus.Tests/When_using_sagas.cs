@@ -28,7 +28,6 @@
         {
             public SendingFunction()
             {
-                //TODO use learning persistence?
                 CustomizeConfiguration = configuration => 
                     configuration.AdvancedConfiguration.UsePersistence<LearningPersistence>();
 
