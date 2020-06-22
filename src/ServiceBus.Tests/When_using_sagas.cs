@@ -71,6 +71,7 @@
                 public Task Handle(ReadSagaDataValueMessage message, IMessageHandlerContext context)
                 {
                     testContext.CounterValue = Data.SomeCounter;
+                    MarkAsComplete();
                     return Task.CompletedTask;
                 }
             }
