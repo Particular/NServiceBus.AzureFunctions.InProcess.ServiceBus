@@ -5,7 +5,6 @@
     using Microsoft.Azure.ServiceBus.Management;
     using NServiceBus;
     using NUnit.Framework;
-    using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
     [SetUpFixture]
     public class OneTimeSetupAndTearDown
@@ -26,8 +25,6 @@
             }
 
             await client.CloseAsync();
-
-            Conventions.EndpointNamingConvention = t => t.Name.Replace('+', '-');
         }
     }
 }
