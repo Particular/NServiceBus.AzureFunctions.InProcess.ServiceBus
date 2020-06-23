@@ -63,13 +63,13 @@
                 }
             }
         }
+    }
 
-        class TriggerMessage : IMessage
-        {
-        }
+    class TriggerMessage : IMessage
+    {
+    }
 
-        class TestEvent : IEvent
-        {
-        }
+    class TestEvent : IEvent
+    {
     }
 }
