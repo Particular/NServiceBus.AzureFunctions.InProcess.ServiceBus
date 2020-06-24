@@ -31,6 +31,9 @@
 
             var transport = configuration.UseTransport<AzureServiceBusTransport>();
             transport.ConnectionString(Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName));
+            transport.RuleNameShortener(x => x
+                .Replace(typeof(DefaultEndpoint).Namespace, string.Empty)
+                .Replace("+", string.Empty));
 
             configuration.UseSerialization<NewtonsoftSerializer>();
 

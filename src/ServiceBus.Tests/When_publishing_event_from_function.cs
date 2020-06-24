@@ -5,7 +5,7 @@
     using NServiceBus.AcceptanceTesting;
     using NUnit.Framework;
 
-    public class When_publishing_event
+    public class When_publishing_event_from_function
     {
         [Test]
         public async Task Should_publish_to_subscribers()
@@ -63,13 +63,13 @@
                 }
             }
         }
-    }
 
-    class TriggerMessage : IMessage
-    {
-    }
+        class TriggerMessage : IMessage
+        {
+        }
 
-    class TestEvent : IEvent
-    {
+        class TestEvent : IEvent
+        {
+        }
     }
 }
