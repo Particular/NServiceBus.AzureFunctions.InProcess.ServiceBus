@@ -29,12 +29,11 @@
                 .UsingCustomDisplayName(functionAppName)
                 .UsingCustomIdentifier(DeterministicGuid.Create(functionAppName));
 
-            // look for licenses in these additional default locations:
-            EndpointConfiguration.LicensePath("license.xml");
-            var licenseText = Environment.GetEnvironmentVariable("NServiceBusLicense");
+            // Look for license as an environment variable
+            var licenseText = Environment.GetEnvironmentVariable("NSERVICEBUS_LICENSE");
             if (!string.IsNullOrWhiteSpace(licenseText))
             {
-               EndpointConfiguration.License(licenseText); 
+               EndpointConfiguration.License(licenseText);
             }
         }
 
