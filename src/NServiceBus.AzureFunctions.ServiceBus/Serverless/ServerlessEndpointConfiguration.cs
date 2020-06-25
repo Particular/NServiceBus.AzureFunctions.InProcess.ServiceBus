@@ -28,6 +28,13 @@
             EndpointConfiguration.UniquelyIdentifyRunningInstance()
                 .UsingCustomDisplayName(functionAppName)
                 .UsingCustomIdentifier(DeterministicGuid.Create(functionAppName));
+
+            // Look for license as an environment variable
+            var licenseText = Environment.GetEnvironmentVariable("NSERVICEBUS_LICENSE");
+            if (!string.IsNullOrWhiteSpace(licenseText))
+            {
+               EndpointConfiguration.License(licenseText);
+            }
         }
 
         internal EndpointConfiguration EndpointConfiguration { get; }
