@@ -33,9 +33,9 @@
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            // TODO: get the transaction mode the endpoint is configured with
-            var transportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive;
-            var useTransaction = messageReceiver != null && transportTransactionMode == TransportTransactionMode.SendsAtomicWithReceive;
+            // When the message receiver is provided, we assume TransportTransactionMode.SendsAtomicWithReceive to be used
+            var useTransaction = messageReceiver != null;
+            var transportTransactionMode = useTransaction ? TransportTransactionMode.SendsAtomicWithReceive : TransportTransactionMode.ReceiveOnly;
 
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
