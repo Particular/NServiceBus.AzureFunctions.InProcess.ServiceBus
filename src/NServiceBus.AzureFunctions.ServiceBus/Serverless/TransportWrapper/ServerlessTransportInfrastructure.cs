@@ -19,8 +19,7 @@
 
         public override IEnumerable<Type> DeliveryConstraints => baseTransportInfrastructure.DeliveryConstraints;
 
-        //support ReceiveOnly so that we can use immediate retries
-        public override TransportTransactionMode TransactionMode { get; } = TransportTransactionMode.ReceiveOnly;
+        public override TransportTransactionMode TransactionMode { get; } = TransportTransactionMode.SendsAtomicWithReceive;
 
         public override OutboundRoutingPolicy OutboundRoutingPolicy => baseTransportInfrastructure.OutboundRoutingPolicy;
 
