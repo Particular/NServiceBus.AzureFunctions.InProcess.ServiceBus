@@ -56,9 +56,10 @@
                 {
                     await messageReceiver.SafeDeadLetterAsync(transportTransactionMode, lockToken, deadLetterReason: "Poisoned message", deadLetterErrorDescription: exception.Message).ConfigureAwait(false);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // nothing we can do about it, message will be retried
+                    functionExecutionContext.Logger.LogDebug($"Failed to move a poisonous message with native ID: `{message.MessageId}` to the dead-letter queue. Message will be retried.", ex);
                 }
 
                 return;
