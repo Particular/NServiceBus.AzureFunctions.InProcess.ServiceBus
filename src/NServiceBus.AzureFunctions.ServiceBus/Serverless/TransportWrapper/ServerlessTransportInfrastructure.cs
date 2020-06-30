@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using Features;
     using Routing;
     using Settings;
     using Transport;
@@ -13,8 +12,6 @@
         {
             this.baseTransportInfrastructure = baseTransportInfrastructure;
             this.settings = settings;
-
-            settings.EnableFeatureByDefault<TransactionScopeSuppressFeature>();
         }
 
         public override IEnumerable<Type> DeliveryConstraints => baseTransportInfrastructure.DeliveryConstraints;
