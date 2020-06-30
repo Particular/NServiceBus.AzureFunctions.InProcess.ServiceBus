@@ -20,7 +20,7 @@
         {
             var baseTransportInfrastructure = baseTransport.Initialize(settings, connectionString);
 
-            return new ServerlessTransportInfrastructure<TBaseTransport>(baseTransportInfrastructure, settings);
+            return new ServerlessTransportInfrastructure(baseTransportInfrastructure, settings);
         }
 
         readonly TBaseTransport baseTransport;
