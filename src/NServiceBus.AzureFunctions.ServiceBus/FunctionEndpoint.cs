@@ -30,7 +30,7 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null, MessageReceiver messageReceiver = null)
+        public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null, IMessageReceiver messageReceiver = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -148,7 +148,7 @@
                 immediateProcessingFailures);
         }
 
-        static TransportTransaction CreateTransportTransaction(bool useTransaction, MessageReceiver messageReceiver, string incomingQueuePartitionKey)
+        static TransportTransaction CreateTransportTransaction(bool useTransaction, IClientEntity messageReceiver, string incomingQueuePartitionKey)
         {
             var transportTransaction = new TransportTransaction();
 

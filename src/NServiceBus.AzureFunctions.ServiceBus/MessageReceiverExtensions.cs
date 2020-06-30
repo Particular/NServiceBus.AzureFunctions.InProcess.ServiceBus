@@ -3,9 +3,9 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus.Core;
 
-    internal static class MessageReceiverExtensions
+    static class MessageReceiverExtensions
     {
-        public static Task SafeCompleteAsync(this MessageReceiver messageReceiver, TransportTransactionMode transportTransactionMode, string lockToken)
+        public static Task SafeCompleteAsync(this IMessageReceiver messageReceiver, TransportTransactionMode transportTransactionMode, string lockToken)
         {
             if (transportTransactionMode != TransportTransactionMode.None)
             {
@@ -15,7 +15,7 @@
             return Task.CompletedTask;
         }
 
-        public static Task SafeAbandonAsync(this MessageReceiver messageReceiver, TransportTransactionMode transportTransactionMode, string lockToken)
+        public static Task SafeAbandonAsync(this IMessageReceiver messageReceiver, TransportTransactionMode transportTransactionMode, string lockToken)
         {
             if (transportTransactionMode != TransportTransactionMode.None)
             {
@@ -25,7 +25,7 @@
             return Task.CompletedTask;
         }
 
-        public static Task SafeDeadLetterAsync(this MessageReceiver messageReceiver, TransportTransactionMode transportTransactionMode, string lockToken, string deadLetterReason, string deadLetterErrorDescription)
+        public static Task SafeDeadLetterAsync(this IMessageReceiver messageReceiver, TransportTransactionMode transportTransactionMode, string lockToken, string deadLetterReason, string deadLetterErrorDescription)
         {
             if (transportTransactionMode != TransportTransactionMode.None)
             {

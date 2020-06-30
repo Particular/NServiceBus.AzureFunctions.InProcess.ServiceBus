@@ -8,6 +8,8 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.Core;
+    using Microsoft.Extensions.Logging;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
@@ -32,8 +34,8 @@
         {
             return Task.FromResult<ComponentRunner>(
                 new FunctionRunner(
-                    Messages, 
-                    CustomizeConfiguration, 
+                    Messages,
+                    CustomizeConfiguration,
                     runDescriptor.ScenarioContext,
                     GetType()));
         }
@@ -107,7 +109,7 @@
                 {
                     var transportMessage = GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.Process(transportMessage, context);
+                    await endpoint.Process(transportMessage, context, new FakeLogger(), new FakeMessageReceiver());
                 }
             }
 
@@ -152,6 +154,93 @@
             IList<object> messages;
             FunctionEndpoint endpoint;
             IMessageSerializer messageSerializer;
+        }
+
+        class FakeLogger : ILogger
+        {
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return false;
+            }
+
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                return null;
+            }
+        }
+
+        class FakeMessageReceiver : IReceiverClient, IMessageReceiver
+        {
+            public Task CloseAsync() => Task.CompletedTask;
+
+            public void RegisterPlugin(ServiceBusPlugin serviceBusPlugin)
+            {
+            }
+
+            public void UnregisterPlugin(string serviceBusPluginName)
+            {
+            }
+
+            public string ClientId { get; }
+            public bool IsClosedOrClosing { get; }
+            public string Path { get; }
+            public TimeSpan OperationTimeout { get; set; }
+            public ServiceBusConnection ServiceBusConnection { get; }
+            public bool OwnsConnection { get; }
+            public IList<ServiceBusPlugin> RegisteredPlugins { get; }
+
+            public void RegisterMessageHandler(Func<Message, CancellationToken, Task> handler, Func<ExceptionReceivedEventArgs, Task> exceptionReceivedHandler)
+            {
+            }
+
+            public void RegisterMessageHandler(Func<Message, CancellationToken, Task> handler, MessageHandlerOptions messageHandlerOptions)
+            {
+            }
+
+            public Task CompleteAsync(string lockToken) => Task.CompletedTask;
+
+            public Task AbandonAsync(string lockToken, IDictionary<string, object> propertiesToModify = null) => Task.CompletedTask;
+
+            public Task DeadLetterAsync(string lockToken, IDictionary<string, object> propertiesToModify = null) => Task.CompletedTask;
+
+            public Task DeadLetterAsync(string lockToken, string deadLetterReason, string deadLetterErrorDescription = null) => Task.CompletedTask;
+
+            public int PrefetchCount { get; set; }
+            public ReceiveMode ReceiveMode { get; }
+            public Task<Message> ReceiveAsync() => throw new NotImplementedException();
+
+            public Task<Message> ReceiveAsync(TimeSpan operationTimeout) => throw new NotImplementedException();
+
+            public Task<IList<Message>> ReceiveAsync(int maxMessageCount) => throw new NotImplementedException();
+
+            public Task<IList<Message>> ReceiveAsync(int maxMessageCount, TimeSpan operationTimeout) => throw new NotImplementedException();
+
+            public Task<Message> ReceiveDeferredMessageAsync(long sequenceNumber) => throw new NotImplementedException();
+
+            public Task<IList<Message>> ReceiveDeferredMessageAsync(IEnumerable<long> sequenceNumbers) => throw new NotImplementedException();
+
+            public Task CompleteAsync(IEnumerable<string> lockTokens) => throw new NotImplementedException();
+
+            public Task DeferAsync(string lockToken, IDictionary<string, object> propertiesToModify = null) => throw new NotImplementedException();
+
+            public Task RenewLockAsync(Message message) => throw new NotImplementedException();
+
+            public Task<DateTime> RenewLockAsync(string lockToken) => throw new NotImplementedException();
+
+            public Task<Message> PeekAsync() => throw new NotImplementedException();
+
+            public Task<IList<Message>> PeekAsync(int maxMessageCount) => throw new NotImplementedException();
+
+            public Task<Message> PeekBySequenceNumberAsync(long fromSequenceNumber) => throw new NotImplementedException();
+
+            public Task<IList<Message>> PeekBySequenceNumberAsync(long fromSequenceNumber, int messageCount) => throw new NotImplementedException();
+
+            public long LastPeekedSequenceNumber { get; }
         }
     }
 }
