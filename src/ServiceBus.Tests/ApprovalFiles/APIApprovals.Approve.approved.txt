@@ -1,5 +1,5 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute(@"ServiceBus.Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001007f16e21368ff041183fab592d9e8ed37e7be355e93323147a1d29983d6e591b04282e4da0c9e18bd901e112c0033925eb7d7872c2f1706655891c5c9d57297994f707d16ee9a8f40d978f064ee1ffc73c0db3f4712691b23bf596f75130f4ec978cf78757ec034625a5f27e6bb50c618931ea49f6f628fd74271c32959efb1c5")]
-namespace NServiceBus.AzureFunctions
+namespace NServiceBus.AzureFunctions.ServiceBus
 {
     public abstract class ServerlessEndpointConfiguration
     {
@@ -12,7 +12,7 @@ namespace NServiceBus.AzureFunctions
             where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
     }
     public abstract class ServerlessEndpoint<TConfiguration>
-        where TConfiguration : NServiceBus.AzureFunctions.ServerlessEndpointConfiguration
+        where TConfiguration : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpointConfiguration
     {
         protected System.Func<NServiceBus.FunctionExecutionContext, string> AssemblyDirectoryResolver;
         protected ServerlessEndpoint(System.Func<NServiceBus.FunctionExecutionContext, TConfiguration> configurationFactory) { }
@@ -23,7 +23,7 @@ namespace NServiceBus.AzureFunctions
 }
 namespace NServiceBus
 {
-    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServerlessEndpoint<NServiceBus.ServiceBusTriggeredEndpointConfiguration>
+    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpoint<NServiceBus.ServiceBusTriggeredEndpointConfiguration>
     {
         public FunctionEndpoint(System.Func<NServiceBus.FunctionExecutionContext, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver = null) { }
@@ -34,7 +34,7 @@ namespace NServiceBus
         public Microsoft.Azure.WebJobs.ExecutionContext ExecutionContext { get; }
         public Microsoft.Extensions.Logging.ILogger Logger { get; }
     }
-    public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.AzureFunctions.ServerlessEndpointConfiguration
+    public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpointConfiguration
     {
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }

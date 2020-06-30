@@ -5,7 +5,6 @@
     using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
-    using AzureFunctions;
     using AzureFunctions.ServiceBus;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
