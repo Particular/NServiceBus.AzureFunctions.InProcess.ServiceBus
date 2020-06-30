@@ -174,7 +174,7 @@
             }
         }
 
-        class FakeMessageReceiver : IReceiverClient, IMessageReceiver
+        class FakeMessageReceiver : IMessageReceiver
         {
             public Task CloseAsync() => Task.CompletedTask;
 
