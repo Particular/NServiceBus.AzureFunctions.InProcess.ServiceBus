@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
@@ -39,10 +40,35 @@
 
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
+            var lockToken = message.SystemProperties.LockToken;
+            string messageId;
+            Dictionary<string, string> headers;
+            byte[] body;
+
+            try
+            {
+                messageId = message.GetMessageId();
+                headers = message.GetHeaders();
+                body = message.GetBody();
+            }
+            catch (Exception exception)
+            {
+                try
+                {
+                    await messageReceiver.SafeDeadLetterAsync(transportTransactionMode, lockToken, deadLetterReason: "Poisoned message", deadLetterErrorDescription: exception.Message).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // nothing we can do about it, message will be retried
+                }
+
+                return;
+            }
+
             try
             {
                 var transportTransaction = CreateTransportTransaction(useTransaction, messageReceiver, message.PartitionKey);
-                var messageContext = CreateMessageContext(message, transportTransaction);
+                var messageContext = CreateMessageContext(message, messageId, headers, body, transportTransaction);
 
                 using (var scope = useTransaction ? new TransactionScope(TransactionScopeOption.RequiresNew, TransactionScopeAsyncFlowOption.Enabled) : null)
                 {
@@ -66,13 +92,14 @@
                     using (var scope = useTransaction ? new TransactionScope(TransactionScopeOption.RequiresNew, TransactionScopeAsyncFlowOption.Enabled) : null)
                     {
                         var transportTransaction = CreateTransportTransaction(useTransaction, messageReceiver, message.PartitionKey);
-                        var errorContext = CreateErrorContext(exception, message, transportTransaction, message.SystemProperties.DeliveryCount);
+                        // provide an unmodified copy of the headers
+                        var errorContext = CreateErrorContext(exception, messageId, message.GetHeaders(), body, transportTransaction, message.SystemProperties.DeliveryCount);
 
                         result = await ProcessFailedMessage(errorContext, functionExecutionContext).ConfigureAwait(false);
 
                         if (result == ErrorHandleResult.Handled)
                         {
-                            await messageReceiver.SafeCompleteAsync(transportTransactionMode, message.SystemProperties.LockToken).ConfigureAwait(false);
+                            await messageReceiver.SafeCompleteAsync(transportTransactionMode, lockToken).ConfigureAwait(false);
                         }
 
                         scope?.Complete();
@@ -80,7 +107,7 @@
 
                     if (result == ErrorHandleResult.RetryRequired)
                     {
-                        await messageReceiver.SafeAbandonAsync(transportTransactionMode, message.SystemProperties.LockToken).ConfigureAwait(false);
+                        await messageReceiver.SafeAbandonAsync(transportTransactionMode, lockToken).ConfigureAwait(false);
                     }
                 }
                 catch (Exception onErrorException) when (onErrorException is MessageLockLostException || onErrorException is ServiceBusTimeoutException)
@@ -91,32 +118,32 @@
                 {
                     functionExecutionContext.Logger.LogCritical($"Failed to execute recoverability policy for message with native ID: `{message.MessageId}`", onErrorException);
 
-                    await messageReceiver.SafeAbandonAsync(transportTransactionMode, message.SystemProperties.LockToken).ConfigureAwait(false);
+                    await messageReceiver.SafeAbandonAsync(transportTransactionMode, lockToken).ConfigureAwait(false);
                 }
             }
         }
 
-        static MessageContext CreateMessageContext(Message originalMessage, TransportTransaction transportTransaction)
+        static MessageContext CreateMessageContext(Message originalMessage, string messageId, Dictionary<string, string> headers, byte[] body, TransportTransaction transportTransaction)
         {
             var contextBag = new ContextBag();
             contextBag.Set(originalMessage);
 
             return new MessageContext(
-                originalMessage.GetMessageId(),
-                originalMessage.GetHeaders(),
-                originalMessage.Body,
+                messageId,
+                headers,
+                body,
                 transportTransaction,
                 new CancellationTokenSource(),
                 contextBag);
         }
 
-        static ErrorContext CreateErrorContext(Exception exception, Message originalMessage, TransportTransaction transportTransaction, int immediateProcessingFailures)
+        static ErrorContext CreateErrorContext(Exception exception, string messageId, Dictionary<string, string> headers, byte[] body, TransportTransaction transportTransaction, int immediateProcessingFailures)
         {
             return new ErrorContext(
                 exception,
-                originalMessage.GetHeaders(),
-                originalMessage.GetMessageId(),
-                originalMessage.Body,
+                headers,
+                messageId,
+                body,
                 transportTransaction,
                 immediateProcessingFailures);
         }
