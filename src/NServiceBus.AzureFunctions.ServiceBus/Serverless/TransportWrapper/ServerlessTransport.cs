@@ -1,5 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions
 {
+    using ServiceBus;
     using Settings;
     using Transport;
 
@@ -18,6 +19,7 @@
         public override TransportInfrastructure Initialize(SettingsHolder settings, string connectionString)
         {
             var baseTransportInfrastructure = baseTransport.Initialize(settings, connectionString);
+
             return new ServerlessTransportInfrastructure<TBaseTransport>(baseTransportInfrastructure, settings);
         }
 

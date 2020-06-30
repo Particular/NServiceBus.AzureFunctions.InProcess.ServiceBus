@@ -2,31 +2,32 @@
 {
     using System;
     using System.Collections.Generic;
+    using Features;
     using Routing;
     using Settings;
     using Transport;
 
     class ServerlessTransportInfrastructure<TBaseInfrastructure> : TransportInfrastructure
     {
-        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure,
-            SettingsHolder settings)
+        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure, SettingsHolder settings)
         {
             this.baseTransportInfrastructure = baseTransportInfrastructure;
             this.settings = settings;
+
+            settings.EnableFeatureByDefault<TransactionScopeSuppressFeature>();
         }
 
-        public override IEnumerable<Type> DeliveryConstraints =>
-            baseTransportInfrastructure.DeliveryConstraints;
+        public override IEnumerable<Type> DeliveryConstraints => baseTransportInfrastructure.DeliveryConstraints;
 
         //support ReceiveOnly so that we can use immediate retries
         public override TransportTransactionMode TransactionMode { get; } = TransportTransactionMode.ReceiveOnly;
 
-        public override OutboundRoutingPolicy OutboundRoutingPolicy =>
-            baseTransportInfrastructure.OutboundRoutingPolicy;
+        public override OutboundRoutingPolicy OutboundRoutingPolicy => baseTransportInfrastructure.OutboundRoutingPolicy;
 
         public override TransportReceiveInfrastructure ConfigureReceiveInfrastructure()
         {
             var pipelineInvoker = settings.GetOrCreate<PipelineInvoker>();
+
             return new ManualPipelineInvocationInfrastructure(pipelineInvoker);
         }
 
