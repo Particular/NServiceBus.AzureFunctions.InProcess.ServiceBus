@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.InteropExtensions;
 
     static class MessageExtensions
     {
@@ -39,6 +40,16 @@
             }
 
             return message.MessageId;
+        }
+
+        public static byte[] GetBody(this Message message)
+        {
+            if (message.UserProperties.TryGetValue("NServiceBus.Transport.Encoding", out var value) && value.Equals("wcf/byte-array"))
+            {
+                return message.GetBody<byte[]>() ?? Array.Empty<byte>();
+            }
+
+            return message.Body ?? Array.Empty<byte>();
         }
     }
 }
