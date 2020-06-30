@@ -108,17 +108,24 @@
                     if (result == ErrorHandleResult.RetryRequired)
                     {
                         await messageReceiver.SafeAbandonAsync(transportTransactionMode, lockToken).ConfigureAwait(false);
+
+                        // Indicate to the Functions runtime not to complete the incoming message
+                        throw;
                     }
                 }
                 catch (Exception onErrorException) when (onErrorException is MessageLockLostException || onErrorException is ServiceBusTimeoutException)
                 {
                     functionExecutionContext.Logger.LogDebug("Failed to execute recoverability.", onErrorException);
+
+                    throw;
                 }
                 catch (Exception onErrorException)
                 {
                     functionExecutionContext.Logger.LogCritical($"Failed to execute recoverability policy for message with native ID: `{message.MessageId}`", onErrorException);
 
                     await messageReceiver.SafeAbandonAsync(transportTransactionMode, lockToken).ConfigureAwait(false);
+
+                    throw;
                 }
             }
         }

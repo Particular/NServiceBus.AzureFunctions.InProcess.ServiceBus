@@ -62,6 +62,17 @@
             var message = new Message(bytes);
             message.UserProperties["NServiceBus.EnclosedMessageTypes"] = "Testing.Handlers.DummyMessage";
 
+            var systemProperties = new Message.SystemPropertiesCollection();
+            // sequence number is required to prevent SystemPropertiesCollection from throwing on the getters
+            var fieldInfo = typeof(Message.SystemPropertiesCollection).GetField("sequenceNumber", BindingFlags.NonPublic | BindingFlags.Instance);
+            fieldInfo.SetValue(systemProperties, 123);
+            // set delivery count to 1
+            var deliveryCountProperty = typeof(Message.SystemPropertiesCollection).GetProperty("DeliveryCount");
+            deliveryCountProperty.SetValue(systemProperties, 1);
+            // assign test message mocked system properties
+            var property = typeof(Message).GetProperty("SystemProperties");
+            property.SetValue(message, systemProperties);
+
             return message;
         }
     }
