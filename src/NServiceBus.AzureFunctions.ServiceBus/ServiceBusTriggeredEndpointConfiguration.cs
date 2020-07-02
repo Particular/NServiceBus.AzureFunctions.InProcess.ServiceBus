@@ -3,7 +3,7 @@
     using Logging;
     using Microsoft.Azure.WebJobs;
     using System;
-    using AzureFunctions;
+    using AzureFunctions.ServiceBus;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint running within an AzureServiceBus trigger.
