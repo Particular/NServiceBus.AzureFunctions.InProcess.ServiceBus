@@ -3,6 +3,8 @@
     using System;
     using System.Security.Cryptography;
     using System.Text;
+    using System.Threading.Tasks;
+    using Logging;
     using Serialization;
     using Transport;
 
@@ -22,6 +24,10 @@
 
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             EndpointConfiguration.Recoverability().CustomPolicy(recoverabilityPolicy.Invoke);
+
+            // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
+            // Can be overriden by ServerlessEndpointConfiguration.LogDiagnostics().
+            EndpointConfiguration.CustomDiagnosticsWriter(_ => Task.CompletedTask);
 
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
             var functionAppName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? Environment.MachineName;
@@ -72,6 +78,18 @@
         public void DoNotSendMessagesToErrorQueue()
         {
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = false;
+        }
+
+        /// <summary>
+        /// Logs endpoint diagnostics information to the log. Diagnostics are logged on level <see cref="LogLevel.Info"/>.
+        /// </summary>
+        public void LogDiagnostics()
+        {
+            EndpointConfiguration.CustomDiagnosticsWriter(diagnostics =>
+            {
+                LogManager.GetLogger("StartupDiagnostics").Info(diagnostics);
+                return Task.CompletedTask;
+            });
         }
 
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();

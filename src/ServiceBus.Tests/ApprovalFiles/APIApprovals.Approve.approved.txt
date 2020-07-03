@@ -6,6 +6,7 @@ namespace NServiceBus.AzureFunctions.ServiceBus
         protected ServerlessEndpointConfiguration(string endpointName) { }
         public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
         public void DoNotSendMessagesToErrorQueue() { }
+        public void LogDiagnostics() { }
         public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
         protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
