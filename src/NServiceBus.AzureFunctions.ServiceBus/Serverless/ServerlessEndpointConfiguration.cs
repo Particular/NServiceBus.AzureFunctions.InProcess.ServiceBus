@@ -23,6 +23,8 @@
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             EndpointConfiguration.Recoverability().CustomPolicy(recoverabilityPolicy.Invoke);
 
+            // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
+            EndpointConfiguration.CustomDiagnosticsWriter(_ => Task.CompletedTask);
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
             var functionAppName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? Environment.MachineName;
             EndpointConfiguration.UniquelyIdentifyRunningInstance()
