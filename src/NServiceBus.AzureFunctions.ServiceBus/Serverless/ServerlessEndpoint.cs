@@ -63,7 +63,7 @@
                     {
                         var configuration = configurationFactory(executionContext);
                         LoadAssemblies(executionContext);
-                        LogManager.GetLogger("Previews").Info("NServiceBus.AzureFunctions.ServiceBus is a Preview package. Preview packages are licensed separately from the rest of the Particular Software platform and have different support guarantees. You can view the license at https://particular.net/eula/previews and the support policy at https://docs.particular.net/previews/support-policy. Customer adoption drives whether NServiceBus.AzureFunctions.ServiceBus will be incorporated into the Particular Software platform. Let us know you are using it, if you haven't already, by emailing us at support@particular.net.");
+                        LogManager.GetLogger("Previews").Info("NServiceBus.AzureFunctions.ServiceBus is a preview package. Preview packages are licensed separately from the rest of the Particular Software platform and have different support guarantees. You can view the license at https://particular.net/eula/previews and the support policy at https://docs.particular.net/previews/support-policy. Customer adoption drives whether NServiceBus.AzureFunctions.ServiceBus will be incorporated into the Particular Software platform. Let us know you are using it, if you haven't already, by emailing us at support@particular.net.");
                         await Endpoint.Start(configuration.EndpointConfiguration).ConfigureAwait(false);
 
                         pipeline = configuration.PipelineInvoker;
