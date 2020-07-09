@@ -2,14 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Routing;
     using Settings;
     using Transport;
 
-    class ServerlessTransportInfrastructure<TBaseInfrastructure> : TransportInfrastructure
+    class ServerlessTransportInfrastructure : TransportInfrastructure
     {
-        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure,
-            SettingsHolder settings)
+        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure, SettingsHolder settings)
         {
             this.baseTransportInfrastructure = baseTransportInfrastructure;
             this.settings = settings;
@@ -43,6 +43,16 @@
         public override EndpointInstance BindToLocalEndpoint(EndpointInstance instance)
         {
             return baseTransportInfrastructure.BindToLocalEndpoint(instance);
+        }
+
+        public override Task Start()
+        {
+            return baseTransportInfrastructure.Start();
+        }
+
+        public override Task Stop()
+        {
+            return baseTransportInfrastructure.Stop();
         }
 
         public override string ToTransportAddress(LogicalAddress logicalAddress)
