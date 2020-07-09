@@ -18,7 +18,7 @@
         public override TransportInfrastructure Initialize(SettingsHolder settings, string connectionString)
         {
             var baseTransportInfrastructure = baseTransport.Initialize(settings, connectionString);
-            return new ServerlessTransportInfrastructure<TBaseTransport>(baseTransportInfrastructure, settings);
+            return new ServerlessTransportInfrastructure(baseTransportInfrastructure, settings);
         }
 
         readonly TBaseTransport baseTransport;
