@@ -40,7 +40,7 @@
 
         public IList<object> Messages { get; } = new List<object>();
 
-        public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { set; private get; } = (_ => { });
+        public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = (_ => { });
 
 
         class FunctionRunner : ComponentRunner
