@@ -51,7 +51,6 @@
         /// </summary>
         /// <param name="executionContext">The execution context.</param>
         /// <param name="token">The cancellation token or default cancellation token.</param>
-        // ReSharper disable once MemberCanBePrivate.Global
         protected async Task InitializeEndpointIfNecessary(FunctionExecutionContext executionContext, CancellationToken token = default)
         {
             if (pipeline == null)
