@@ -20,8 +20,6 @@
         {
             EndpointConfiguration = new EndpointConfiguration(endpointName);
 
-            EndpointConfiguration.Recoverability().Delayed(c => c.NumberOfRetries(0));
-
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             EndpointConfiguration.Recoverability().CustomPolicy(recoverabilityPolicy.Invoke);
 
