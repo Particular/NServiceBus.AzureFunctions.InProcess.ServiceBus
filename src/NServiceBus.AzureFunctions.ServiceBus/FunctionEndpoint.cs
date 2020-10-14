@@ -1,4 +1,6 @@
-﻿namespace NServiceBus
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace NServiceBus
 {
     using System;
     using System.Threading;
@@ -16,11 +18,16 @@
     /// </summary>
     public class FunctionEndpoint : ServerlessEndpoint<ServiceBusTriggeredEndpointConfiguration>
     {
+        private readonly IServiceProvider serviceProvider;
+        private readonly IStartableEndpointWithExternallyManagedContainer startableEndpoint;
+
         /// <summary>
-        /// Create a new endpoint hosting in Azure Function.
+        /// ctor
         /// </summary>
-        public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory) : base(configurationFactory)
+        public FunctionEndpoint(IServiceProvider serviceProvider, IStartableEndpointWithExternallyManagedContainer startableEndpoint)
         {
+            this.serviceProvider = serviceProvider;
+            this.startableEndpoint = startableEndpoint;
         }
 
         /// <summary>
@@ -35,7 +42,7 @@
 
             try
             {
-                await Process(messageContext, functionExecutionContext).ConfigureAwait(false);
+                await Process(messageContext, functionExecutionContext, serviceProvider, startableEndpoint).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -47,7 +54,7 @@
                     new TransportTransaction(),
                     message.SystemProperties.DeliveryCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, functionExecutionContext)
+                var errorHandleResult = await ProcessFailedMessage(errorContext, functionExecutionContext, serviceProvider, startableEndpoint)
                     .ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
@@ -69,6 +76,31 @@
                     new CancellationTokenSource(),
                     new ContextBag());
             }
+        }
+    }
+
+    /// <summary>
+    /// Register NServiceBus
+    /// </summary>
+    public static class ServiceCollectionExtension
+    {
+        /// <summary>
+        /// Register NServiceBus
+        /// </summary>
+        /// <param name="serviceCollection">service collection</param>
+        /// <param name="configurationFactory">fac</param>
+        /// <returns>Return service collection</returns>
+        public static IServiceCollection UseNServiceBus(this IServiceCollection serviceCollection, Func<ServerlessEndpointConfiguration> configurationFactory)
+        {
+            var serviceBusTriggeredEndpointConfiguration = configurationFactory();
+
+            var startableEndpoint = EndpointWithExternallyManagedServiceProvider.Create(serviceBusTriggeredEndpointConfiguration.EndpointConfiguration, serviceCollection);
+
+            serviceCollection.AddSingleton(serviceBusTriggeredEndpointConfiguration.PipelineInvoker);
+            serviceCollection.AddSingleton(startableEndpoint);
+            serviceCollection.AddSingleton<FunctionEndpoint>();
+
+            return serviceCollection;
         }
     }
 }

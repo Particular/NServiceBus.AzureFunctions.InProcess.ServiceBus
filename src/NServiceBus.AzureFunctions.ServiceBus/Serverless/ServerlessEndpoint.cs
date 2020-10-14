@@ -21,17 +21,19 @@
         /// <summary>
         /// Create a new session based on the configuration factory provided.
         /// </summary>
-        protected ServerlessEndpoint(Func<FunctionExecutionContext, TConfiguration> configurationFactory)
+        protected ServerlessEndpoint(/*Func<FunctionExecutionContext, TConfiguration> configurationFactory*/)
         {
-            this.configurationFactory = configurationFactory;
+            //// this.configurationFactory = configurationFactory;
         }
 
         /// <summary>
         /// Lets the NServiceBus pipeline process this message.
         /// </summary>
-        protected async Task Process(MessageContext messageContext, FunctionExecutionContext executionContext)
+        protected async Task Process(MessageContext messageContext, FunctionExecutionContext executionContext,
+            IServiceProvider serviceProvider,
+            IStartableEndpointWithExternallyManagedContainer startableEndpoint)
         {
-            await InitializeEndpointIfNecessary(executionContext, messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(executionContext, serviceProvider, startableEndpoint, messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
 
             await pipeline.PushMessage(messageContext).ConfigureAwait(false);
         }
@@ -39,9 +41,9 @@
         /// <summary>
         /// Lets the NServiceBus pipeline process this failed message.
         /// </summary>
-        protected async Task<ErrorHandleResult> ProcessFailedMessage(ErrorContext errorContext, FunctionExecutionContext executionContext)
+        protected async Task<ErrorHandleResult> ProcessFailedMessage(ErrorContext errorContext, FunctionExecutionContext executionContext, IServiceProvider serviceProvider, IStartableEndpointWithExternallyManagedContainer startableEndpoint)
         {
-            await InitializeEndpointIfNecessary(executionContext).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(executionContext, serviceProvider, startableEndpoint).ConfigureAwait(false);
 
             return await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
         }
@@ -50,8 +52,13 @@
         /// Allows to forcefully initialize the endpoint if it hasn't been initialized yet.
         /// </summary>
         /// <param name="executionContext">The execution context.</param>
+        /// <param name="serviceProvider">Service provider supplied via Azure Function.</param>
+        /// <param name="startableEndpoint">xxx</param>
         /// <param name="token">The cancellation token or default cancellation token.</param>
-        protected async Task InitializeEndpointIfNecessary(FunctionExecutionContext executionContext, CancellationToken token = default)
+        protected async Task InitializeEndpointIfNecessary(FunctionExecutionContext executionContext,
+            IServiceProvider serviceProvider,
+            IStartableEndpointWithExternallyManagedContainer startableEndpoint,
+            CancellationToken token = default)
         {
             if (pipeline == null)
             {
@@ -60,12 +67,13 @@
                 {
                     if (pipeline == null)
                     {
-                        var configuration = configurationFactory(executionContext);
+                        //var configuration = configurationFactory(executionContext);
                         LoadAssemblies(executionContext);
                         LogManager.GetLogger("Previews").Info("NServiceBus.AzureFunctions.ServiceBus is a preview package. Preview packages are licensed separately from the rest of the Particular Software platform and have different support guarantees. You can view the license at https://particular.net/eula/previews and the support policy at https://docs.particular.net/previews/support-policy. Customer adoption drives whether NServiceBus.AzureFunctions.ServiceBus will be incorporated into the Particular Software platform. Let us know you are using it, if you haven't already, by emailing us at support@particular.net.");
-                        await Endpoint.Start(configuration.EndpointConfiguration).ConfigureAwait(false);
+                        //await Endpoint.Start(configuration.EndpointConfiguration).ConfigureAwait(false);
+                        var endpoint = await startableEndpoint.Start(serviceProvider).ConfigureAwait(false);
 
-                        pipeline = configuration.PipelineInvoker;
+                        pipeline = (PipelineInvoker) serviceProvider.GetService(typeof(PipelineInvoker));
                     }
                 }
                 finally
@@ -133,7 +141,7 @@
         /// </summary>
         protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext => Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
 
-        readonly Func<FunctionExecutionContext, TConfiguration> configurationFactory;
+        ////readonly Func<FunctionExecutionContext, TConfiguration> configurationFactory;
 
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
