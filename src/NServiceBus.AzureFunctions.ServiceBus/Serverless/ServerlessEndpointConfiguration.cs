@@ -1,4 +1,6 @@
-﻿namespace NServiceBus.AzureFunctions.ServiceBus
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace NServiceBus.AzureFunctions.ServiceBus
 {
     using System;
     using System.Security.Cryptography;
@@ -44,6 +46,8 @@
         internal EndpointConfiguration EndpointConfiguration { get; }
 
         internal PipelineInvoker PipelineInvoker { get; private set; }
+
+        internal IServiceCollection ServiceCollection { get; set; }
 
         /// <summary>
         /// Gives access to the underlying endpoint configuration for advanced configuration options.

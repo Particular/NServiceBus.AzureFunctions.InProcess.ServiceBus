@@ -1,4 +1,6 @@
-﻿namespace ServiceBus.Tests
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace ServiceBus.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -32,8 +34,8 @@
         {
             return Task.FromResult<ComponentRunner>(
                 new FunctionRunner(
-                    Messages, 
-                    CustomizeConfiguration, 
+                    Messages,
+                    CustomizeConfiguration,
                     runDescriptor.ScenarioContext,
                     GetType()));
         }
@@ -107,7 +109,8 @@
                 {
                     var transportMessage = GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.Process(transportMessage, context);
+                    var serviceProvider = new ServiceCollection().BuildServiceProvider();
+                    await endpoint.Process(transportMessage, context, serviceProvider);
                 }
             }
 
