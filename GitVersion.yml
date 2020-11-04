@@ -2,7 +2,7 @@ assembly-versioning-scheme: Major
 branches:
   master:
     mode: ContinuousDeployment
-    tag: experimental
+    tag: alpha
     increment: Minor
     tracks-release-branches: true
   release:
