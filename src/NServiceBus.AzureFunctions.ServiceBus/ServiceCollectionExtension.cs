@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using NServiceBus.AzureFunctions.ServiceBus;
 
 namespace NServiceBus
 {
@@ -15,15 +14,17 @@ namespace NServiceBus
         /// <param name="serviceCollection">service collection</param>
         /// <param name="configurationFactory">fac</param>
         /// <returns>Return service collection</returns>
-        public static IServiceCollection UseNServiceBus(this IServiceCollection serviceCollection, Func<ServerlessEndpointConfiguration> configurationFactory)
+        public static IServiceCollection UseNServiceBus(this IServiceCollection serviceCollection,
+            Func<ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
             var serviceBusTriggeredEndpointConfiguration = configurationFactory();
 
-            var startableEndpoint = EndpointWithExternallyManagedServiceProvider.Create(serviceBusTriggeredEndpointConfiguration.EndpointConfiguration, serviceCollection);
+            var startableEndpoint =
+                EndpointWithExternallyManagedServiceProvider.Create(
+                    serviceBusTriggeredEndpointConfiguration.EndpointConfiguration, serviceCollection);
 
-            serviceCollection.Add(new ServiceDescriptor(typeof(PipelineInvoker), provider => serviceBusTriggeredEndpointConfiguration.PipelineInvoker, ServiceLifetime.Singleton));
-            serviceCollection.Add(new ServiceDescriptor(typeof(IStartableEndpointWithExternallyManagedContainer), provider => startableEndpoint, ServiceLifetime.Singleton));
-            serviceCollection.Add(new ServiceDescriptor(typeof(FunctionEndpoint), typeof(FunctionEndpoint), ServiceLifetime.Singleton));
+            serviceCollection.AddSingleton(sp =>
+                new FunctionEndpoint(startableEndpoint, serviceBusTriggeredEndpointConfiguration, sp));
 
             return serviceCollection;
         }

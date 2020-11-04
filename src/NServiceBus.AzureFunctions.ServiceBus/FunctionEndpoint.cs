@@ -22,13 +22,27 @@ namespace NServiceBus
     /// </summary>
     public class FunctionEndpoint
     {
-        private readonly IServiceProvider serviceProvider;
+        private readonly Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory;
+        private IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint;
+        private ServiceBusTriggeredEndpointConfiguration configuration;
+        private IServiceProvider serviceProvider;
+
+
 
         /// <summary>
-        /// Function endpoint that is injected into Azure Function.
+        /// 
         /// </summary>
-        public FunctionEndpoint(IServiceProvider serviceProvider)
+        /// ////TODO this is called by the user via the static scenario
+        public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
+            this.configurationFactory = configurationFactory;
+        }
+
+        // This ctor is used for the FunctionsHost scenario
+        internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
+        {
+            this.externallyManagedContainerEndpoint = externallyManagedContainerEndpoint;
+            this.configuration = configuration;
             this.serviceProvider = serviceProvider;
         }
 
@@ -42,9 +56,12 @@ namespace NServiceBus
             var messageContext = CreateMessageContext(message);
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
+            //TODO dedicated try/catch here as we can't do any sends if we fail to start the endpoint?
+            await InitializeEndpointIfNecessary(functionExecutionContext, messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+
             try
             {
-                await Process(messageContext, functionExecutionContext, serviceProvider).ConfigureAwait(false);
+                await pipeline.PushMessage(messageContext).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -56,8 +73,7 @@ namespace NServiceBus
                     new TransportTransaction(),
                     message.SystemProperties.DeliveryCount);
 
-                var errorHandleResult = await ProcessFailedMessage(errorContext, functionExecutionContext, serviceProvider)
-                    .ConfigureAwait(false);
+                var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
                 {
@@ -81,32 +97,11 @@ namespace NServiceBus
         }
 
         /// <summary>
-        /// Lets the NServiceBus pipeline process this message.
-        /// </summary>
-        private async Task Process(MessageContext messageContext, FunctionExecutionContext executionContext, IServiceProvider serviceProvider)
-        {
-            await InitializeEndpointIfNecessary(executionContext, serviceProvider, messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
-
-            await pipeline.PushMessage(messageContext).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Lets the NServiceBus pipeline process this failed message.
-        /// </summary>
-        private async Task<ErrorHandleResult> ProcessFailedMessage(ErrorContext errorContext, FunctionExecutionContext executionContext, IServiceProvider serviceProvider)
-        {
-            await InitializeEndpointIfNecessary(executionContext, serviceProvider).ConfigureAwait(false);
-
-            return await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Allows to forcefully initialize the endpoint if it hasn't been initialized yet.
         /// </summary>
         /// <param name="executionContext">The execution context.</param>
-        /// <param name="serviceProvider">Service provider supplied via Azure Function.</param>
         /// <param name="token">The cancellation token or default cancellation token.</param>
-        private async Task InitializeEndpointIfNecessary(FunctionExecutionContext executionContext, IServiceProvider serviceProvider, CancellationToken token = default)
+        private async Task InitializeEndpointIfNecessary(FunctionExecutionContext executionContext, CancellationToken token = default)
         {
             if (pipeline == null)
             {
@@ -115,13 +110,24 @@ namespace NServiceBus
                 {
                     if (pipeline == null)
                     {
+                        //TODO do we have to call LoadAssemblies earlier with functionsHost as Endpoint.Create is called earlier?
                         LoadAssemblies(executionContext);
                         LogManager.GetLogger("Previews").Info("NServiceBus.AzureFunctions.ServiceBus is a preview package. Preview packages are licensed separately from the rest of the Particular Software platform and have different support guarantees. You can view the license at https://particular.net/eula/previews and the support policy at https://docs.particular.net/previews/support-policy. Customer adoption drives whether NServiceBus.AzureFunctions.ServiceBus will be incorporated into the Particular Software platform. Let us know you are using it, if you haven't already, by emailing us at support@particular.net.");
 
-                        var startableEndpoint = serviceProvider.GetService<IStartableEndpointWithExternallyManagedContainer>();
-                        var endpoint = await startableEndpoint.Start(serviceProvider).ConfigureAwait(false);
+                        if (externallyManagedContainerEndpoint == null)
+                        {
+                            //TODO if we remove the executionContext parameter to the configuration factory, we could call the factory earlier, similar to the functionsHost approach.
+                            var configuration = configurationFactory(executionContext);
+                            var serviceCollection = new ServiceCollection();
+                            externallyManagedContainerEndpoint =
+                                EndpointWithExternallyManagedServiceProvider.Create(
+                                    configuration.EndpointConfiguration, serviceCollection);
+                            serviceProvider = serviceCollection.BuildServiceProvider();
+                        }
 
-                        pipeline = serviceProvider.GetService<PipelineInvoker>();
+                        var endpoint = await externallyManagedContainerEndpoint.Start(serviceProvider).ConfigureAwait(false);
+
+                        pipeline = configuration.PipelineInvoker;
                     }
                 }
                 finally

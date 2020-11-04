@@ -109,8 +109,7 @@ namespace ServiceBus.Tests
                 {
                     var transportMessage = GenerateMessage(message);
                     var context = new ExecutionContext();
-                    var serviceProvider = new ServiceCollection().BuildServiceProvider();
-                    await endpoint.Process(transportMessage, context, serviceProvider);
+                    await endpoint.Process(transportMessage, context);
                 }
             }
 
