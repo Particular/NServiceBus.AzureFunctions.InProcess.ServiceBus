@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace NServiceBus
+﻿namespace NServiceBus
 {
     using Logging;
     using Microsoft.Azure.WebJobs;

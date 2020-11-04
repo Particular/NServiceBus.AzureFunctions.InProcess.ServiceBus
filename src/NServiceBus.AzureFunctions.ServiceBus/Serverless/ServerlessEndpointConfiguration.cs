@@ -47,8 +47,6 @@ namespace NServiceBus.AzureFunctions.ServiceBus
 
         internal PipelineInvoker PipelineInvoker { get; private set; }
 
-        internal IServiceCollection ServiceCollection { get; set; }
-
         /// <summary>
         /// Gives access to the underlying endpoint configuration for advanced configuration options.
         /// </summary>
