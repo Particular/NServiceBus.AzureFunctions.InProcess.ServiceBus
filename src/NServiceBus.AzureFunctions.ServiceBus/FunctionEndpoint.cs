@@ -117,7 +117,7 @@ namespace NServiceBus
                         if (externallyManagedContainerEndpoint == null)
                         {
                             //TODO if we remove the executionContext parameter to the configuration factory, we could call the factory earlier, similar to the functionsHost approach.
-                            var configuration = configurationFactory(executionContext);
+                            configuration = configurationFactory(executionContext);
                             var serviceCollection = new ServiceCollection();
                             externallyManagedContainerEndpoint =
                                 EndpointWithExternallyManagedServiceProvider.Create(
