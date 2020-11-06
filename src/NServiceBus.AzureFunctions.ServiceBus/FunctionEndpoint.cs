@@ -56,7 +56,6 @@ namespace NServiceBus
             var messageContext = CreateMessageContext(message);
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
-            //TODO dedicated try/catch here as we can't do any sends if we fail to start the endpoint?
             await InitializeEndpointIfNecessary(functionExecutionContext, messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
 
             try
