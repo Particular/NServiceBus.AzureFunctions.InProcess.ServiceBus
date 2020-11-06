@@ -22,12 +22,8 @@ namespace NServiceBus
     /// </summary>
     public class FunctionEndpoint
     {
-        private readonly Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory;
-        private IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint;
+        private readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
         private ServiceBusTriggeredEndpointConfiguration configuration;
-        private IServiceProvider serviceProvider;
-
-
 
         /// <summary>
         /// 
@@ -35,15 +31,27 @@ namespace NServiceBus
         /// ////TODO this is called by the user via the static scenario
         public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
-            this.configurationFactory = configurationFactory;
+            this.endpointFactory = executionContext =>
+            {
+                LoadAssemblies(AssemblyDirectoryResolver(executionContext));
+
+                //TODO if we remove the executionContext parameter to the configuration factory, we could call the factory earlier, similar to the functionsHost approach.
+                configuration = configurationFactory(executionContext);
+                var serviceCollection = new ServiceCollection();
+                var externallyManagedContainerEndpoint =
+                    EndpointWithExternallyManagedServiceProvider.Create(
+                        configuration.EndpointConfiguration, serviceCollection);
+                var serviceProvider = serviceCollection.BuildServiceProvider();
+                return externallyManagedContainerEndpoint.Start(serviceProvider);
+            };
         }
 
         // This ctor is used for the FunctionsHost scenario
-        internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
+        internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
+            ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
         {
-            this.externallyManagedContainerEndpoint = externallyManagedContainerEndpoint;
             this.configuration = configuration;
-            this.serviceProvider = serviceProvider;
+            this.endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
         /// <summary>
@@ -56,7 +64,8 @@ namespace NServiceBus
             var messageContext = CreateMessageContext(message);
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
-            await InitializeEndpointIfNecessary(functionExecutionContext, messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionExecutionContext,
+                messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
 
             try
             {
@@ -109,22 +118,11 @@ namespace NServiceBus
                 {
                     if (pipeline == null)
                     {
-                        LogManager.GetLogger("Previews").Info("NServiceBus.AzureFunctions.ServiceBus is a preview package. Preview packages are licensed separately from the rest of the Particular Software platform and have different support guarantees. You can view the license at https://particular.net/eula/previews and the support policy at https://docs.particular.net/previews/support-policy. Customer adoption drives whether NServiceBus.AzureFunctions.ServiceBus will be incorporated into the Particular Software platform. Let us know you are using it, if you haven't already, by emailing us at support@particular.net.");
+                        LogManager.GetLogger("Previews").Info(
+                            "NServiceBus.AzureFunctions.ServiceBus is a preview package. Preview packages are licensed separately from the rest of the Particular Software platform and have different support guarantees. You can view the license at https://particular.net/eula/previews and the support policy at https://docs.particular.net/previews/support-policy. Customer adoption drives whether NServiceBus.AzureFunctions.ServiceBus will be incorporated into the Particular Software platform. Let us know you are using it, if you haven't already, by emailing us at support@particular.net.");
 
-                        if (externallyManagedContainerEndpoint == null)
-                        {
-                            LoadAssemblies(AssemblyDirectoryResolver(executionContext));
-
-                            //TODO if we remove the executionContext parameter to the configuration factory, we could call the factory earlier, similar to the functionsHost approach.
-                            configuration = configurationFactory(executionContext);
-                            var serviceCollection = new ServiceCollection();
-                            externallyManagedContainerEndpoint =
-                                EndpointWithExternallyManagedServiceProvider.Create(
-                                    configuration.EndpointConfiguration, serviceCollection);
-                            serviceProvider = serviceCollection.BuildServiceProvider();
-                        }
-
-                        var endpoint = await externallyManagedContainerEndpoint.Start(serviceProvider).ConfigureAwait(false);
+                        //var endpoint = await externallyManagedContainerEndpoint.Start(serviceProvider).ConfigureAwait(false);
+                        var endpoint = await endpointFactory(executionContext).ConfigureAwait(false);
 
                         pipeline = configuration.PipelineInvoker;
                     }
@@ -161,7 +159,9 @@ namespace NServiceBus
                 }
                 catch (Exception e)
                 {
-                    LogManager.GetLogger<FunctionEndpoint>().DebugFormat("Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.{1}{2}", binFile, Environment.NewLine, e);
+                    LogManager.GetLogger<FunctionEndpoint>().DebugFormat(
+                        "Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.{1}{2}",
+                        binFile, Environment.NewLine, e);
                 }
             }
         }
@@ -193,7 +193,8 @@ namespace NServiceBus
         /// Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
         /// When using functions, assemblies are moved to a 'bin' folder within ExecutionContext.FunctionAppDirectory.
         /// </summary>
-        protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext => Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
+        protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext =>
+            Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
 
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
