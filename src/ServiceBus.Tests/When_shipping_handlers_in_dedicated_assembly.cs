@@ -33,7 +33,7 @@ namespace ServiceBus.Tests
 
             var settings = configuration.AdvancedConfiguration.GetSettings();
 
-            var endpointFactory = ServiceCollectionExtension.Configure(configuration, serviceCollection,
+            var endpointFactory = FunctionsHostBuilderExtensions.Configure(configuration, serviceCollection,
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();

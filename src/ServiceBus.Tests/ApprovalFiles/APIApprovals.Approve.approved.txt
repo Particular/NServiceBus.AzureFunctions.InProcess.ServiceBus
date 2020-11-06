@@ -27,14 +27,14 @@ namespace NServiceBus
         public Microsoft.Azure.WebJobs.ExecutionContext ExecutionContext { get; }
         public Microsoft.Extensions.Logging.ILogger Logger { get; }
     }
+    public class static FunctionsHostBuilderExtensions
+    {
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
+    }
     public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpointConfiguration
     {
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
         public static NServiceBus.ServiceBusTriggeredEndpointConfiguration FromAttributes() { }
-    }
-    public class static ServiceCollectionExtension
-    {
-        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
     }
 }
