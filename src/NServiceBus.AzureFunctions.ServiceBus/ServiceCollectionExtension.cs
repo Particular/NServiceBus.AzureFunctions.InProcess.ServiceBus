@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NServiceBus
@@ -11,22 +12,29 @@ namespace NServiceBus
         /// <summary>
         /// Register NServiceBus
         /// </summary>
-        /// <param name="serviceCollection">service collection</param>
-        /// <param name="configurationFactory">fac</param>
-        /// <returns>Return service collection</returns>
-        public static IServiceCollection UseNServiceBus(this IServiceCollection serviceCollection,
+        public static void UseNServiceBus(this IFunctionsHostBuilder functionsHostBuilder,
             Func<ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
             var serviceBusTriggeredEndpointConfiguration = configurationFactory();
 
+            FunctionEndpoint.LoadAssemblies(functionsHostBuilder.GetContext().ApplicationRootPath);
+
+            var endpointFactory = Configure(serviceBusTriggeredEndpointConfiguration, functionsHostBuilder.Services,
+                functionsHostBuilder.GetContext().ApplicationRootPath);
+
+            functionsHostBuilder.Services.AddSingleton(endpointFactory);
+        }
+
+        internal static Func<IServiceProvider, FunctionEndpoint> Configure(ServiceBusTriggeredEndpointConfiguration configuration, IServiceCollection serviceCollection, string appDirectory)
+        {
+            FunctionEndpoint.LoadAssemblies(appDirectory);
+
             var startableEndpoint =
                 EndpointWithExternallyManagedServiceProvider.Create(
-                    serviceBusTriggeredEndpointConfiguration.EndpointConfiguration, serviceCollection);
+                    configuration.EndpointConfiguration, serviceCollection);
 
-            serviceCollection.AddSingleton(sp =>
-                new FunctionEndpoint(startableEndpoint, serviceBusTriggeredEndpointConfiguration, sp));
-
-            return serviceCollection;
+            return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration,
+                serviceProvider);
         }
     }
 }

@@ -110,12 +110,12 @@ namespace NServiceBus
                 {
                     if (pipeline == null)
                     {
-                        //TODO do we have to call LoadAssemblies earlier with functionsHost as Endpoint.Create is called earlier?
-                        LoadAssemblies(executionContext);
                         LogManager.GetLogger("Previews").Info("NServiceBus.AzureFunctions.ServiceBus is a preview package. Preview packages are licensed separately from the rest of the Particular Software platform and have different support guarantees. You can view the license at https://particular.net/eula/previews and the support policy at https://docs.particular.net/previews/support-policy. Customer adoption drives whether NServiceBus.AzureFunctions.ServiceBus will be incorporated into the Particular Software platform. Let us know you are using it, if you haven't already, by emailing us at support@particular.net.");
 
                         if (externallyManagedContainerEndpoint == null)
                         {
+                            LoadAssemblies(executionContext.ExecutionContext.FunctionAppDirectory);
+
                             //TODO if we remove the executionContext parameter to the configuration factory, we could call the factory earlier, similar to the functionsHost approach.
                             configuration = configurationFactory(executionContext);
                             var serviceCollection = new ServiceCollection();
@@ -137,10 +137,10 @@ namespace NServiceBus
             }
         }
 
-        void LoadAssemblies(FunctionExecutionContext executionContext)
+        internal static void LoadAssemblies(string assemblyDirectory)
         {
             var binFiles = Directory.EnumerateFiles(
-                AssemblyDirectoryResolver(executionContext),
+                assemblyDirectory,
                 "*.dll",
                 SearchOption.TopDirectoryOnly);
 
@@ -162,7 +162,7 @@ namespace NServiceBus
                 }
                 catch (Exception e)
                 {
-                    executionContext.Logger.LogDebug(e, "Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.", binFile);
+                    LogManager.GetLogger<FunctionEndpoint>().DebugFormat("Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.{1}{2}", binFile, Environment.NewLine, e);
                 }
             }
         }
