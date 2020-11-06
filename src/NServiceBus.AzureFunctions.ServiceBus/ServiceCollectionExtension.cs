@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +21,7 @@ namespace NServiceBus
             FunctionEndpoint.LoadAssemblies(functionsHostBuilder.GetContext().ApplicationRootPath);
 
             var endpointFactory = Configure(serviceBusTriggeredEndpointConfiguration, functionsHostBuilder.Services,
-                functionsHostBuilder.GetContext().ApplicationRootPath);
+                Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
 
             functionsHostBuilder.Services.AddSingleton(endpointFactory);
         }
