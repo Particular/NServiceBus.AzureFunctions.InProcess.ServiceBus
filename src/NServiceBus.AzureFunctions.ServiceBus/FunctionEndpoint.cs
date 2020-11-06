@@ -26,9 +26,8 @@ namespace NServiceBus
         private ServiceBusTriggeredEndpointConfiguration configuration;
 
         /// <summary>
-        /// 
+        /// Creates a new instance of <see cref="FunctionEndpoint"/> that can handle messages using the provided configuration.
         /// </summary>
-        /// ////TODO this is called by the user via the static scenario
         public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
             this.endpointFactory = executionContext =>
@@ -46,7 +45,7 @@ namespace NServiceBus
             };
         }
 
-        // This ctor is used for the FunctionsHost scenario
+        // This ctor is used for the FunctionsHostBuilder scenario where the endpoint is created already during configuration time using the function host's container.
         internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
             ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
         {
