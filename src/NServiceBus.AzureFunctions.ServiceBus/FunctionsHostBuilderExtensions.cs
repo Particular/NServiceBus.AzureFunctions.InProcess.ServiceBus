@@ -19,8 +19,6 @@ namespace NServiceBus
         {
             var serviceBusTriggeredEndpointConfiguration = configurationFactory();
 
-            FunctionEndpoint.LoadAssemblies(functionsHostBuilder.GetContext().ApplicationRootPath);
-
             var endpointFactory = Configure(serviceBusTriggeredEndpointConfiguration, functionsHostBuilder.Services,
                 Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
 
