@@ -35,6 +35,6 @@ namespace NServiceBus
     }
     public class static ServiceCollectionExtension
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection UseNServiceBus(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
     }
 }
