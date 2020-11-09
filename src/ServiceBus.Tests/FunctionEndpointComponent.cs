@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace ServiceBus.Tests
+﻿namespace ServiceBus.Tests
 {
     using System;
     using System.Collections.Generic;
