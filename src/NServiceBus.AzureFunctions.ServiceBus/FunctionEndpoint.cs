@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
-using Microsoft.Extensions.DependencyInjection;
 using NServiceBus.Logging;
 
 namespace NServiceBus
@@ -36,12 +35,7 @@ namespace NServiceBus
 
                 //TODO if we remove the executionContext parameter to the configuration factory, we could call the factory earlier, similar to the functionsHost approach.
                 configuration = configurationFactory(executionContext);
-                var serviceCollection = new ServiceCollection();
-                var externallyManagedContainerEndpoint =
-                    EndpointWithExternallyManagedServiceProvider.Create(
-                        configuration.EndpointConfiguration, serviceCollection);
-                var serviceProvider = serviceCollection.BuildServiceProvider();
-                return externallyManagedContainerEndpoint.Start(serviceProvider);
+                return Endpoint.Start(configuration.EndpointConfiguration);
             };
         }
 
