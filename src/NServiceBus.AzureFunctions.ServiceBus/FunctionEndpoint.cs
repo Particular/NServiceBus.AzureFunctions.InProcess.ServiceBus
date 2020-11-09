@@ -33,7 +33,6 @@ namespace NServiceBus
             {
                 LoadAssemblies(AssemblyDirectoryResolver(executionContext));
 
-                //TODO if we remove the executionContext parameter to the configuration factory, we could call the factory earlier, similar to the functionsHost approach.
                 configuration = configurationFactory(executionContext);
                 return Endpoint.Start(configuration.EndpointConfiguration);
             };
