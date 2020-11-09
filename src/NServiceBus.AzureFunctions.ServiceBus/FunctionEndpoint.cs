@@ -1,10 +1,9 @@
-﻿using System.IO;
-using System.Reflection;
-using System.Runtime.Loader;
-using NServiceBus.Logging;
-
-namespace NServiceBus
+﻿namespace NServiceBus
 {
+    using System.IO;
+    using System.Reflection;
+    using System.Runtime.Loader;
+    using Logging;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
@@ -29,7 +28,7 @@ namespace NServiceBus
         /// </summary>
         public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
-            this.endpointFactory = executionContext =>
+            endpointFactory = executionContext =>
             {
                 LoadAssemblies(AssemblyDirectoryResolver(executionContext));
 
