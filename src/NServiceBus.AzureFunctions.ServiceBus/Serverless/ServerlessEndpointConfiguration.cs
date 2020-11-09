@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace NServiceBus.AzureFunctions.ServiceBus
+﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
     using System;
     using System.Security.Cryptography;
