@@ -32,8 +32,8 @@
         {
             return Task.FromResult<ComponentRunner>(
                 new FunctionRunner(
-                    Messages, 
-                    CustomizeConfiguration, 
+                    Messages,
+                    CustomizeConfiguration,
                     runDescriptor.ScenarioContext,
                     GetType()));
         }

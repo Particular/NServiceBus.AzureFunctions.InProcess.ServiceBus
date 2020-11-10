@@ -12,20 +12,12 @@ namespace NServiceBus.AzureFunctions.ServiceBus
         protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
             where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
     }
-    public abstract class ServerlessEndpoint<TConfiguration>
-        where TConfiguration : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpointConfiguration
-    {
-        protected System.Func<NServiceBus.FunctionExecutionContext, string> AssemblyDirectoryResolver;
-        protected ServerlessEndpoint(System.Func<NServiceBus.FunctionExecutionContext, TConfiguration> configurationFactory) { }
-        protected System.Threading.Tasks.Task InitializeEndpointIfNecessary(NServiceBus.FunctionExecutionContext executionContext, System.Threading.CancellationToken token = null) { }
-        protected System.Threading.Tasks.Task Process(NServiceBus.Transport.MessageContext messageContext, NServiceBus.FunctionExecutionContext executionContext) { }
-        protected System.Threading.Tasks.Task<NServiceBus.Transport.ErrorHandleResult> ProcessFailedMessage(NServiceBus.Transport.ErrorContext errorContext, NServiceBus.FunctionExecutionContext executionContext) { }
-    }
 }
 namespace NServiceBus
 {
-    public class FunctionEndpoint : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpoint<NServiceBus.ServiceBusTriggeredEndpointConfiguration>
+    public class FunctionEndpoint
     {
+        protected System.Func<NServiceBus.FunctionExecutionContext, string> AssemblyDirectoryResolver;
         public FunctionEndpoint(System.Func<NServiceBus.FunctionExecutionContext, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
     }
@@ -34,6 +26,10 @@ namespace NServiceBus
         public FunctionExecutionContext(Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger logger) { }
         public Microsoft.Azure.WebJobs.ExecutionContext ExecutionContext { get; }
         public Microsoft.Extensions.Logging.ILogger Logger { get; }
+    }
+    public class static FunctionsHostBuilderExtensions
+    {
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
     }
     public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpointConfiguration
     {
