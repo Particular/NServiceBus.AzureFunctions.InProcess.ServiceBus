@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="[2.2.0, 3)" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="[1.5.0, 2)" />
-    <PackageReference Include="NServiceBus.Extensions.DependencyInjection" Version="1.0.1" />
+    <PackageReference Include="NServiceBus.Extensions.DependencyInjection" Version="[1.0,2)" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="[4.1.0, 5.0.0)" />
     <PackageReference Include="Particular.CodeRules" Version="0.7.0" PrivateAssets="All" />
     <PackageReference Include="Particular.Packaging" Version="0.8.0" PrivateAssets="All" />
