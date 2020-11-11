@@ -1,14 +1,14 @@
 ﻿namespace NServiceBus
 {
+    using System;
     using System.IO;
     using System.Reflection;
     using System.Runtime.Loader;
-    using Logging;
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.ServiceBus;
     using Extensibility;
+    using Logging;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Extensions.Logging;
     using Transport;
@@ -20,11 +20,8 @@
     /// </summary>
     public class FunctionEndpoint
     {
-        private readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
-        private ServiceBusTriggeredEndpointConfiguration configuration;
-
         /// <summary>
-        /// Creates a new instance of <see cref="FunctionEndpoint"/> that can handle messages using the provided configuration.
+        /// Creates a new instance of <see cref="FunctionEndpoint" /> that can handle messages using the provided configuration.
         /// </summary>
         public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
@@ -42,7 +39,7 @@
             ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
         {
             this.configuration = configuration;
-            this.endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
+            endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
         /// <summary>
@@ -186,7 +183,10 @@
         protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext =>
             Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
 
+        private readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
+
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+        private ServiceBusTriggeredEndpointConfiguration configuration;
 
         PipelineInvoker pipeline;
     }

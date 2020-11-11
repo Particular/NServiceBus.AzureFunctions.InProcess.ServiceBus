@@ -1,35 +1,18 @@
-﻿using System.Threading.Tasks;
-using NServiceBus.Serialization;
-using NServiceBus.Transport;
-
-namespace NServiceBus
+﻿namespace NServiceBus
 {
+    using System;
+    using System.Threading.Tasks;
+    using AzureFunctions.ServiceBus;
     using Logging;
     using Microsoft.Azure.WebJobs;
-    using System;
-    using AzureFunctions.ServiceBus;
+    using Serialization;
+    using Transport;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint running within an AzureServiceBus trigger.
     /// </summary>
     public class ServiceBusTriggeredEndpointConfiguration
     {
-        private readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
-        internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
-
-        /// <summary>
-        /// Azure Service Bus transport
-        /// </summary>
-        public TransportExtensions<AzureServiceBusTransport> Transport { get; }
-
-        internal EndpointConfiguration EndpointConfiguration { get; }
-        internal PipelineInvoker PipelineInvoker { get; private set; }
-
-        /// <summary>
-        /// Gives access to the underlying endpoint configuration for advanced configuration options.
-        /// </summary>
-        public EndpointConfiguration AdvancedConfiguration => EndpointConfiguration;
-
         static ServiceBusTriggeredEndpointConfiguration()
         {
             LogManager.UseFactory(FunctionsLoggerFactory.Instance);
@@ -64,7 +47,8 @@ namespace NServiceBus
 
             Transport = UseTransport<AzureServiceBusTransport>();
 
-            var connectionString = Environment.GetEnvironmentVariable(connectionStringName ?? DefaultServiceBusConnectionName);
+            var connectionString =
+                Environment.GetEnvironmentVariable(connectionStringName ?? DefaultServiceBusConnectionName);
             Transport.ConnectionString(connectionString);
 
             var recoverability = AdvancedConfiguration.Recoverability();
@@ -75,7 +59,21 @@ namespace NServiceBus
         }
 
         /// <summary>
-        /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via reflection.
+        /// Azure Service Bus transport
+        /// </summary>
+        public TransportExtensions<AzureServiceBusTransport> Transport { get; }
+
+        internal EndpointConfiguration EndpointConfiguration { get; }
+        internal PipelineInvoker PipelineInvoker { get; private set; }
+
+        /// <summary>
+        /// Gives access to the underlying endpoint configuration for advanced configuration options.
+        /// </summary>
+        public EndpointConfiguration AdvancedConfiguration => EndpointConfiguration;
+
+        /// <summary>
+        /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via
+        /// reflection.
         /// </summary>
         public static ServiceBusTriggeredEndpointConfiguration FromAttributes()
         {
@@ -85,7 +83,8 @@ namespace NServiceBus
                 return new ServiceBusTriggeredEndpointConfiguration(configuration.QueueName, configuration.Connection);
             }
 
-            throw new Exception($"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
+            throw new Exception(
+                $"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
         }
 
         /// <summary>
@@ -117,7 +116,7 @@ namespace NServiceBus
         }
 
         /// <summary>
-        /// Logs endpoint diagnostics information to the log. Diagnostics are logged on level <see cref="LogLevel.Info"/>.
+        /// Logs endpoint diagnostics information to the log. Diagnostics are logged on level <see cref="LogLevel.Info" />.
         /// </summary>
         public void LogDiagnostics()
         {
@@ -127,5 +126,8 @@ namespace NServiceBus
                 return Task.CompletedTask;
             });
         }
+
+        private readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
+        internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
     }
 }
