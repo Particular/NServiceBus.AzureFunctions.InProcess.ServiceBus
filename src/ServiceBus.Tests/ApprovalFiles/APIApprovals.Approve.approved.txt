@@ -1,18 +1,4 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute(@"ServiceBus.Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001007f16e21368ff041183fab592d9e8ed37e7be355e93323147a1d29983d6e591b04282e4da0c9e18bd901e112c0033925eb7d7872c2f1706655891c5c9d57297994f707d16ee9a8f40d978f064ee1ffc73c0db3f4712691b23bf596f75130f4ec978cf78757ec034625a5f27e6bb50c618931ea49f6f628fd74271c32959efb1c5")]
-namespace NServiceBus.AzureFunctions.ServiceBus
-{
-    public abstract class ServerlessEndpointConfiguration
-    {
-        protected ServerlessEndpointConfiguration(string endpointName) { }
-        public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
-        public void DoNotSendMessagesToErrorQueue() { }
-        public void LogDiagnostics() { }
-        public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
-            where T : NServiceBus.Serialization.SerializationDefinition, new () { }
-        protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
-            where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
-    }
-}
 namespace NServiceBus
 {
     public class FunctionEndpoint
@@ -31,10 +17,17 @@ namespace NServiceBus
     {
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
     }
-    public class ServiceBusTriggeredEndpointConfiguration : NServiceBus.AzureFunctions.ServiceBus.ServerlessEndpointConfiguration
+    public class ServiceBusTriggeredEndpointConfiguration
     {
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
+        public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
+        public void DoNotSendMessagesToErrorQueue() { }
         public static NServiceBus.ServiceBusTriggeredEndpointConfiguration FromAttributes() { }
+        public void LogDiagnostics() { }
+        public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
+            where T : NServiceBus.Serialization.SerializationDefinition, new () { }
+        protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
+            where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
     }
 }
