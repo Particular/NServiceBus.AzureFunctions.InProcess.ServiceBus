@@ -11,7 +11,8 @@
         [Test]
         public void Approve()
         {
-            var publicApi = ApiGenerator.GeneratePublicApi(typeof(ServiceBusTriggeredEndpointConfiguration).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
+            var publicApi = typeof(ServiceBusTriggeredEndpointConfiguration).Assembly.GeneratePublicApi(
+                new ApiGeneratorOptions {ExcludeAttributes = new[] {"System.Runtime.Versioning.TargetFrameworkAttribute"}});
             Approver.Verify(publicApi);
         }
     }
