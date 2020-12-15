@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace NServiceBus
+﻿namespace NServiceBus
 {
+    using System;
+    using System.IO;
+    using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection;
+
     /// <summary>
     /// Provides extension methods to configure a <see cref="FunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
     /// </summary>
@@ -22,18 +22,20 @@ namespace NServiceBus
             var endpointFactory = Configure(serviceBusTriggeredEndpointConfiguration, functionsHostBuilder.Services,
                 Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
 
+            // for backward compatibility
             functionsHostBuilder.Services.AddSingleton(endpointFactory);
+            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<FunctionEndpoint>());
         }
 
         internal static Func<IServiceProvider, FunctionEndpoint> Configure(
-            ServiceBusTriggeredEndpointConfiguration configuration, 
-            IServiceCollection serviceCollection, 
+            ServiceBusTriggeredEndpointConfiguration configuration,
+            IServiceCollection serviceCollection,
             string appDirectory)
         {
             FunctionEndpoint.LoadAssemblies(appDirectory);
 
             var startableEndpoint = EndpointWithExternallyManagedServiceProvider.Create(
-                    configuration.EndpointConfiguration, 
+                    configuration.EndpointConfiguration,
                     serviceCollection);
 
             return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);

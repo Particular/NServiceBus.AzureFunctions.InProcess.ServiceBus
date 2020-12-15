@@ -18,7 +18,7 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint
+    public class FunctionEndpoint : IFunctionEndpoint
     {
         /// <summary>
         /// Creates a new instance of <see cref="FunctionEndpoint" /> that can handle messages using the provided configuration.
