@@ -97,7 +97,7 @@
         /// </summary>
         /// <param name="executionContext">The execution context.</param>
         /// <param name="token">The cancellation token or default cancellation token.</param>
-        private async Task InitializeEndpointIfNecessary(FunctionExecutionContext executionContext, CancellationToken token = default)
+        async Task InitializeEndpointIfNecessary(FunctionExecutionContext executionContext, CancellationToken token = default)
         {
             if (pipeline == null)
             {
@@ -213,7 +213,7 @@
             await endpoint.Unsubscribe(eventType).ConfigureAwait(false);
         }
 
-        private async Task InitializeEndpointUsedOutsideHandlerIfNecessary(ExecutionContext executionContext, ILogger functionsLogger)
+        async Task InitializeEndpointUsedOutsideHandlerIfNecessary(ExecutionContext executionContext, ILogger functionsLogger)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -284,12 +284,12 @@
         protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext =>
             Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
 
-        private readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
+        readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
 
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-        private ServiceBusTriggeredEndpointConfiguration configuration;
+        ServiceBusTriggeredEndpointConfiguration configuration;
 
         PipelineInvoker pipeline;
-        private IEndpointInstance endpoint;
+        IEndpointInstance endpoint;
     }
 }
