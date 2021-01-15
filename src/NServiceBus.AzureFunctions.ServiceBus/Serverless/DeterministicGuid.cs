@@ -1,9 +1,9 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Text;
-
-namespace NServiceBus.AzureFunctions.ServiceBus
+﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
+    using System;
+    using System.Security.Cryptography;
+    using System.Text;
+
     static class DeterministicGuid
     {
         public static Guid Create(string data)

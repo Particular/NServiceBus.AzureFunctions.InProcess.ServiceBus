@@ -28,17 +28,17 @@
         {
             public SendingFunction()
             {
-                CustomizeConfiguration = configuration => 
+                CustomizeConfiguration = configuration =>
                     configuration.AdvancedConfiguration.UsePersistence<LearningPersistence>();
 
                 var correlationProperty = Guid.NewGuid().ToString("N");
-                Messages.Add(new StartSagaMessage {CorrelationProperty = correlationProperty});
-                Messages.Add(new UpdateSagaMessage {CorrelationProperty = correlationProperty, UpdateValue = 42});
-                Messages.Add(new ReadSagaDataValueMessage {CorrelationProperty = correlationProperty});
+                Messages.Add(new StartSagaMessage { CorrelationProperty = correlationProperty });
+                Messages.Add(new UpdateSagaMessage { CorrelationProperty = correlationProperty, UpdateValue = 42 });
+                Messages.Add(new ReadSagaDataValueMessage { CorrelationProperty = correlationProperty });
             }
 
-            public class DemoSaga : Saga<DemoSagaData>, 
-                IAmStartedByMessages<StartSagaMessage>, 
+            public class DemoSaga : Saga<DemoSagaData>,
+                IAmStartedByMessages<StartSagaMessage>,
                 IHandleMessages<UpdateSagaMessage>,
                 IHandleMessages<ReadSagaDataValueMessage>
             {

@@ -40,7 +40,7 @@
 
         public IList<object> Messages { get; } = new List<object>();
 
-        public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = (_ => { });
+        public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
 
 
         class FunctionRunner : ComponentRunner
@@ -55,7 +55,7 @@
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
-                this.Name = functionComponentType.FullName;
+                Name = functionComponentType.FullName;
 
                 var serializer = new NewtonsoftSerializer();
                 messageSerializer = serializer.Configure(new SettingsHolder())(new MessageMapper());
@@ -82,7 +82,7 @@
                             {
                                 scenarioContext.FailedMessages.AddOrUpdate(
                                     Name,
-                                    new[] {failedMessage},
+                                    new[] { failedMessage },
                                     (_, fm) =>
                                     {
                                         var messages = fm.ToList();
