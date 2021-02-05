@@ -4,40 +4,29 @@
     using System.Threading.Tasks;
     using Transport;
 
-    class PipelineInvoker : IPushMessages
+    class PipelineInvoker : IMessageReceiver
     {
-        Task IPushMessages.Init(Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError, CriticalError criticalError, PushSettings settings)
-        {
-            if (this.onMessage == null)
-            {
-                // The core ReceiveComponent calls TransportInfrastructure.MessagePumpFactory() multiple times
-                // the first invocation is for the main pipeline, ignore all other pipelines as we don't want to manually invoke them.
-                this.onMessage = onMessage;
+        public PipelineInvoker(string id) => Id = id;
 
-                this.onError = onError;
-            }
+        public Task Initialize(PushRuntimeSettings limitations, Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError)
+        {
+            this.onMessage = onMessage;
+            this.onError = onError;
 
             return Task.CompletedTask;
         }
 
-        void IPushMessages.Start(PushRuntimeSettings limitations)
-        {
-        }
+        public Task StartReceive() => Task.CompletedTask;
 
-        Task IPushMessages.Stop()
-        {
-            return Task.CompletedTask;
-        }
+        public Task StopReceive() => Task.CompletedTask;
 
-        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext)
-        {
-            return onError(errorContext);
-        }
+        public ISubscriptionManager Subscriptions => null; // TODO can this cause troubles with Autosubscribe?
 
-        public Task PushMessage(MessageContext messageContext)
-        {
-            return onMessage.Invoke(messageContext);
-        }
+        public string Id { get; }
+
+        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext) => onError(errorContext);
+
+        public Task PushMessage(MessageContext messageContext) => onMessage.Invoke(messageContext);
 
         Func<MessageContext, Task> onMessage;
         Func<ErrorContext, Task<ErrorHandleResult>> onError;
