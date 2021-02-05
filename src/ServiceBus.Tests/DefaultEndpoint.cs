@@ -22,7 +22,7 @@
             configuration.DisableFeature<TimeoutManager>();
 
             configuration.RegisterComponents(c => c
-                .RegisterSingleton(runDescriptor.ScenarioContext.GetType(), runDescriptor.ScenarioContext));
+                .AddSingleton(runDescriptor.ScenarioContext.GetType(), runDescriptor.ScenarioContext));
 
             var recoverability = configuration.Recoverability();
             recoverability.Delayed(delayed => delayed.NumberOfRetries(0));
