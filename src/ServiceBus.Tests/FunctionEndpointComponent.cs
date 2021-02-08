@@ -16,6 +16,7 @@
     using NServiceBus.MessageInterfaces.MessageMapper.Reflection;
     using NServiceBus.Serialization;
     using NServiceBus.Settings;
+    using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     abstract class FunctionEndpointComponent : IComponentBehavior
@@ -56,7 +57,7 @@
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
-                Name = functionComponentType.FullName;
+                Name = Conventions.EndpointNamingConvention(functionComponentType);
 
                 var serializer = new NewtonsoftSerializer();
                 messageSerializer = serializer.Configure(new SettingsHolder())(new MessageMapper());
