@@ -1,6 +1,5 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Transport;
@@ -25,10 +24,10 @@
         {
             var baseTransportInfrastructure = await baseTransport.Initialize(
                 hostSettings,
-                Array.Empty<ReceiveSettings>(), // do not setup any receivers on the downstream.
+                receiverSettings,
                 sendingAddresses).ConfigureAwait(false);
 
-            var serverlessTransportInfrastructure = new ServerlessTransportInfrastructure(baseTransportInfrastructure, receiverSettings);
+            var serverlessTransportInfrastructure = new ServerlessTransportInfrastructure(baseTransportInfrastructure, baseTransportInfrastructure.Receivers);
             MainReceiver = (PipelineInvoker)serverlessTransportInfrastructure.GetReceiver(MainReceiverId);
 
             return serverlessTransportInfrastructure;

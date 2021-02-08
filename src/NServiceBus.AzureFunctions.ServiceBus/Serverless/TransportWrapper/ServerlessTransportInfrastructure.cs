@@ -9,14 +9,14 @@
     {
         public ServerlessTransportInfrastructure(
             TransportInfrastructure baseTransportInfrastructure,
-            ReceiveSettings[] receiverSettings)
+            ReadOnlyCollection<IMessageReceiver> receiverSettings)
         {
             this.baseTransportInfrastructure = baseTransportInfrastructure;
 
             Dispatcher = baseTransportInfrastructure.Dispatcher;
 
             var receivers = receiverSettings
-                .Select(r => new PipelineInvoker(r.Id))
+                .Select(r => new PipelineInvoker(r))
                 .ToArray();
             // ReSharper disable once CoVariantArrayConversion
             Receivers = new ReadOnlyCollection<IMessageReceiver>(receivers);

@@ -6,23 +6,28 @@
 
     class PipelineInvoker : IMessageReceiver
     {
-        public PipelineInvoker(string id) => Id = id;
+        readonly IMessageReceiver receiver;
+
+        public PipelineInvoker(IMessageReceiver receiver) => this.receiver = receiver;
 
         public Task Initialize(PushRuntimeSettings limitations, Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError)
         {
             this.onMessage = onMessage;
             this.onError = onError;
 
-            return Task.CompletedTask;
+            // initialize the base transport receiver
+            return receiver.Initialize(limitations, _ => Task.CompletedTask,
+                _ => Task.FromResult(ErrorHandleResult.Handled));
+
         }
 
-        public Task StartReceive() => Task.CompletedTask;
+        public Task StartReceive() => Task.CompletedTask; // do not start the base transport receiver
 
         public Task StopReceive() => Task.CompletedTask;
 
-        public ISubscriptionManager Subscriptions => null; // TODO can this cause troubles with Autosubscribe?
+        public ISubscriptionManager Subscriptions => receiver.Subscriptions;
 
-        public string Id { get; }
+        public string Id => receiver.Id;
 
         public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext) => onError(errorContext);
 
