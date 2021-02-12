@@ -1,6 +1,5 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    using System;
     using System.Threading.Tasks;
     using Transport;
 
@@ -10,7 +9,7 @@
 
         public PipelineInvoker(IMessageReceiver receiver) => this.receiver = receiver;
 
-        public Task Initialize(PushRuntimeSettings limitations, Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError)
+        public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError)
         {
             this.onMessage = onMessage;
             this.onError = onError;
@@ -33,7 +32,7 @@
 
         public Task PushMessage(MessageContext messageContext) => onMessage.Invoke(messageContext);
 
-        Func<MessageContext, Task> onMessage;
-        Func<ErrorContext, Task<ErrorHandleResult>> onError;
+        OnMessage onMessage;
+        OnError onError;
     }
 }
