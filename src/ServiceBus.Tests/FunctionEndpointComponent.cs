@@ -96,6 +96,10 @@
 
                     endpointConfiguration.RegisterComponents(c => c.AddSingleton(scenarioContext.GetType(), scenarioContext));
 
+                    // enable installers to auto-create the input queue for tests
+                    // in real Azure Functions, the input queue is assumed to exist
+                    endpointConfiguration.EnableInstallers();
+
                     configurationCustomization(functionEndpointConfiguration);
                     return functionEndpointConfiguration;
                 });
