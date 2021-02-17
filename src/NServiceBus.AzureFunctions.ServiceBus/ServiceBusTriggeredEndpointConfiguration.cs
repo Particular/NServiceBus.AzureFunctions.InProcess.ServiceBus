@@ -57,8 +57,6 @@
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
 
             EndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
-
-            //TODO should we disable Autosubscribe?
         }
 
         /// <summary>
