@@ -52,8 +52,7 @@
             var messageContext = CreateMessageContext(message);
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
-            await InitializeEndpointIfNecessary(functionExecutionContext,
-                messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionExecutionContext).ConfigureAwait(false);
 
             try
             {
@@ -87,7 +86,6 @@
                     originalMessage.GetHeaders(),
                     originalMessage.Body,
                     new TransportTransaction(),
-                    new CancellationTokenSource(),
                     new ContextBag());
             }
         }

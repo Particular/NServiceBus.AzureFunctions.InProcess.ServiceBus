@@ -1,26 +1,43 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    using Settings;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Transport;
 
     class ServerlessTransport<TBaseTransport> : TransportDefinition
-        where TBaseTransport : TransportDefinition, new()
+        where TBaseTransport : TransportDefinition
     {
-        public ServerlessTransport()
-        {
-            baseTransport = new TBaseTransport();
-        }
-
-        public override string ExampleConnectionStringForErrorMessage { get; } = string.Empty;
-
-        public override bool RequiresConnectionString => baseTransport.RequiresConnectionString;
-
-        public override TransportInfrastructure Initialize(SettingsHolder settings, string connectionString)
-        {
-            var baseTransportInfrastructure = baseTransport.Initialize(settings, connectionString);
-            return new ServerlessTransportInfrastructure(baseTransportInfrastructure, settings);
-        }
+        const string MainReceiverId = "Main"; // the fixed ID of the main receiver, assigned by core.
 
         readonly TBaseTransport baseTransport;
+
+        public ServerlessTransport(TBaseTransport baseTransport)
+            : base(TransportTransactionMode.ReceiveOnly, //support ReceiveOnly so that we can use immediate retries
+                baseTransport.SupportsDelayedDelivery,
+                baseTransport.SupportsPublishSubscribe,
+                baseTransport.SupportsTTBR)
+        {
+            this.baseTransport = baseTransport;
+        }
+
+        public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receiverSettings, string[] sendingAddresses)
+        {
+            var baseTransportInfrastructure = await baseTransport.Initialize(
+                hostSettings,
+                receiverSettings,
+                sendingAddresses).ConfigureAwait(false);
+
+            var serverlessTransportInfrastructure = new ServerlessTransportInfrastructure(baseTransportInfrastructure, baseTransportInfrastructure.Receivers);
+            MainReceiver = (PipelineInvoker)serverlessTransportInfrastructure.GetReceiver(MainReceiverId);
+
+            return serverlessTransportInfrastructure;
+        }
+
+        public override string ToTransportAddress(QueueAddress address) => baseTransport.ToTransportAddress(address);
+
+        public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() =>
+            baseTransport.GetSupportedTransactionModes();
+
+        public PipelineInvoker MainReceiver { get; private set; }
     }
 }

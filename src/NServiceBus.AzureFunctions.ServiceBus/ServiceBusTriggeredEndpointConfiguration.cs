@@ -6,7 +6,6 @@
     using Logging;
     using Microsoft.Azure.WebJobs;
     using Serialization;
-    using Transport;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint running within an AzureServiceBus trigger.
@@ -21,7 +20,7 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
         /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null)
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null, Action<AzureServiceBusTransport> azureTransportConfiguration = null)
         {
             EndpointConfiguration = new EndpointConfiguration(endpointName);
 
@@ -45,11 +44,13 @@
                 EndpointConfiguration.License(licenseText);
             }
 
-            Transport = UseTransport<AzureServiceBusTransport>();
-
             var connectionString =
                 Environment.GetEnvironmentVariable(connectionStringName ?? DefaultServiceBusConnectionName);
-            Transport.ConnectionString(connectionString);
+            var serviceBusTransport = new AzureServiceBusTransport(connectionString);
+            azureTransportConfiguration?.Invoke(serviceBusTransport);
+
+            serverlessTransport = new ServerlessTransport<AzureServiceBusTransport>(serviceBusTransport);
+            Routing = EndpointConfiguration.UseTransport(serverlessTransport);
 
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
@@ -59,12 +60,12 @@
         }
 
         /// <summary>
-        /// Azure Service Bus transport
+        /// Routing configuration.
         /// </summary>
-        public TransportExtensions<AzureServiceBusTransport> Transport { get; }
+        public RoutingSettings Routing { get; }
 
         internal EndpointConfiguration EndpointConfiguration { get; }
-        internal PipelineInvoker PipelineInvoker { get; private set; }
+        internal PipelineInvoker PipelineInvoker => serverlessTransport.MainReceiver;
 
         /// <summary>
         /// Gives access to the underlying endpoint configuration for advanced configuration options.
@@ -85,18 +86,6 @@
 
             throw new Exception(
                 $"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
-        }
-
-        /// <summary>
-        /// Define a transport to be used when sending and publishing messages.
-        /// </summary>
-        protected TransportExtensions<TTransport> UseTransport<TTransport>()
-            where TTransport : TransportDefinition, new()
-        {
-            var serverlessTransport = EndpointConfiguration.UseTransport<ServerlessTransport<TTransport>>();
-
-            PipelineInvoker = serverlessTransport.PipelineAccess();
-            return serverlessTransport.BaseTransportConfiguration();
         }
 
         /// <summary>
@@ -127,6 +116,7 @@
             });
         }
 
+        ServerlessTransport<AzureServiceBusTransport> serverlessTransport;
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
         internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
     }

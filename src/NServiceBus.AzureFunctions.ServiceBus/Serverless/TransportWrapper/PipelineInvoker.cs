@@ -1,45 +1,38 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    using System;
     using System.Threading.Tasks;
     using Transport;
 
-    class PipelineInvoker : IPushMessages
+    class PipelineInvoker : IMessageReceiver
     {
-        Task IPushMessages.Init(Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError, CriticalError criticalError, PushSettings settings)
+        readonly IMessageReceiver receiver;
+
+        public PipelineInvoker(IMessageReceiver receiver) => this.receiver = receiver;
+
+        public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError)
         {
-            if (this.onMessage == null)
-            {
-                // The core ReceiveComponent calls TransportInfrastructure.MessagePumpFactory() multiple times
-                // the first invocation is for the main pipeline, ignore all other pipelines as we don't want to manually invoke them.
-                this.onMessage = onMessage;
+            this.onMessage = onMessage;
+            this.onError = onError;
 
-                this.onError = onError;
-            }
+            // initialize the base transport receiver
+            return receiver.Initialize(limitations, _ => Task.CompletedTask,
+                _ => Task.FromResult(ErrorHandleResult.Handled));
 
-            return Task.CompletedTask;
         }
 
-        void IPushMessages.Start(PushRuntimeSettings limitations)
-        {
-        }
+        public Task StartReceive() => Task.CompletedTask; // do not start the base transport receiver
 
-        Task IPushMessages.Stop()
-        {
-            return Task.CompletedTask;
-        }
+        public Task StopReceive() => Task.CompletedTask;
 
-        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext)
-        {
-            return onError(errorContext);
-        }
+        public ISubscriptionManager Subscriptions => receiver.Subscriptions;
 
-        public Task PushMessage(MessageContext messageContext)
-        {
-            return onMessage.Invoke(messageContext);
-        }
+        public string Id => receiver.Id;
 
-        Func<MessageContext, Task> onMessage;
-        Func<ErrorContext, Task<ErrorHandleResult>> onError;
+        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext) => onError(errorContext);
+
+        public Task PushMessage(MessageContext messageContext) => onMessage.Invoke(messageContext);
+
+        OnMessage onMessage;
+        OnError onError;
     }
 }
