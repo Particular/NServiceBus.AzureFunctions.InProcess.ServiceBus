@@ -1,6 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.ServiceBus
 {
-    using System.Collections.ObjectModel;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Transport;
@@ -9,21 +9,19 @@
     {
         public ServerlessTransportInfrastructure(
             TransportInfrastructure baseTransportInfrastructure,
-            ReadOnlyCollection<IMessageReceiver> receiverSettings)
+            IReadOnlyDictionary<string, IMessageReceiver> receiverSettings)
         {
             this.baseTransportInfrastructure = baseTransportInfrastructure;
 
             Dispatcher = baseTransportInfrastructure.Dispatcher;
 
-            var receivers = receiverSettings
-                .Select(r => new PipelineInvoker(r))
-                .ToArray();
-            // ReSharper disable once CoVariantArrayConversion
-            Receivers = new ReadOnlyCollection<IMessageReceiver>(receivers);
+            Receivers = receiverSettings
+                .ToDictionary<KeyValuePair<string, IMessageReceiver>, string, IMessageReceiver>(
+                    r => r.Key,
+                    r => new PipelineInvoker(r.Value));
         }
 
-        public override Task DisposeAsync() => baseTransportInfrastructure.DisposeAsync();
-
+        public override Task Shutdown() => baseTransportInfrastructure.Shutdown();
 
         readonly TransportInfrastructure baseTransportInfrastructure;
     }

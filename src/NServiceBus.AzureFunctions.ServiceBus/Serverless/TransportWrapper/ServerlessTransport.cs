@@ -28,7 +28,7 @@
                 sendingAddresses).ConfigureAwait(false);
 
             var serverlessTransportInfrastructure = new ServerlessTransportInfrastructure(baseTransportInfrastructure, baseTransportInfrastructure.Receivers);
-            MainReceiver = (PipelineInvoker)serverlessTransportInfrastructure.GetReceiver(MainReceiverId);
+            MainReceiver = (PipelineInvoker)serverlessTransportInfrastructure.Receivers[MainReceiverId];
 
             return serverlessTransportInfrastructure;
         }
