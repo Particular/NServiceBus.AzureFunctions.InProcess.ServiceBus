@@ -32,7 +32,7 @@
             IServiceCollection serviceCollection,
             string appDirectory)
         {
-            FunctionEndpoint.LoadAssemblies(appDirectory);
+            configuration.EndpointConfiguration.AssemblyScanner().AdditionalAssemblyScanningPath = appDirectory;
 
             var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
                     configuration.EndpointConfiguration,
