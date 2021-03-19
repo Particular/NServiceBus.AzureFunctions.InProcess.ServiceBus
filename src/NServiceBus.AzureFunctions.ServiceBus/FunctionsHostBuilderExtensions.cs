@@ -34,6 +34,10 @@
         {
             configuration.EndpointConfiguration.AssemblyScanner().AdditionalAssemblyScanningPath = appDirectory;
 
+            // Third party assembly brought in by Functions SDK that will appear in both NServiceBus base and additional path for assembly scanning.
+            // To avoid exceptions, do not scan it.
+            configuration.AdvancedConfiguration.AssemblyScanner().ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
+
             var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
                     configuration.EndpointConfiguration,
                     serviceCollection);

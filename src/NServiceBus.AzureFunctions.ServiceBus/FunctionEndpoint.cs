@@ -28,6 +28,11 @@
                 configuration = configurationFactory(executionContext);
                 configuration.EndpointConfiguration.AssemblyScanner().AdditionalAssemblyScanningPath =
                     AssemblyDirectoryResolver(executionContext);
+
+                // Third party assembly brought in by Functions SDK that will appear in both NServiceBus base and additional path for assembly scanning.
+                // To avoid exceptions, do not scan it.
+                configuration.AdvancedConfiguration.AssemblyScanner().ExcludeAssemblies(AssembliesToExcludeFromScanning);
+
                 return Endpoint.Start(configuration.EndpointConfiguration);
             };
         }
@@ -224,6 +229,8 @@
         /// </summary>
         protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext =>
             Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
+
+        internal static readonly string[] AssembliesToExcludeFromScanning = { "NCrontab.Signed.dll" };
 
         readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
 
