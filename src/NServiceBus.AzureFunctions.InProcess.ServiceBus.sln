@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29025.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.ServiceBus", "NServiceBus.AzureFunctions.ServiceBus\NServiceBus.AzureFunctions.ServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.InProcess.ServiceBus", "NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.Tests", "ServiceBus.Tests\ServiceBus.Tests.csproj", "{7F90FF66-48AD-47C4-AB5C-34137D07B62B}"
 EndProject
