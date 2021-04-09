@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.ServiceBus
+﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
 {
     using System.Collections.Generic;
     using System.Linq;
