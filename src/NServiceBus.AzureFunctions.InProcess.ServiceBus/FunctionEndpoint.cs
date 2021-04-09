@@ -20,10 +20,8 @@
     /// </summary>
     public class FunctionEndpoint : IFunctionEndpoint
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="FunctionEndpoint" /> that can handle messages using the provided configuration.
-        /// </summary>
-        public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
+        // This constructor is used for testing
+        internal FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
             endpointFactory = executionContext =>
             {
