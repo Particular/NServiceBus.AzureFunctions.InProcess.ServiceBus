@@ -2,7 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
-    using AzureFunctions.ServiceBus;
+    using AzureFunctions.InProcess.ServiceBus;
     using Logging;
     using Microsoft.Azure.WebJobs;
     using Serialization;
