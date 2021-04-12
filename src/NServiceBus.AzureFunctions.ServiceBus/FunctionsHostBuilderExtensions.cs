@@ -34,7 +34,7 @@
         {
             FunctionEndpoint.LoadAssemblies(appDirectory);
 
-            var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
+            var startableEndpoint = EndpointWithExternallyManagedServiceProvider.Create(
                     configuration.EndpointConfiguration,
                     serviceCollection);
 
