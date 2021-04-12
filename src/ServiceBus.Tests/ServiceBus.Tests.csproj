@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
+    <ProjectReference Include="..\NServiceBus.AzureFunctions.ServiceBus\NServiceBus.AzureFunctions.ServiceBus.csproj" />
   </ItemGroup>
 
   <ItemGroup>
