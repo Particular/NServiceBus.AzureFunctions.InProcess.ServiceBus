@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.ServiceBus
+﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
 {
     using Settings;
     using Transport;
