@@ -8,7 +8,6 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
-    using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
@@ -16,7 +15,6 @@
     using NServiceBus.MessageInterfaces.MessageMapper.Reflection;
     using NServiceBus.Serialization;
     using NServiceBus.Settings;
-    using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     abstract class FunctionEndpointComponent : IComponentBehavior
@@ -57,7 +55,7 @@
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
-                Name = Conventions.EndpointNamingConvention(functionComponentType);
+                Name = functionComponentType.FullName;
 
                 var serializer = new NewtonsoftSerializer();
                 messageSerializer = serializer.Configure(new SettingsHolder())(new MessageMapper());
@@ -94,11 +92,7 @@
                                 return Task.CompletedTask;
                             }));
 
-                    endpointConfiguration.RegisterComponents(c => c.AddSingleton(scenarioContext.GetType(), scenarioContext));
-
-                    // enable installers to auto-create the input queue for tests
-                    // in real Azure Functions, the input queue is assumed to exist
-                    endpointConfiguration.EnableInstallers();
+                    endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
 
                     configurationCustomization(functionEndpointConfiguration);
                     return functionEndpointConfiguration;
