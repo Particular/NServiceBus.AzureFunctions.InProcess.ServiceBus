@@ -20,20 +20,6 @@
     /// </summary>
     public class FunctionEndpoint : IFunctionEndpoint
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="FunctionEndpoint" /> that can handle messages using the provided configuration.
-        /// </summary>
-        public FunctionEndpoint(Func<FunctionExecutionContext, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
-        {
-            endpointFactory = executionContext =>
-            {
-                LoadAssemblies(AssemblyDirectoryResolver(executionContext));
-
-                configuration = configurationFactory(executionContext);
-                return Endpoint.Start(configuration.EndpointConfiguration);
-            };
-        }
-
         // This ctor is used for the FunctionsHostBuilder scenario where the endpoint is created already during configuration time using the function host's container.
         internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
             ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
@@ -273,13 +259,6 @@
                     return false;
             }
         }
-
-        /// <summary>
-        /// Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
-        /// When using functions, assemblies are moved to a 'bin' folder within ExecutionContext.FunctionAppDirectory.
-        /// </summary>
-        protected Func<FunctionExecutionContext, string> AssemblyDirectoryResolver = functionExecutionContext =>
-            Path.Combine(functionExecutionContext.ExecutionContext.FunctionAppDirectory, "bin");
 
         readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
 

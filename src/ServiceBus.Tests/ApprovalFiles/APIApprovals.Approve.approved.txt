@@ -3,8 +3,6 @@ namespace NServiceBus
 {
     public class FunctionEndpoint : NServiceBus.IFunctionEndpoint
     {
-        protected System.Func<NServiceBus.FunctionExecutionContext, string> AssemblyDirectoryResolver;
-        public FunctionEndpoint(System.Func<NServiceBus.FunctionExecutionContext, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
         public System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
         public System.Threading.Tasks.Task Publish(object message, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }

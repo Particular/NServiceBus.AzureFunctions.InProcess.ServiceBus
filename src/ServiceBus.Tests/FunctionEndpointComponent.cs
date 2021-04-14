@@ -8,6 +8,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
@@ -65,38 +66,39 @@
 
             public override Task Start(CancellationToken token)
             {
-                endpoint = new TestableFunctionEndpoint(context =>
-                {
-                    var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name);
+                var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name);
+                var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
 
-                    var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
+                endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
 
-                    endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
+                endpointConfiguration.Recoverability()
+                    .Immediate(i => i.NumberOfRetries(0))
+                    .Delayed(d => d.NumberOfRetries(0))
+                    .Failed(c => c
+                        // track messages sent to the error queue to fail the test
+                        .OnMessageSentToErrorQueue(failedMessage =>
+                        {
+                            scenarioContext.FailedMessages.AddOrUpdate(
+                                Name,
+                                new[] { failedMessage },
+                                (_, fm) =>
+                                {
+                                    var messages = fm.ToList();
+                                    messages.Add(failedMessage);
+                                    return messages;
+                                });
+                            return Task.CompletedTask;
+                        }));
 
-                    endpointConfiguration.Recoverability()
-                        .Immediate(i => i.NumberOfRetries(0))
-                        .Delayed(d => d.NumberOfRetries(0))
-                        .Failed(c => c
-                            // track messages sent to the error queue to fail the test
-                            .OnMessageSentToErrorQueue(failedMessage =>
-                            {
-                                scenarioContext.FailedMessages.AddOrUpdate(
-                                    Name,
-                                    new[] { failedMessage },
-                                    (_, fm) =>
-                                    {
-                                        var messages = fm.ToList();
-                                        messages.Add(failedMessage);
-                                        return messages;
-                                    });
-                                return Task.CompletedTask;
-                            }));
+                endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
 
-                    endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
+                configurationCustomization(functionEndpointConfiguration);
 
-                    configurationCustomization(functionEndpointConfiguration);
-                    return functionEndpointConfiguration;
-                });
+                var serviceCollection = new ServiceCollection();
+                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
+                var serviceProvider = serviceCollection.BuildServiceProvider();
+
+                endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
 
                 return Task.CompletedTask;
             }
