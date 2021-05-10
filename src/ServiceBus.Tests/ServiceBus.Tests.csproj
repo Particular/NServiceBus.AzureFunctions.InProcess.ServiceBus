@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
     <PackageReference Include="NServiceBus" Version="7.4.6" />
     <PackageReference Include="NServiceBus.AcceptanceTesting" Version="7.4.6" />
