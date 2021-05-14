@@ -4,10 +4,9 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.ServiceBus;
+    using Azure.Messaging.ServiceBus;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -24,20 +23,15 @@
         {
         }
 
-        public FunctionEndpointComponent(object triggerMessage)
-        {
-            Messages.Add(triggerMessage);
-        }
+        public FunctionEndpointComponent(object triggerMessage) => Messages.Add(triggerMessage);
 
-        public Task<ComponentRunner> CreateRunner(RunDescriptor runDescriptor)
-        {
-            return Task.FromResult<ComponentRunner>(
+        public Task<ComponentRunner> CreateRunner(RunDescriptor runDescriptor) =>
+            Task.FromResult<ComponentRunner>(
                 new FunctionRunner(
                     Messages,
                     CustomizeConfiguration,
                     runDescriptor.ScenarioContext,
                     GetType()));
-        }
 
         public IList<object> Messages { get; } = new List<object>();
 
@@ -123,27 +117,20 @@
                 return base.Stop();
             }
 
-            Message GenerateMessage(object message)
+            ServiceBusReceivedMessage GenerateMessage(object message)
             {
-                Message asbMessage;
+                var properties = new Dictionary<string, object> { { "NServiceBus.EnclosedMessageTypes", message.GetType().FullName } };
+
+                ServiceBusReceivedMessage asbMessage;
                 using (var stream = new MemoryStream())
                 {
                     messageSerializer.Serialize(message, stream);
-                    asbMessage = new Message(stream.ToArray());
+                    asbMessage = ServiceBusModelFactory.ServiceBusReceivedMessage(
+                        body: new BinaryData(stream.ToArray()),
+                        properties: properties,
+                        sequenceNumber: 123,
+                        deliveryCount: 1);
                 }
-
-                asbMessage.UserProperties["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName;
-
-                var systemProperties = new Message.SystemPropertiesCollection();
-                // sequence number is required to prevent SystemPropertiesCollection from throwing on the getters
-                var fieldInfo = typeof(Message.SystemPropertiesCollection).GetField("sequenceNumber", BindingFlags.NonPublic | BindingFlags.Instance);
-                fieldInfo.SetValue(systemProperties, 123);
-                // set delivery count to 1
-                var deliveryCountProperty = typeof(Message.SystemPropertiesCollection).GetProperty("DeliveryCount");
-                deliveryCountProperty.SetValue(systemProperties, 1);
-                // assign test message mocked system properties
-                var property = typeof(Message).GetProperty("SystemProperties");
-                property.SetValue(asbMessage, systemProperties);
 
                 return asbMessage;
             }
@@ -151,9 +138,9 @@
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
-            IList<object> messages;
+            readonly IList<object> messages;
             FunctionEndpoint endpoint;
-            IMessageSerializer messageSerializer;
+            readonly IMessageSerializer messageSerializer;
         }
     }
 }

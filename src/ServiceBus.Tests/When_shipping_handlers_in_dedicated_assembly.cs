@@ -1,13 +1,14 @@
 ﻿namespace ServiceBus.Tests
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Loader;
     using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.Azure.ServiceBus;
+    using Azure.Messaging.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
@@ -55,11 +56,11 @@
             Assert.AreEqual(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()), AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly));
         }
 
-        Message GenerateMessage()
+        static ServiceBusReceivedMessage GenerateMessage()
         {
             var bytes = Encoding.UTF8.GetBytes("<DummyMessage/>");
-            var message = new Message(bytes);
-            message.UserProperties["NServiceBus.EnclosedMessageTypes"] = "Testing.Handlers.DummyMessage";
+            var properties = new Dictionary<string, object> { { "NServiceBus.EnclosedMessageTypes", "Testing.Handlers.DummyMessage" } };
+            var message = ServiceBusModelFactory.ServiceBusReceivedMessage(body: new BinaryData(bytes), properties: properties);
 
             return message;
         }
