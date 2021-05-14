@@ -6,10 +6,10 @@
     using System.Runtime.Loader;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Messaging.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus;
     using Extensibility;
     using Logging;
-    using Microsoft.Azure.ServiceBus;
     using Microsoft.Extensions.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -31,7 +31,7 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
+        public async Task Process(ServiceBusReceivedMessage message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -53,7 +53,7 @@
                     messageContext.MessageId,
                     messageContext.Body,
                     new TransportTransaction(),
-                    message.SystemProperties.DeliveryCount);
+                    message.DeliveryCount);
 
                 var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
 
@@ -66,16 +66,14 @@
                 throw;
             }
 
-            MessageContext CreateMessageContext(Message originalMessage)
-            {
-                return new MessageContext(
+            static MessageContext CreateMessageContext(ServiceBusReceivedMessage originalMessage) =>
+                new MessageContext(
                     originalMessage.GetMessageId(),
                     originalMessage.GetHeaders(),
-                    originalMessage.Body,
+                    originalMessage.Body.ToArray(),
                     new TransportTransaction(),
                     new CancellationTokenSource(),
                     new ContextBag());
-            }
         }
 
         /// <summary>
@@ -113,10 +111,8 @@
         }
 
         /// <inheritdoc />
-        public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null)
-        {
-            return Send(message, new SendOptions(), executionContext, functionsLogger);
-        }
+        public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null) =>
+            Send(message, new SendOptions(), executionContext, functionsLogger);
 
         /// <inheritdoc />
         public async Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
@@ -127,10 +123,8 @@
         }
 
         /// <inheritdoc />
-        public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null)
-        {
-            return Send(messageConstructor, new SendOptions(), executionContext, functionsLogger);
-        }
+        public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null) =>
+            Send(messageConstructor, new SendOptions(), executionContext, functionsLogger);
 
         /// <inheritdoc />
         public async Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
@@ -263,7 +257,7 @@
         readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
 
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-        ServiceBusTriggeredEndpointConfiguration configuration;
+        readonly ServiceBusTriggeredEndpointConfiguration configuration;
 
         PipelineInvoker pipeline;
         IEndpointInstance endpoint;
