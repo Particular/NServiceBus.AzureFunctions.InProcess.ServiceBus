@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29025.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.InProcess.ServiceBus", "NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D2345DCC-2A8D-4B30-9701-F276597D6858} = {D2345DCC-2A8D-4B30-9701-F276597D6858}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.Tests", "ServiceBus.Tests\ServiceBus.Tests.csproj", "{7F90FF66-48AD-47C4-AB5C-34137D07B62B}"
 EndProject
@@ -14,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing.Handlers", "Testing.Handlers\Testing.Handlers.csproj", "{F922CF8D-9012-4D04-84FF-3C923F79A075}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.SourceGenerator", "NServiceBus.AzureFunctions.SourceGenerator\NServiceBus.AzureFunctions.SourceGenerator.csproj", "{D2345DCC-2A8D-4B30-9701-F276597D6858}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +38,10 @@ Global
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
