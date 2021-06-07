@@ -26,7 +26,7 @@
                     endpointName = context.SemanticModel.GetConstantValue(attributeSyntax.ArgumentList.Arguments[0].Expression).ToString();
                 }
 
-                bool IsMatch(string value) => value.Equals("NServiceBusEndpointName") || value.Equals("NServiceBus.NServiceBusEndpointName");
+                bool IsMatch(string value) => value.Equals("NServiceBus.NServiceBusEndpointNameAttribute");
             }
         }
 
