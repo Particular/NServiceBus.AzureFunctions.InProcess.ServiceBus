@@ -59,6 +59,15 @@ namespace Foo
             Approver.Verify(output);
         }
 
+        [OneTimeSetUp]
+        public void Init()
+        {
+            // For the unit tests to work, the compilation used by the source generator needs to know that NServiceBusEndpointName
+            // is an attribute from NServiceBus namespace and its full name is NServiceBus.NServiceBusEndpointNameAttribute.
+            // By referencing NServiceBusEndpointNameAttribute here, NServiceBus.AzureFunctions.InProcess.ServiceBus is forced to load and participate in the compilation.
+            _ = new NServiceBusEndpointNameAttribute("test");
+        }
+
         static string GetGeneratedOutput(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
