@@ -16,8 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Analyzer artifacts">
-    <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\bin\$(Configuration)\**\NServiceBus.AzureFunctions.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.SourceGenerator.dll" Link="NServiceBus.Core.Analyzer.dll" Visible="false" />
-    <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\*.ps1" Pack="true" PackagePath="tools" Visible="false" />
+    <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\bin\$(Configuration)\**\NServiceBus.AzureFunctions.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.SourceGenerator.dll" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
