@@ -19,13 +19,14 @@
 
             public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
             {
-                // find all valid attributes
                 if (context.Node is AttributeSyntax attributeSyntax
                     && attributeSyntax.ArgumentList?.Arguments.Count == 1
-                    && context.SemanticModel.GetTypeInfo(attributeSyntax).Type?.ToDisplayString() == "NServiceBus.NServiceBusEndpointNameAttribute")
+                    && IsMatch(context.SemanticModel.GetTypeInfo(attributeSyntax).Type?.ToDisplayString()))
                 {
                     endpointName = context.SemanticModel.GetConstantValue(attributeSyntax.ArgumentList.Arguments[0].Expression).ToString();
                 }
+
+                bool IsMatch(string value) => value.Equals("NServiceBusEndpointName") || value.Equals("NServiceBus.NServiceBusEndpointName");
             }
         }
 
