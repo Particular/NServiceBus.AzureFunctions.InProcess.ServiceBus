@@ -2,7 +2,7 @@
 {
     ///<summary>
     /// Assembly attribute to specify NServiceBus logical endpoint name.
-    /// This name is used to wire-up an auto-generated service bus trigger function, responding to messages in the queue specified by the name provided.
+    /// This name is used to wire up an auto-generated service bus trigger function, responding to messages in the queue specified by the name provided.
     ///</summary>
     [System.AttributeUsage(System.AttributeTargets.Assembly)]
     public sealed class NServiceBusEndpointNameAttribute : System.Attribute
@@ -11,6 +11,7 @@
         /// Endpoint name that is the input queue name.
         /// </summary>
         public string Name { get; }
+
         ///<summary>
         ///Endpoint logical name.
         ///</summary>

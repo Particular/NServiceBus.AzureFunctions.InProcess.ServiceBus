@@ -3,14 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using NUnit.Framework;
     using Particular.Approvals;
 
     [TestFixture]
-
     public class SourceGeneratorApprovals
     {
         [Test]
@@ -61,13 +59,12 @@ namespace Foo
             Approver.Verify(output);
         }
 
-
         static string GetGeneratedOutput(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
-
             var references = new List<MetadataReference>();
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
             foreach (var assembly in assemblies)
             {
                 if (!assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
@@ -77,10 +74,11 @@ namespace Foo
             }
 
             var compilation = CSharpCompilation.Create("foo", new[] { syntaxTree }, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-            ISourceGenerator generator = new TriggerFunctionGenerator();
+            var generator = new TriggerFunctionGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
             driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generateDiagnostics);
+
             Assert.False(generateDiagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), "Failed: " + generateDiagnostics.FirstOrDefault()?.GetMessage());
 
             return outputCompilation.SyntaxTrees.Last().ToString();
