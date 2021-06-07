@@ -15,7 +15,7 @@
         public void UsingNamespace()
         {
             var source = @"
-using using NServiceBus;
+using NServiceBus;
 
 [assembly: NServiceBusEndpointName(Foo.Startup.EndpointName)]
 
