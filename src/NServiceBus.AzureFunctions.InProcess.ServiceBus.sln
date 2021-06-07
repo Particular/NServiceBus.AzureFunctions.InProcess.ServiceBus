@@ -9,6 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.Tests", "ServiceBus.Tests\ServiceBus.Tests.csproj", "{7F90FF66-48AD-47C4-AB5C-34137D07B62B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F922CF8D-9012-4D04-84FF-3C923F79A075} = {F922CF8D-9012-4D04-84FF-3C923F79A075}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{93BBDA95-B60E-4BF2-BCFE-4D756E7EC78C}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing.Handlers", "Testing
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.SourceGenerator", "NServiceBus.AzureFunctions.SourceGenerator\NServiceBus.AzureFunctions.SourceGenerator.csproj", "{D2345DCC-2A8D-4B30-9701-F276597D6858}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBus.AzureFunctions.SourceGenerator.Tests", "NServiceBus.AzureFunctions.SourceGenerator.Tests\NServiceBus.AzureFunctions.SourceGenerator.Tests.csproj", "{22BE8002-D99B-461B-B472-F2361A849E47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.SourceGenerator.Tests", "NServiceBus.AzureFunctions.SourceGenerator.Tests\NServiceBus.AzureFunctions.SourceGenerator.Tests.csproj", "{22BE8002-D99B-461B-B472-F2361A849E47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

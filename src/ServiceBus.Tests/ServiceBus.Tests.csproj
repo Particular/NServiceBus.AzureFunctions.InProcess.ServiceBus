@@ -25,9 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ExternalHandlers\Testing.Handlers.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="..\Testing.Handlers\bin\$(Configuration)\**\Testing.Handlers.dll" Link="ExternalHandlers\Testing.Handlers.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
