@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
+    <ProjectReference Include="..\Testing.Handlers\Testing.Handlers.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
