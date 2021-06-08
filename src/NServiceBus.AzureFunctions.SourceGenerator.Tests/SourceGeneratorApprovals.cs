@@ -83,6 +83,11 @@ namespace Foo
             }
 
             var compilation = CSharpCompilation.Create("foo", new[] { syntaxTree }, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            // Fail tests when the injected program isn't valid _before_ running generators
+            var compileDiagnostics = compilation.GetDiagnostics();
+            Assert.False(compileDiagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), "Failed: " + compileDiagnostics.FirstOrDefault()?.GetMessage());
+
             var generator = new TriggerFunctionGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
