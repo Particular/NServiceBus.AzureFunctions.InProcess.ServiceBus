@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Linq;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -27,7 +28,7 @@ namespace Foo
     }
 }
 ";
-            var output = GetGeneratedOutput(source);
+            var (output, _) = GetGeneratedOutput(source);
             Approver.Verify(output);
         }
 
@@ -45,7 +46,7 @@ namespace Foo
     }
 }
 ";
-            var output = GetGeneratedOutput(source);
+            var (output, _) = GetGeneratedOutput(source);
             Approver.Verify(output);
         }
 
@@ -55,7 +56,7 @@ namespace Foo
             var source = @"
 [assembly: NServiceBus.NServiceBusEndpointName(""endpoint"")]
 ";
-            var output = GetGeneratedOutput(source);
+            var (output, _) = GetGeneratedOutput(source);
             Approver.Verify(output);
         }
 
@@ -63,9 +64,34 @@ namespace Foo
         public void No_attribute_should_not_generate_trigger_function()
         {
             var source = @"";
-            var output = GetGeneratedOutput(source);
+            var (output, _) = GetGeneratedOutput(source);
             Approver.Verify(output);
         }
+
+        [Test]
+        public void No_attribute_should_not_generate_compilation_error()
+        {
+            var source = @"using NServiceBus;";
+            var (output, diagnostics) = GetGeneratedOutput(source);
+
+            Assert.False(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error));
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public void Invalid_name_should_cause_an_error(string endpointName)
+        {
+            var source = @"
+using NServiceBus;
+
+[assembly: NServiceBusEndpointName(""" + endpointName + @""")]
+";
+            var (output, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
+
+            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error));
+        }
+
 
         [OneTimeSetUp]
         public void Init()
@@ -76,7 +102,7 @@ namespace Foo
             _ = new NServiceBusEndpointNameAttribute("test");
         }
 
-        static string GetGeneratedOutput(string source)
+        static (string output, ImmutableArray<Diagnostic> diagnostics) GetGeneratedOutput(string source, bool suppressGeneratedDiagnosticsErrors = false)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
             var references = new List<MetadataReference>();
@@ -101,9 +127,12 @@ namespace Foo
             var driver = CSharpGeneratorDriver.Create(generator);
             driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generateDiagnostics);
 
-            Assert.False(generateDiagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), "Failed: " + generateDiagnostics.FirstOrDefault()?.GetMessage());
+            if (!suppressGeneratedDiagnosticsErrors)
+            {
+                Assert.False(generateDiagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), "Failed: " + generateDiagnostics.FirstOrDefault()?.GetMessage());
+            }
 
-            return outputCompilation.SyntaxTrees.Last().ToString();
+            return (outputCompilation.SyntaxTrees.Last().ToString(), generateDiagnostics);
         }
     }
 }

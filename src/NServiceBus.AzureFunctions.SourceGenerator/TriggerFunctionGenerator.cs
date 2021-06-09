@@ -8,6 +8,15 @@
     [Generator]
     public class TriggerFunctionGenerator : ISourceGenerator
     {
+#pragma warning disable RS2008 // Enable analyzer release tracking
+        static readonly DiagnosticDescriptor InvalidEndpointNameWarning = new DiagnosticDescriptor(id: "NSBFUNC001",
+#pragma warning restore RS2008 // Enable analyzer release tracking
+            title: "Invalid Endpoint Name",
+            messageFormat: "Endpoint name is invalid and cannot be used to generate trigger function",
+            category: "TriggerFunctionGenerator",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
@@ -16,6 +25,7 @@
         class SyntaxReceiver : ISyntaxContextReceiver
         {
             internal string endpointName;
+            internal bool attributeFound;
 
             public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
             {
@@ -24,6 +34,7 @@
                     && IsMatch(context.SemanticModel.GetTypeInfo(attributeSyntax).Type?.ToDisplayString()))
                 {
                     endpointName = context.SemanticModel.GetConstantValue(attributeSyntax.ArgumentList.Arguments[0].Expression).ToString();
+                    attributeFound = true;
                 }
 
                 bool IsMatch(string value) => value.Equals("NServiceBus.NServiceBusEndpointNameAttribute");
@@ -32,14 +43,22 @@
 
         public void Execute(GeneratorExecutionContext context)
         {
-            // retrieve the populated receiver
+            // Short circuit if this is a different syntax receiver
             if (!(context.SyntaxContextReceiver is SyntaxReceiver syntaxReceiver))
             {
                 return;
             }
 
+            // Skip processing if no attribute was found
+            if (!syntaxReceiver.attributeFound)
+            {
+                return;
+            }
+
+            // Generate an error if empty/null/space is used as endpoint name
             if (string.IsNullOrWhiteSpace(syntaxReceiver.endpointName))
             {
+                context.ReportDiagnostic(Diagnostic.Create(InvalidEndpointNameWarning, Location.None, syntaxReceiver.endpointName));
                 return;
             }
 
