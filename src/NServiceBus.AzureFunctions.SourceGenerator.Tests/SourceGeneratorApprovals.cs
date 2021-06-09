@@ -59,6 +59,14 @@ namespace Foo
             Approver.Verify(output);
         }
 
+        [Test]
+        public void No_attribute_should_not_generate_trigger_function()
+        {
+            var source = @"";
+            var output = GetGeneratedOutput(source);
+            Approver.Verify(output);
+        }
+
         [OneTimeSetUp]
         public void Init()
         {
