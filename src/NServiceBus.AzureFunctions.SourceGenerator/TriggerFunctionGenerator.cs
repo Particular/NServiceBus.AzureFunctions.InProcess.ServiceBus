@@ -88,8 +88,7 @@ class FunctionEndpointTrigger
     {{
         await endpoint.Process(message, executionContext, logger);
     }}
-}}
-";
+}}";
             context.AddSource("NServiceBus__FunctionEndpointTrigger", SourceText.From(source, Encoding.UTF8));
         }
     }

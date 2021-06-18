@@ -15,8 +15,8 @@
         [Test]
         public void UsingNamespace()
         {
-            var source = @"
-using NServiceBus;
+            var source =
+@"using NServiceBus;
 
 [assembly: NServiceBusEndpointName(Foo.Startup.EndpointName)]
 
@@ -26,17 +26,17 @@ namespace Foo
     {
         public const string EndpointName = ""endpoint"";
     }
-}
-";
+}";
             var (output, _) = GetGeneratedOutput(source);
+
             Approver.Verify(output);
         }
 
         [Test]
         public void UsingFullyQualifiedAttributeName()
         {
-            var source = @"
-[assembly: NServiceBus.NServiceBusEndpointName(Foo.Startup.EndpointName)]
+            var source =
+@"[assembly: NServiceBus.NServiceBusEndpointName(Foo.Startup.EndpointName)]
 
 namespace Foo
 {
@@ -44,19 +44,18 @@ namespace Foo
     {
         public const string EndpointName = ""endpoint"";
     }
-}
-";
+}";
             var (output, _) = GetGeneratedOutput(source);
+
             Approver.Verify(output);
         }
 
         [Test]
         public void NameIsStringValue()
         {
-            var source = @"
-[assembly: NServiceBus.NServiceBusEndpointName(""endpoint"")]
-";
+            var source = @"[assembly: NServiceBus.NServiceBusEndpointName(""endpoint"")]";
             var (output, _) = GetGeneratedOutput(source);
+
             Approver.Verify(output);
         }
 
@@ -65,6 +64,7 @@ namespace Foo
         {
             var source = @"";
             var (output, _) = GetGeneratedOutput(source);
+
             Approver.Verify(output);
         }
 
