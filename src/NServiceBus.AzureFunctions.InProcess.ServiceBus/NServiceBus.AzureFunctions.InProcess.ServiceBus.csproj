@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.0.0-beta.4" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.0.0-beta.5" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="[2.3.0, 3.0.0)" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="[1.9.0, 2.0.0)" />
     <PackageReference Include="NServiceBus.Extensions.DependencyInjection" Version="[1.0.1, 2.0.0)" />
