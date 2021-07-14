@@ -47,7 +47,9 @@ namespace NServiceBus
     public sealed class NServiceBusEndpointNameAttribute : System.Attribute
     {
         public NServiceBusEndpointNameAttribute(string name) { }
+        public NServiceBusEndpointNameAttribute(string name, string triggerFunctionName) { }
         public string Name { get; }
+        public string TriggerFunctionName { get; }
     }
     public class ServiceBusTriggeredEndpointConfiguration
     {

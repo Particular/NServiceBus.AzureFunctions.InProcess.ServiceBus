@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Test.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

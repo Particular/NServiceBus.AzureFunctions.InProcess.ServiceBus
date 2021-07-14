@@ -8,11 +8,16 @@
     [Generator]
     public class TriggerFunctionGenerator : ISourceGenerator
     {
-#pragma warning disable RS2008 // Enable analyzer release tracking
-        static readonly DiagnosticDescriptor InvalidEndpointNameWarning = new DiagnosticDescriptor(id: "NSBFUNC001",
-#pragma warning restore RS2008 // Enable analyzer release tracking
+        internal static readonly DiagnosticDescriptor InvalidEndpointNameError = new DiagnosticDescriptor(id: "NSBFUNC001",
             title: "Invalid Endpoint Name",
             messageFormat: "Endpoint name is invalid and cannot be used to generate trigger function",
+            category: "TriggerFunctionGenerator",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        internal static readonly DiagnosticDescriptor InvalidTriggerFunctionNameError = new DiagnosticDescriptor(id: "NSBFUNC002",
+            title: "Invalid Trigger Function Name",
+            messageFormat: "Trigger function name is invalid and cannot be used to generate trigger function",
             category: "TriggerFunctionGenerator",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
@@ -25,19 +30,24 @@
         class SyntaxReceiver : ISyntaxContextReceiver
         {
             internal string endpointName;
+            internal string triggerFunctionName;
             internal bool attributeFound;
 
             public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
             {
                 if (context.Node is AttributeSyntax attributeSyntax
-                    && attributeSyntax.ArgumentList?.Arguments.Count == 1
-                    && IsMatch(context.SemanticModel.GetTypeInfo(attributeSyntax).Type?.ToDisplayString()))
+                    && IsNServiceBusEndpointNameAttribute(context.SemanticModel.GetTypeInfo(attributeSyntax).Type?.ToDisplayString()))
                 {
-                    endpointName = context.SemanticModel.GetConstantValue(attributeSyntax.ArgumentList.Arguments[0].Expression).ToString();
                     attributeFound = true;
+                    endpointName = AttributeParameterAtPosition(0);
+                    triggerFunctionName = AttributeParametersCount() == 2
+                        ? AttributeParameterAtPosition(1)
+                        : $"NServiceBusFunctionEndpointTrigger-{endpointName}";
                 }
 
-                bool IsMatch(string value) => value.Equals("NServiceBus.NServiceBusEndpointNameAttribute");
+                bool IsNServiceBusEndpointNameAttribute(string value) => value.Equals("NServiceBus.NServiceBusEndpointNameAttribute");
+                string AttributeParameterAtPosition(int position) => context.SemanticModel.GetConstantValue(attributeSyntax.ArgumentList.Arguments[position].Expression).ToString();
+                int AttributeParametersCount() => attributeSyntax.ArgumentList.Arguments.Count;
             }
         }
 
@@ -58,7 +68,14 @@
             // Generate an error if empty/null/space is used as endpoint name
             if (string.IsNullOrWhiteSpace(syntaxReceiver.endpointName))
             {
-                context.ReportDiagnostic(Diagnostic.Create(InvalidEndpointNameWarning, Location.None, syntaxReceiver.endpointName));
+                context.ReportDiagnostic(Diagnostic.Create(InvalidEndpointNameError, Location.None, syntaxReceiver.endpointName));
+                return;
+            }
+
+            // Generate an error if empty/null/space is used as trigger function name
+            if (string.IsNullOrWhiteSpace(syntaxReceiver.triggerFunctionName))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(InvalidTriggerFunctionNameError, Location.None, syntaxReceiver.triggerFunctionName));
                 return;
             }
 
@@ -79,7 +96,7 @@ class FunctionEndpointTrigger
         this.endpoint = endpoint;
     }}
 
-    [FunctionName(""NServiceBusFunctionEndpointTrigger-{syntaxReceiver.endpointName}"")]
+    [FunctionName(""{syntaxReceiver.triggerFunctionName}"")]
     public async Task Run(
         [ServiceBusTrigger(queueName: ""{syntaxReceiver.endpointName}"")]
         Message message,

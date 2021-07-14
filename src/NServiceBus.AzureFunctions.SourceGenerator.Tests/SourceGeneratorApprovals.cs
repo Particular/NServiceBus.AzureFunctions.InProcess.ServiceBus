@@ -77,6 +77,22 @@ namespace Foo
             Assert.False(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error));
         }
 
+        [Test]
+        public void Can_override_trigger_function_name()
+        {
+            var source =
+                @"using NServiceBus;
+
+[assembly: NServiceBusEndpointName(""endpoint"", ""trigger"")]
+
+public class Startup
+{
+}";
+            var (output, _) = GetGeneratedOutput(source);
+
+            Approver.Verify(output);
+        }
+
         [TestCase(null)]
         [TestCase("")]
         [TestCase(" ")]
@@ -89,9 +105,23 @@ using NServiceBus;
 ";
             var (output, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
-            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error));
+            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidEndpointNameError.Id));
         }
 
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public void Invalid_trigger_function_name_should_cause_an_error(string triggerFunctionName)
+        {
+            var source = @"
+using NServiceBus;
+
+[assembly: NServiceBusEndpointName(""endpoint"", """ + triggerFunctionName + @""")]
+";
+            var (output, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
+
+            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidTriggerFunctionNameError.Id));
+        }
 
         [OneTimeSetUp]
         public void Init()
@@ -100,6 +130,7 @@ using NServiceBus;
             // is an attribute from NServiceBus namespace and its full name is NServiceBus.NServiceBusEndpointNameAttribute.
             // By referencing NServiceBusEndpointNameAttribute here, NServiceBus.AzureFunctions.InProcess.ServiceBus is forced to load and participate in the compilation.
             _ = new NServiceBusEndpointNameAttribute("test");
+            _ = new NServiceBusEndpointNameAttribute("test", "trigger");
         }
 
         static (string output, ImmutableArray<Diagnostic> diagnostics) GetGeneratedOutput(string source, bool suppressGeneratedDiagnosticsErrors = false)
