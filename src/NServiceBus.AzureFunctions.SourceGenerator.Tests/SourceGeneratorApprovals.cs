@@ -130,6 +130,7 @@ using NServiceBus;
             // is an attribute from NServiceBus namespace and its full name is NServiceBus.NServiceBusEndpointNameAttribute.
             // By referencing NServiceBusEndpointNameAttribute here, NServiceBus.AzureFunctions.InProcess.ServiceBus is forced to load and participate in the compilation.
             _ = new NServiceBusEndpointNameAttribute("test");
+            _ = new NServiceBusEndpointNameAttribute("test", "trigger");
         }
 
         static (string output, ImmutableArray<Diagnostic> diagnostics) GetGeneratedOutput(string source, bool suppressGeneratedDiagnosticsErrors = false)

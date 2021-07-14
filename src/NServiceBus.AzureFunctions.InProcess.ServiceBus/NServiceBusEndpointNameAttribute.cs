@@ -13,7 +13,7 @@
         public string Name { get; }
 
         /// <summary>
-        /// Override trigger function name. By default the value is "NServiceBusFunctionEndpointTrigger-{Nme}" where Name is the endpoint name.
+        /// Override trigger function name.
         /// </summary>
         public string TriggerFunctionName { get; }
 
@@ -21,8 +21,19 @@
         ///Endpoint logical name.
         ///</summary>
         ///<param name="name">Endpoint name that is the input queue name.</param>
+        ///<remarks>The trigger function name will be "NServiceBusFunctionEndpointTrigger-{Name}" where Name is the endpoint name.</remarks>
+        public NServiceBusEndpointNameAttribute(string name)
+        {
+            Name = name;
+            TriggerFunctionName = $"NServiceBusFunctionEndpointTrigger-{Name}";
+        }
+
+        ///<summary>
+        ///Endpoint logical name.
+        ///</summary>
+        ///<param name="name">Endpoint name that is the input queue name.</param>
         ///<param name="triggerFunctionName">Name given to the auto-generated trigger function.</param>
-        public NServiceBusEndpointNameAttribute(string name, string triggerFunctionName = default)
+        public NServiceBusEndpointNameAttribute(string name, string triggerFunctionName)
         {
             Name = name;
             TriggerFunctionName = triggerFunctionName;
