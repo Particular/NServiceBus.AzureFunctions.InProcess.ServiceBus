@@ -8,17 +8,14 @@
     [Generator]
     public class TriggerFunctionGenerator : ISourceGenerator
     {
-#pragma warning disable RS2008 // Enable analyzer release tracking
         internal static readonly DiagnosticDescriptor InvalidEndpointNameError = new DiagnosticDescriptor(id: "NSBFUNC001",
-#pragma warning restore RS2008 // Enable analyzer release tracking
             title: "Invalid Endpoint Name",
             messageFormat: "Endpoint name is invalid and cannot be used to generate trigger function",
             category: "TriggerFunctionGenerator",
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
-#pragma warning disable RS2008 // Enable analyzer release tracking
+
         internal static readonly DiagnosticDescriptor InvalidTriggerFunctionNameError = new DiagnosticDescriptor(id: "NSBFUNC002",
-#pragma warning restore RS2008 // Enable analyzer release tracking
             title: "Invalid Trigger Function Name",
             messageFormat: "Trigger function name is invalid and cannot be used to generate trigger function",
             category: "TriggerFunctionGenerator",

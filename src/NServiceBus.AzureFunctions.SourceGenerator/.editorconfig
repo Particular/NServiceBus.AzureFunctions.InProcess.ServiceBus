@@ -1,0 +1,5 @@
+[*.cs]
+
+# Justification: Not using the analzyer release tracking feature
+dotnet_diagnostic.RS2008.severity = none
+
