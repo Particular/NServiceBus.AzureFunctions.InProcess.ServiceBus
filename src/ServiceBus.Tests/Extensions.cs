@@ -18,7 +18,8 @@
 
         public static IEnumerable<Type> GetTypesScopedByTestClass(this Type componentType)
         {
-            var assemblies = new AssemblyScanner().GetScannableAssemblies();
+            var scanner = new AssemblyScanner { ThrowExceptions = false };
+            var assemblies = scanner.GetScannableAssemblies();
 
             var assembliesToScan = assemblies.Assemblies
                 //exclude acceptance tests by default

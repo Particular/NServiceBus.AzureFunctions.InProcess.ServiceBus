@@ -29,6 +29,9 @@
             configuration.UseSerialization<XmlSerializer>();
             configuration.EndpointConfiguration.UsePersistence<LearningPersistence>();
 
+            var scanner = configuration.EndpointConfiguration.AssemblyScanner();
+            scanner.ThrowExceptions = false;
+
             var settings = configuration.AdvancedConfiguration.GetSettings();
 
             var endpointFactory = FunctionsHostBuilderExtensions.Configure(configuration, serviceCollection,
