@@ -12,6 +12,9 @@
         public void Should_guide_user_towards_success()
         {
             var endpointConfiguration = new EndpointConfiguration("SampleEndpoint");
+            var scanner = endpointConfiguration.AssemblyScanner();
+            scanner.ThrowExceptions = false;
+
             endpointConfiguration.UseTransport<ServerlessTransport<AzureServiceBusTransport>>();
 
             var exception = Assert.ThrowsAsync<Exception>(

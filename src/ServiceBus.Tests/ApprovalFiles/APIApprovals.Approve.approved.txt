@@ -53,6 +53,8 @@ namespace NServiceBus
     }
     public class ServiceBusTriggeredEndpointConfiguration
     {
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Configuration.IConfiguration configuration = null) { }
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }

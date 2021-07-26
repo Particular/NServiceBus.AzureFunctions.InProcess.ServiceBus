@@ -5,6 +5,7 @@
     using AzureFunctions.InProcess.ServiceBus;
     using Logging;
     using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Configuration;
     using Serialization;
     using Transport;
 
@@ -19,9 +20,33 @@
         }
 
         /// <summary>
+        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger
+        /// </summary>
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration = null)
+            : this(endpointName, null, configuration)
+        {
+        }
+
+        /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
         /// </summary>
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null)
+            : this(endpointName, connectionStringName, null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
+        /// </summary>
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName)
+            : this(endpointName, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
+        /// </summary>
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null, IConfiguration configuration = null)
         {
             EndpointConfiguration = new EndpointConfiguration(endpointName);
 
@@ -33,13 +58,12 @@
             EndpointConfiguration.CustomDiagnosticsWriter(_ => Task.CompletedTask);
 
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
-            var functionAppName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? Environment.MachineName;
+            var functionAppName = GetConfiguredValueOrFallback(configuration, "WEBSITE_SITE_NAME", true) ?? Environment.MachineName;
             EndpointConfiguration.UniquelyIdentifyRunningInstance()
                 .UsingCustomDisplayName(functionAppName)
                 .UsingCustomIdentifier(DeterministicGuid.Create(functionAppName));
 
-            // Look for license as an environment variable
-            var licenseText = Environment.GetEnvironmentVariable("NSERVICEBUS_LICENSE");
+            var licenseText = GetConfiguredValueOrFallback(configuration, "NSERVICEBUS_LICENSE", optional: true);
             if (!string.IsNullOrWhiteSpace(licenseText))
             {
                 EndpointConfiguration.License(licenseText);
@@ -47,16 +71,17 @@
 
             Transport = UseTransport<AzureServiceBusTransport>();
 
-            var connectionString =
-                Environment.GetEnvironmentVariable(connectionStringName ?? DefaultServiceBusConnectionName);
+            var connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName ?? DefaultServiceBusConnectionName, optional: true);
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
                 Transport.ConnectionString(connectionString);
             }
-            else if (!string.IsNullOrWhiteSpace(connectionStringName))
+            else
             {
-                throw new Exception(
-                    $"Azure Service Bus connection string named '{connectionStringName}' was provided but wasn't found in the environment variables. Make sure the connection string is stored in the environment variable named '{connectionStringName}'.");
+                var message = connectionStringName != null ?
+                    $"Azure Service Bus connection string named '{connectionStringName}' was provided but wasn't found in the environment variables. Make sure the connection string is stored in the environment variable named '{connectionStringName}'." :
+                    "Azure Service Bus connection string was not provided.";
+                throw new Exception(message);
             }
 
             var recoverability = AdvancedConfiguration.Recoverability();
@@ -64,6 +89,25 @@
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
 
             EndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
+        }
+
+        string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)
+        {
+            if (configuration != null)
+            {
+                var configuredValue = configuration.GetValue<string>(key);
+                if (configuredValue != null)
+                {
+                    return configuredValue;
+                }
+            }
+
+            var environmentVariable = Environment.GetEnvironmentVariable(key);
+            if (string.IsNullOrEmpty(environmentVariable) && !optional)
+            {
+                throw new Exception($"Configuration or environment value for '{key}' was not set or was empty.");
+            }
+            return environmentVariable;
         }
 
         /// <summary>

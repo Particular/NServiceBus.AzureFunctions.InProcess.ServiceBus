@@ -5,13 +5,13 @@
     using NUnit.Framework;
 
     [TestFixture]
-    public class When_providing_missing_connection_string_name
+    public class When_providing_connection_string_name_with_missing_value
     {
         [Test]
         public void Should_guide_user_towards_success()
         {
             var exception = Assert.Throws<Exception>(() =>
-                    new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", "DOES_NOT_EXIST"),
+                _ = new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", "DOES_NOT_EXIST"),
                 "Exception should be thrown in constructor so that the error will be found during functions startup"
             );
 
