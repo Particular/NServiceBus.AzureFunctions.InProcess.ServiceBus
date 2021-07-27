@@ -6,10 +6,12 @@
     using System.Runtime.Loader;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Transactions;
     using AzureFunctions.InProcess.ServiceBus;
     using Extensibility;
     using Logging;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.Core;
     using Microsoft.Extensions.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -29,13 +31,96 @@
         }
 
         /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
+        /// </summary>
+        public async Task ProcessTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        {
+            var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
+
+            try
+            {
+                try
+                {
+                    using (var transaction = new CommittableTransaction(new TransactionOptions { IsolationLevel = IsolationLevel.Serializable, Timeout = TransactionManager.MaximumTimeout }))
+                    {
+                        TransportTransaction transportTransaction = CreateTransportTransaction(message, messageReceiver, transaction);
+
+                        MessageContext messageContext = CreateMessageContext(message, transportTransaction);
+
+                        //TODO: Could also be done earlier since the token here doesn't need to come from the context (it's a new one anyway)
+                        await InitializeEndpointIfNecessary(functionExecutionContext,
+                            messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+
+                        await pipeline.PushMessage(messageContext).ConfigureAwait(false);
+
+                        using (var scope = new TransactionScope(transaction, TransactionScopeAsyncFlowOption.Enabled))
+                        {
+                            await messageReceiver.CompleteAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
+                            scope.Complete();
+                        }
+
+                        transaction.Commit();
+                    }
+
+                }
+                catch (Exception exception)
+                {
+                    using (var transaction = new CommittableTransaction(new TransactionOptions { IsolationLevel = IsolationLevel.Serializable, Timeout = TransactionManager.MaximumTimeout }))
+                    {
+                        var transportTransaction = CreateTransportTransaction(message, messageReceiver, transaction);
+
+                        var errorContext = new ErrorContext(
+                            exception,
+                            message.GetHeaders(),
+                            message.MessageId,
+                            message.Body,
+                            transportTransaction,
+                            message.SystemProperties.DeliveryCount);
+
+                        var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
+
+                        if (errorHandleResult == ErrorHandleResult.Handled)
+                        {
+                            using (var scope = new TransactionScope(transaction, TransactionScopeAsyncFlowOption.Enabled))
+                            {
+                                // return to signal to the Functions host it can complete the incoming message
+                                await messageReceiver.CompleteAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
+                                scope.Complete();
+                            }
+
+                            transaction.Commit();
+                            return;
+                        }
+
+                        throw;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // abandon message outside of a transaction scope
+                await messageReceiver.AbandonAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        static TransportTransaction CreateTransportTransaction(Message message, IMessageReceiver messageReceiver, CommittableTransaction transaction)
+        {
+            var transportTransaction = new TransportTransaction();
+            transportTransaction.Set((messageReceiver.ServiceBusConnection, messageReceiver.Path));
+            transportTransaction.Set("IncomingQueue.PartitionKey", message.PartitionKey);
+            transportTransaction.Set(transaction);
+            return transportTransaction;
+        }
+
+        /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
         public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            var messageContext = CreateMessageContext(message);
+            var messageContext = CreateMessageContext(message, new TransportTransaction());
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
             await InitializeEndpointIfNecessary(functionExecutionContext,
@@ -65,18 +150,16 @@
 
                 throw;
             }
-
-            MessageContext CreateMessageContext(Message originalMessage)
-            {
-                return new MessageContext(
-                    originalMessage.GetMessageId(),
-                    originalMessage.GetHeaders(),
-                    originalMessage.Body,
-                    new TransportTransaction(),
-                    new CancellationTokenSource(),
-                    new ContextBag());
-            }
         }
+
+        static MessageContext CreateMessageContext(Message originalMessage, TransportTransaction transportTransaction) =>
+            new MessageContext(
+                originalMessage.GetMessageId(),
+                originalMessage.GetHeaders(),
+                originalMessage.Body,
+                transportTransaction,
+                new CancellationTokenSource(),
+                new ContextBag());
 
         /// <summary>
         /// Allows to forcefully initialize the endpoint if it hasn't been initialized yet.
