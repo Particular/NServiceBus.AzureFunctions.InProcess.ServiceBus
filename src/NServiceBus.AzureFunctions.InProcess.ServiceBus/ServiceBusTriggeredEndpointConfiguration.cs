@@ -49,7 +49,15 @@
 
             var connectionString =
                 Environment.GetEnvironmentVariable(connectionStringName ?? DefaultServiceBusConnectionName);
-            Transport.ConnectionString(connectionString);
+            if (!string.IsNullOrWhiteSpace(connectionString))
+            {
+                Transport.ConnectionString(connectionString);
+            }
+            else if (!string.IsNullOrWhiteSpace(connectionStringName))
+            {
+                throw new Exception(
+                    $"Connection string not found. Make sure the Service Bus connection string is stored in an environment variable named {connectionStringName}.");
+            }
 
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
