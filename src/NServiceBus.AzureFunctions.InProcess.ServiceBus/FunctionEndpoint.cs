@@ -43,34 +43,26 @@
             {
                 try
                 {
-                    using (var transaction = new CommittableTransaction(new TransactionOptions { IsolationLevel = IsolationLevel.Serializable, Timeout = TransactionManager.MaximumTimeout }))
+                    await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
+                        .ConfigureAwait(false);
+
+                    using (var transaction = CreateTransaction())
                     {
-                        TransportTransaction transportTransaction = CreateTransportTransaction(message, messageReceiver, transaction);
-
-                        MessageContext messageContext = CreateMessageContext(message, transportTransaction);
-
-                        //TODO: Could also be done earlier since the token here doesn't need to come from the context (it's a new one anyway)
-                        await InitializeEndpointIfNecessary(functionExecutionContext,
-                            messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+                        var transportTransaction = CreateTransportTransaction(message, messageReceiver, transaction);
+                        var messageContext = CreateMessageContext(message, transportTransaction);
 
                         await pipeline.PushMessage(messageContext).ConfigureAwait(false);
 
-                        using (var scope = new TransactionScope(transaction, TransactionScopeAsyncFlowOption.Enabled))
-                        {
-                            await messageReceiver.CompleteAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
-                            scope.Complete();
-                        }
-
+                        await messageReceiver.SafeCompleteAsync(message, transaction).ConfigureAwait(false);
                         transaction.Commit();
                     }
 
                 }
                 catch (Exception exception)
                 {
-                    using (var transaction = new CommittableTransaction(new TransactionOptions { IsolationLevel = IsolationLevel.Serializable, Timeout = TransactionManager.MaximumTimeout }))
+                    using (var transaction = CreateTransaction())
                     {
                         var transportTransaction = CreateTransportTransaction(message, messageReceiver, transaction);
-
                         var errorContext = new ErrorContext(
                             exception,
                             message.GetHeaders(),
@@ -83,26 +75,27 @@
 
                         if (errorHandleResult == ErrorHandleResult.Handled)
                         {
-                            using (var scope = new TransactionScope(transaction, TransactionScopeAsyncFlowOption.Enabled))
-                            {
-                                // return to signal to the Functions host it can complete the incoming message
-                                await messageReceiver.CompleteAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
-                                scope.Complete();
-                            }
+                            await messageReceiver.SafeCompleteAsync(message, transaction).ConfigureAwait(false);
 
                             transaction.Commit();
                             return;
                         }
 
+                        // handled by outer try-catch
                         throw;
                     }
                 }
             }
             catch (Exception)
             {
-                // abandon message outside of a transaction scope
+                // abandon message outside of a transaction scope to ensure the abandon operation can't be rolled back
                 await messageReceiver.AbandonAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
                 throw;
+            }
+
+            CommittableTransaction CreateTransaction()
+            {
+                return new CommittableTransaction(new TransactionOptions { IsolationLevel = IsolationLevel.Serializable, Timeout = TransactionManager.MaximumTimeout });
             }
         }
 
