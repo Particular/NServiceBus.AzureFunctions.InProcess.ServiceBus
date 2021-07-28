@@ -35,6 +35,8 @@
         /// </summary>
         public async Task ProcessTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
         {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
             try
