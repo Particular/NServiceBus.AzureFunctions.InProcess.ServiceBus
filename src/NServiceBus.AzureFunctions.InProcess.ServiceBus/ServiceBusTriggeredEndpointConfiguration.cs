@@ -49,7 +49,15 @@
 
             var connectionString =
                 Environment.GetEnvironmentVariable(connectionStringName ?? DefaultServiceBusConnectionName);
-            Transport.ConnectionString(connectionString);
+            if (!string.IsNullOrWhiteSpace(connectionString))
+            {
+                Transport.ConnectionString(connectionString);
+            }
+            else if (!string.IsNullOrWhiteSpace(connectionStringName))
+            {
+                throw new Exception(
+                    $"Azure Service Bus connection string named '{connectionStringName}' was provided but wasn't found in the environment variables. Make sure the connection string is stored in the environment variable named '{connectionStringName}'.");
+            }
 
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));

@@ -1,5 +1,6 @@
 ﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
 {
+    using System;
     using Settings;
     using Transport;
 
@@ -13,10 +14,23 @@
 
         public override string ExampleConnectionStringForErrorMessage { get; } = string.Empty;
 
-        public override bool RequiresConnectionString => baseTransport.RequiresConnectionString;
+        // HINT: Prevent core from throwing a generic exception
+        public override bool RequiresConnectionString => false;
 
         public override TransportInfrastructure Initialize(SettingsHolder settings, string connectionString)
         {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new Exception($@"Azure Service Bus connection string has not been configured.
+
+Specify a connection string using:
+
+  serviceBusTriggeredEndpointConfiguration.Transport.ConnectionString(connectionString);
+
+or
+
+  an environment variable named {ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName}");
+            }
             var baseTransportInfrastructure = baseTransport.Initialize(settings, connectionString);
             return new ServerlessTransportInfrastructure(baseTransportInfrastructure, settings);
         }
