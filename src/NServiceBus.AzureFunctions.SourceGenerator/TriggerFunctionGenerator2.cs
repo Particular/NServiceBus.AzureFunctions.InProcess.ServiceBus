@@ -130,7 +130,9 @@ class FunctionEndpointTrigger
         ILogger logger,
         ExecutionContext executionContext)
     {{
-        await endpoint.ProcessTransactional(message, executionContext, messageReceiver, logger);
+        {(syntaxReceiver.enableCrossEntityTransactions
+            ? "await endpoint.ProcessTransactional(message, executionContext, messageReceiver, logger);"
+            : "await endpoint.Process(message, executionContext, logger);")}
     }}
 }}";
             context.AddSource("NServiceBus__FunctionEndpointTrigger", SourceText.From(source, Encoding.UTF8));
