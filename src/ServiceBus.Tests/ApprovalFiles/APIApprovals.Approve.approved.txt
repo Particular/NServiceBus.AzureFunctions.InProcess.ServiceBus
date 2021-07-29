@@ -46,6 +46,8 @@ namespace NServiceBus
         System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
     }
     [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
+    [System.Obsolete("Use `NServiceBusTriggerFunctionAttribute` instead. Will be treated as an error fr" +
+        "om version 2.0.0. Will be removed in version 3.0.0.", false)]
     public sealed class NServiceBusEndpointNameAttribute : System.Attribute
     {
         public NServiceBusEndpointNameAttribute(string name) { }
@@ -56,7 +58,7 @@ namespace NServiceBus
     [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
     public sealed class NServiceBusTriggerFunctionAttribute : System.Attribute
     {
-        public NServiceBusTriggerFunctionAttribute(string name, string triggerFunctionName = null, bool enableCrossEntityTransactions = false) { }
+        public NServiceBusTriggerFunctionAttribute(string name) { }
         public bool EnableCrossEntityTransactions { get; set; }
         public string Name { get; }
         public string TriggerFunctionName { get; set; }
