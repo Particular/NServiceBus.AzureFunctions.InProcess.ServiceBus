@@ -86,7 +86,7 @@ namespace Foo
             var source =
                 @"using NServiceBus;
 
-[assembly: NServiceBusTriggerFunction(""endpoint"", ""trigger"")]
+[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"")]
 
 public class Startup
 {
@@ -119,7 +119,7 @@ using NServiceBus;
             var source = @"
 using NServiceBus;
 
-[assembly: NServiceBusTriggerFunction(""endpoint"", """ + triggerFunctionName + @""")]
+[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = """ + triggerFunctionName + @""")]
 ";
             var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
@@ -132,23 +132,7 @@ using NServiceBus;
             var source = @"
 using NServiceBus;
 
-[assembly: NServiceBusTriggerFunction(""endpoint"", ""trigger"")]
-
-public class Startup
-{
-}";
-            var (output, _) = GetGeneratedOutput(source);
-
-            Approver.Verify(output);
-        }
-
-        [Test]
-        public void Use_two_optionals()
-        {
-            var source = @"
-using NServiceBus;
-
-[assembly: NServiceBusTriggerFunction(""endpoint"", ""trigger"", true)]
+[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"")]
 
 public class Startup
 {
@@ -164,7 +148,7 @@ public class Startup
             var source = @"
 using NServiceBus;
 
-[assembly: NServiceBusTriggerFunction(""endpoint"", triggerFunctionName: ""trigger"")]
+[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"")]
 
 public class Startup
 {
@@ -181,6 +165,22 @@ public class Startup
 using NServiceBus;
 
 [assembly: NServiceBusTriggerFunction(""endpoint"", EnableCrossEntityTransactions = true)]
+
+public class Startup
+{
+}";
+            var (output, _) = GetGeneratedOutput(source);
+
+            Approver.Verify(output);
+        }
+
+        [Test]
+        public void Use_two_optionals()
+        {
+            var source = @"
+using NServiceBus;
+
+[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"", EnableCrossEntityTransactions = true)]
 
 public class Startup
 {
@@ -213,10 +213,6 @@ public class Startup
             // is an attribute from NServiceBus namespace and its full name is NServiceBus.NServiceBusTriggerFunctionAttribute.
             // By referencing NServiceBusTriggerFunctionAttribute here, NServiceBus.AzureFunctions.InProcess.ServiceBus is forced to load and participate in the compilation.
             _ = new NServiceBusTriggerFunctionAttribute(name: "test");
-            _ = new NServiceBusTriggerFunctionAttribute(name: "test", triggerFunctionName: "trigger");
-            _ = new NServiceBusTriggerFunctionAttribute(name: "test", enableCrossEntityTransactions: true);
-            _ = new NServiceBusTriggerFunctionAttribute(name: "test", triggerFunctionName: "trigger", enableCrossEntityTransactions: true);
-            _ = new NServiceBusTriggerFunctionAttribute(name: "test", enableCrossEntityTransactions: true, triggerFunctionName: "trigger");
         }
 
         static (string output, ImmutableArray<Diagnostic> diagnostics) GetGeneratedOutput(string source, bool suppressGeneratedDiagnosticsErrors = false)
