@@ -26,13 +26,9 @@
         /// Endpoint logical name.
         /// </summary>
         /// <param name="name">Endpoint name that is the input queue name.</param>
-        /// <param name="triggerFunctionName">Name given to the auto-generated trigger function.</param>
-        /// <param name="enableCrossEntityTransactions">Enable cross-entity transactions.</param>
-        public NServiceBusTriggerFunctionAttribute(string name, string triggerFunctionName = default, bool enableCrossEntityTransactions = default)
+        public NServiceBusTriggerFunctionAttribute(string name)
         {
             Name = name;
-            TriggerFunctionName = triggerFunctionName;
-            EnableCrossEntityTransactions = enableCrossEntityTransactions;
         }
     }
 }
