@@ -4,8 +4,11 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
+    using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.WebJobs;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.Extensions.Logging;
     using NUnit.Framework;
     using Particular.Approvals;
 
@@ -230,16 +233,22 @@ public class Startup
                 }
             }
 
-            var compilation = CSharpCompilation.Create("foo", new[] { syntaxTree }, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-            // Fail tests when the injected program isn't valid _before_ running generators
-            var compileDiagnostics = compilation.GetDiagnostics();
-            Assert.False(compileDiagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), "Failed: " + compileDiagnostics.FirstOrDefault()?.GetMessage());
+            var compilation = Compile(new[]
+            {
+                syntaxTree
+            }, references);
 
             var generator = new TriggerFunctionGenerator2();
 
             var driver = CSharpGeneratorDriver.Create(generator);
             driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generateDiagnostics);
+
+            // add necessary references for the generated trigger
+            references.Add(MetadataReference.CreateFromFile(typeof(ServiceBusTriggerAttribute).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ExecutionContext).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(Message).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ILogger).Assembly.Location));
+            Compile(outputCompilation.SyntaxTrees, references);
 
             if (!suppressGeneratedDiagnosticsErrors)
             {
@@ -247,6 +256,19 @@ public class Startup
             }
 
             return (outputCompilation.SyntaxTrees.Last().ToString(), generateDiagnostics);
+        }
+
+        static CSharpCompilation Compile(IEnumerable<SyntaxTree> syntaxTrees, IEnumerable<MetadataReference> references)
+        {
+            var compilation = CSharpCompilation.Create("result", syntaxTrees, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            // Verify the code compiled:
+            var compilationErrors = compilation
+                .GetDiagnostics()
+                .Where(d => d.Severity >= DiagnosticSeverity.Warning);
+            Assert.IsEmpty(compilationErrors, compilationErrors.FirstOrDefault()?.GetMessage());
+
+            return compilation;
         }
     }
 }
