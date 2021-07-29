@@ -127,39 +127,7 @@ using NServiceBus;
         }
 
         [Test]
-        public void Use_one_optional()
-        {
-            var source = @"
-using NServiceBus;
-
-[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"")]
-
-public class Startup
-{
-}";
-            var (output, _) = GetGeneratedOutput(source);
-
-            Approver.Verify(output);
-        }
-
-        [Test]
-        public void One_optional_with_parameter_name()
-        {
-            var source = @"
-using NServiceBus;
-
-[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"")]
-
-public class Startup
-{
-}";
-            var (output, _) = GetGeneratedOutput(source);
-
-            Approver.Verify(output);
-        }
-
-        [Test]
-        public void One_optional_out_of_order()
+        public void Can_enable_transactions()
         {
             var source = @"
 using NServiceBus;
