@@ -1,4 +1,6 @@
-﻿namespace NServiceBus.AzureFunctions.SourceGenerator.Tests
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable CS0618 // Disable obsolete warning for NServiceBusEndpointNameAttribute
+namespace NServiceBus.AzureFunctions.SourceGenerator.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -167,3 +169,5 @@ using NServiceBus;
         }
     }
 }
+#pragma warning restore CS0618
+#pragma warning restore IDE0079 // Remove unnecessary suppression
