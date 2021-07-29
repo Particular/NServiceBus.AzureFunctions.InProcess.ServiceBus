@@ -15,7 +15,7 @@
     {
         static ServiceBusTriggeredEndpointConfiguration()
         {
-            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
+            LogManager.UseFactory(DeferredLoggerFactory.Instance);
         }
 
         /// <summary>
