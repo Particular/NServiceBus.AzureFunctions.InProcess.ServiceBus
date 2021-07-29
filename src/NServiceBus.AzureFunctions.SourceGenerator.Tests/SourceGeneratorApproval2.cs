@@ -72,7 +72,7 @@ namespace Foo
         public void No_attribute_should_not_generate_compilation_error()
         {
             var source = @"using NServiceBus;";
-            var (output, diagnostics) = GetGeneratedOutput(source);
+            var (_, diagnostics) = GetGeneratedOutput(source);
 
             Assert.False(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error));
         }
@@ -103,7 +103,7 @@ using NServiceBus;
 
 [assembly: NServiceBusTriggerFunction(""" + endpointName + @""")]
 ";
-            var (output, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
+            var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
             Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator2.InvalidEndpointNameError.Id));
         }
@@ -118,7 +118,7 @@ using NServiceBus;
 
 [assembly: NServiceBusTriggerFunction(""endpoint"", """ + triggerFunctionName + @""")]
 ";
-            var (output, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
+            var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
             Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator2.InvalidTriggerFunctionNameError.Id));
         }
