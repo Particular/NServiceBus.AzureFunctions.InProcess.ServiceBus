@@ -25,6 +25,7 @@ namespace NServiceBus
     }
     public static class FunctionsHostBuilderExtensions
     {
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, Microsoft.Extensions.Configuration.IConfiguration configuration) { }
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
     }
     public interface IFunctionEndpoint
@@ -53,6 +54,7 @@ namespace NServiceBus
     }
     public class ServiceBusTriggeredEndpointConfiguration
     {
+        public ServiceBusTriggeredEndpointConfiguration(Microsoft.Extensions.Configuration.IConfiguration configuration) { }
         public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Configuration.IConfiguration configuration = null) { }
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }

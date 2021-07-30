@@ -3,6 +3,7 @@
     using System;
     using System.IO;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
@@ -10,6 +11,16 @@
     /// </summary>
     public static class FunctionsHostBuilderExtensions
     {
+        /// <summary>
+        /// Use the IConfiguration to configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// </summary>
+        public static void UseNServiceBus(
+            this IFunctionsHostBuilder functionsHostBuilder)
+        {
+            functionsHostBuilder.UseNServiceBus(() => new ServiceBusTriggeredEndpointConfiguration(
+                functionsHostBuilder.GetContext().Configuration));
+        }
+
         /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
         /// </summary>

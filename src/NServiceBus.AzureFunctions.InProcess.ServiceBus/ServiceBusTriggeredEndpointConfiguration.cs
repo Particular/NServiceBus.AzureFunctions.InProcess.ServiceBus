@@ -22,6 +22,14 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger
         /// </summary>
+        public ServiceBusTriggeredEndpointConfiguration(IConfiguration configuration)
+            : this(GetConfiguredValueOrFallback(configuration, "ENDPOINT_NAME", optional: false), configuration)
+        {
+        }
+
+        /// <summary>
+        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger
+        /// </summary>
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration = null)
             : this(endpointName, null, configuration)
         {
@@ -91,7 +99,7 @@
             EndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
         }
 
-        string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)
+        static string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)
         {
             if (configuration != null)
             {
