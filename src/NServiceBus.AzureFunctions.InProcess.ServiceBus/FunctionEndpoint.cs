@@ -41,50 +41,12 @@
 
             try
             {
-                try
-                {
-                    await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-                    using (var transaction = CreateTransaction())
-                    {
-                        var transportTransaction = CreateTransportTransaction(message, messageReceiver, transaction);
-                        var messageContext = CreateMessageContext(message, transportTransaction);
-
-                        await pipeline.PushMessage(messageContext).ConfigureAwait(false);
-
-                        await messageReceiver.SafeCompleteAsync(message, transaction).ConfigureAwait(false);
-                        transaction.Commit();
-                    }
-
-                }
-                catch (Exception exception)
-                {
-                    using (var transaction = CreateTransaction())
-                    {
-                        var transportTransaction = CreateTransportTransaction(message, messageReceiver, transaction);
-                        var errorContext = new ErrorContext(
-                            exception,
-                            message.GetHeaders(),
-                            message.MessageId,
-                            message.Body,
-                            transportTransaction,
-                            message.SystemProperties.DeliveryCount);
-
-                        var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
-
-                        if (errorHandleResult == ErrorHandleResult.Handled)
-                        {
-                            await messageReceiver.SafeCompleteAsync(message, transaction).ConfigureAwait(false);
-
-                            transaction.Commit();
-                            return;
-                        }
-
-                        // handled by outer try-catch
-                        throw;
-                    }
-                }
+                await Process(message,
+                        functionExecutionContext,
+                        tx => messageReceiver.SafeCompleteAsync(message, tx),
+                        () => CreateTransaction(),
+                        tx => CreateTransportTransaction(tx))
+                    .ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -93,19 +55,21 @@
                 throw;
             }
 
-            CommittableTransaction CreateTransaction()
-            {
-                return new CommittableTransaction(new TransactionOptions { IsolationLevel = IsolationLevel.Serializable, Timeout = TransactionManager.MaximumTimeout });
-            }
-        }
+            CommittableTransaction CreateTransaction() =>
+                new CommittableTransaction(new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.Serializable,
+                    Timeout = TransactionManager.MaximumTimeout
+                });
 
-        static TransportTransaction CreateTransportTransaction(Message message, IMessageReceiver messageReceiver, CommittableTransaction transaction)
-        {
-            var transportTransaction = new TransportTransaction();
-            transportTransaction.Set((messageReceiver.ServiceBusConnection, messageReceiver.Path));
-            transportTransaction.Set("IncomingQueue.PartitionKey", message.PartitionKey);
-            transportTransaction.Set(transaction);
-            return transportTransaction;
+            TransportTransaction CreateTransportTransaction(CommittableTransaction transaction)
+            {
+                var transportTransaction = new TransportTransaction();
+                transportTransaction.Set((messageReceiver.ServiceBusConnection, messageReceiver.Path));
+                transportTransaction.Set("IncomingQueue.PartitionKey", message.PartitionKey);
+                transportTransaction.Set(transaction);
+                return transportTransaction;
+            }
         }
 
         /// <summary>
@@ -115,46 +79,71 @@
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            var messageContext = CreateMessageContext(message, new TransportTransaction());
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
-            await InitializeEndpointIfNecessary(functionExecutionContext,
-                messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+            await Process(message,
+                    functionExecutionContext,
+                    _ => Task.CompletedTask,
+                    () => null,
+                    _ => new TransportTransaction())
+                .ConfigureAwait(false);
+        }
+
+        async Task Process(Message message, FunctionExecutionContext functionExecutionContext, Func<CommittableTransaction, Task> onComplete, Func<CommittableTransaction> transactionFactory, Func<CommittableTransaction, TransportTransaction> transportTransactionFactory)
+        {
+            await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
+                .ConfigureAwait(false);
 
             try
             {
-                await pipeline.PushMessage(messageContext).ConfigureAwait(false);
+                using (var transaction = transactionFactory())
+                {
+                    var transportTransaction = transportTransactionFactory(transaction);
+                    var messageContext = CreateMessageContext(transportTransaction);
+
+                    await pipeline.PushMessage(messageContext).ConfigureAwait(false);
+
+                    await onComplete(transaction).ConfigureAwait(false);
+                    //await messageReceiver.SafeCompleteAsync(message, transaction).ConfigureAwait(false);
+                    transaction?.Commit();
+                }
             }
             catch (Exception exception)
             {
-                var errorContext = new ErrorContext(
-                    exception,
-                    message.GetHeaders(),
-                    messageContext.MessageId,
-                    messageContext.Body,
-                    new TransportTransaction(),
-                    message.SystemProperties.DeliveryCount);
-
-                var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
-
-                if (errorHandleResult == ErrorHandleResult.Handled)
+                using (var transaction = transactionFactory())
                 {
-                    // return to signal to the Functions host it can complete the incoming message
-                    return;
+                    var transportTransaction = transportTransactionFactory(transaction);
+                    var errorContext = new ErrorContext(
+                        exception,
+                        message.GetHeaders(),
+                        message.MessageId,
+                        message.Body,
+                        transportTransaction,
+                        message.SystemProperties.DeliveryCount);
+
+                    var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
+
+                    if (errorHandleResult == ErrorHandleResult.Handled)
+                    {
+                        await onComplete(transaction).ConfigureAwait(false);
+
+                        transaction?.Commit();
+                        return;
+                    }
+
+                    throw;
                 }
-
-                throw;
             }
-        }
 
-        static MessageContext CreateMessageContext(Message originalMessage, TransportTransaction transportTransaction) =>
-            new MessageContext(
-                originalMessage.GetMessageId(),
-                originalMessage.GetHeaders(),
-                originalMessage.Body,
-                transportTransaction,
-                new CancellationTokenSource(),
-                new ContextBag());
+            MessageContext CreateMessageContext(TransportTransaction transportTransaction) =>
+                new MessageContext(
+                    message.GetMessageId(),
+                    message.GetHeaders(),
+                    message.Body,
+                    transportTransaction,
+                    new CancellationTokenSource(),
+                    new ContextBag());
+        }
 
         /// <summary>
         /// Allows to forcefully initialize the endpoint if it hasn't been initialized yet.
