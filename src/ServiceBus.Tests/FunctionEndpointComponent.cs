@@ -8,6 +8,9 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
+#pragma warning disable IDE0005 // Using directive is unnecessary.
+    using Microsoft.Azure.ServiceBus.Core;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -107,9 +110,11 @@
             {
                 foreach (var message in messages)
                 {
-                    var transportMessage = GenerateMessage(message);
-                    var context = new ExecutionContext();
-                    await endpoint.Process(transportMessage, context);
+#if !TRANSACTIONAL
+                    await ProcessNonTransactional(message);
+#else
+                    await ProcessTransactional(message);
+#endif
                 }
             }
 
@@ -123,6 +128,41 @@
                 return base.Stop();
             }
 
+#pragma warning disable IDE0051 // Remove unused private members
+            async Task ProcessTransactional(object message)
+
+            {
+                var transportMessage = GenerateMessage(message);
+                var context = new ExecutionContext();
+                var messageReceiver = new FakeMessageReceiver();
+                try
+                {
+                    await endpoint.ProcessTransactional(transportMessage, context, messageReceiver);
+
+                    if (!messageReceiver.CompletedLockTokens.Contains(transportMessage.SystemProperties.LockToken))
+                    {
+                        throw new Exception($"Message {transportMessage.MessageId} succeeded transactional processing but was not completed on the message receiver!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (!messageReceiver.AbandonedLockTokens.Contains(transportMessage.SystemProperties.LockToken))
+                    {
+                        throw new Exception($"Message {transportMessage.MessageId} failed transactional processing but was not abandoned on the message receiver!", e);
+                    }
+                    throw;
+                }
+            }
+
+            Task ProcessNonTransactional(object message)
+            {
+                var transportMessage = GenerateMessage(message);
+                var context = new ExecutionContext();
+                return endpoint.Process(transportMessage, context);
+            }
+
+#pragma warning restore IDE0051 // Remove unused private members
+
             Message GenerateMessage(object message)
             {
                 Message asbMessage;
@@ -135,12 +175,16 @@
                 asbMessage.UserProperties["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName;
 
                 var systemProperties = new Message.SystemPropertiesCollection();
+
                 // sequence number is required to prevent SystemPropertiesCollection from throwing on the getters
-                var fieldInfo = typeof(Message.SystemPropertiesCollection).GetField("sequenceNumber", BindingFlags.NonPublic | BindingFlags.Instance);
-                fieldInfo.SetValue(systemProperties, 123);
+                var sequenceNumberField = typeof(Message.SystemPropertiesCollection).GetField("sequenceNumber", BindingFlags.NonPublic | BindingFlags.Instance);
+                sequenceNumberField.SetValue(systemProperties, 123);
                 // set delivery count to 1
                 var deliveryCountProperty = typeof(Message.SystemPropertiesCollection).GetProperty("DeliveryCount");
                 deliveryCountProperty.SetValue(systemProperties, 1);
+                // set a lock token
+                var lockTokenProperty = typeof(Message.SystemPropertiesCollection).GetProperty("LockTokenGuid", BindingFlags.NonPublic | BindingFlags.Instance);
+                lockTokenProperty.SetValue(systemProperties, Guid.NewGuid());
                 // assign test message mocked system properties
                 var property = typeof(Message).GetProperty("SystemProperties");
                 property.SetValue(asbMessage, systemProperties);

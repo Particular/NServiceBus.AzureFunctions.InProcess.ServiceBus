@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Test.snk</AssemblyOriginatorKeyFile>
+    <!--<DefineConstants>TRANSACTIONAL</DefineConstants>-->
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
+    <ProjectReference Include="..\Testing.Handlers\Testing.Handlers.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="NServiceBus" Version="7.5.0" />
+    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="7.5.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Particular.Approvals" Version="0.3.0" />
+    <PackageReference Include="PublicApiGenerator" Version="10.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Testing.Handlers\bin\$(Configuration)\netstandard2.0\Testing.Handlers.dll" Link="ExternalHandlers\Testing.Handlers.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ServiceBus.Tests\**\*.cs" Exclude="..\ServiceBus.Tests\obj\**\*.*" />
+  </ItemGroup>
+
+</Project>
