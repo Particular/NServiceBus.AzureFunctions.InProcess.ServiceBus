@@ -104,7 +104,7 @@
                     await pipeline.PushMessage(messageContext).ConfigureAwait(false);
 
                     await onComplete(transaction).ConfigureAwait(false);
-                    //await messageReceiver.SafeCompleteAsync(message, transaction).ConfigureAwait(false);
+
                     transaction?.Commit();
                 }
             }
