@@ -6,7 +6,6 @@
     using System.Runtime.Loader;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Transactions;
     using AzureFunctions.InProcess.ServiceBus;
     using Extensibility;
     using Logging;
@@ -43,9 +42,7 @@
             {
                 await Process(message,
                         functionExecutionContext,
-                        tx => messageReceiver.SafeCompleteAsync(message, tx),
-                        () => CreateTransaction(),
-                        tx => CreateTransportTransaction(tx))
+                        new MessageReceiverFunctionTransactionStrategy(message, messageReceiver))
                     .ConfigureAwait(false);
             }
             catch (Exception)
@@ -53,22 +50,6 @@
                 // abandon message outside of a transaction scope to ensure the abandon operation can't be rolled back
                 await messageReceiver.AbandonAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
                 throw;
-            }
-
-            CommittableTransaction CreateTransaction() =>
-                new CommittableTransaction(new TransactionOptions
-                {
-                    IsolationLevel = IsolationLevel.Serializable,
-                    Timeout = TransactionManager.MaximumTimeout
-                });
-
-            TransportTransaction CreateTransportTransaction(CommittableTransaction transaction)
-            {
-                var transportTransaction = new TransportTransaction();
-                transportTransaction.Set((messageReceiver.ServiceBusConnection, messageReceiver.Path));
-                transportTransaction.Set("IncomingQueue.PartitionKey", message.PartitionKey);
-                transportTransaction.Set(transaction);
-                return transportTransaction;
             }
         }
 
@@ -83,13 +64,11 @@
 
             await Process(message,
                     functionExecutionContext,
-                    _ => Task.CompletedTask,
-                    () => null,
-                    _ => new TransportTransaction())
+                    FunctionTransactionStrategy.None)
                 .ConfigureAwait(false);
         }
 
-        async Task Process(Message message, FunctionExecutionContext functionExecutionContext, Func<CommittableTransaction, Task> onComplete, Func<CommittableTransaction> transactionFactory, Func<CommittableTransaction, TransportTransaction> transportTransactionFactory)
+        async Task Process(Message message, FunctionExecutionContext functionExecutionContext, FunctionTransactionStrategy transactionStrategy)
         {
             await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                 .ConfigureAwait(false);
@@ -98,23 +77,23 @@
 
             try
             {
-                using (var transaction = transactionFactory())
+                using (var transaction = transactionStrategy.CreateTransaction())
                 {
-                    var transportTransaction = transportTransactionFactory(transaction);
+                    var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
                     var messageContext = CreateMessageContext(transportTransaction);
 
                     await pipeline.PushMessage(messageContext).ConfigureAwait(false);
 
-                    await onComplete(transaction).ConfigureAwait(false);
+                    await transactionStrategy.Complete(transaction).ConfigureAwait(false);
 
                     transaction?.Commit();
                 }
             }
             catch (Exception exception)
             {
-                using (var transaction = transactionFactory())
+                using (var transaction = transactionStrategy.CreateTransaction())
                 {
-                    var transportTransaction = transportTransactionFactory(transaction);
+                    var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
                     var errorContext = new ErrorContext(
                         exception,
                         message.GetHeaders(),
@@ -127,7 +106,7 @@
 
                     if (errorHandleResult == ErrorHandleResult.Handled)
                     {
-                        await onComplete(transaction).ConfigureAwait(false);
+                        await transactionStrategy.Complete(transaction).ConfigureAwait(false);
 
                         transaction?.Commit();
                         return;
