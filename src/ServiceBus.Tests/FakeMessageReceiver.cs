@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
@@ -28,7 +29,11 @@
 
         public Task UnregisterMessageHandlerAsync(TimeSpan inflightMessageHandlerTasksWaitTimeout) => throw new NotImplementedException();
 
-        public Task CompleteAsync(string lockToken) => throw new NotImplementedException();
+        public Task CompleteAsync(string lockToken)
+        {
+            CompletedLockTokens.Add(lockToken);
+            return Task.CompletedTask;
+        }
 
         public List<string> AbandonedLockTokens { get; } = new List<string>();
         public Task AbandonAsync(string lockToken, IDictionary<string, object> propertiesToModify = null)
