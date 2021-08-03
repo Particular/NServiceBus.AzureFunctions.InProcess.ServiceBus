@@ -10,7 +10,7 @@
     using Transport;
 
     /// <summary>
-    /// Represents a serverless NServiceBus endpoint running within an AzureServiceBus trigger.
+    /// Represents a serverless NServiceBus endpoint.
     /// </summary>
     public class ServiceBusTriggeredEndpointConfiguration
     {
@@ -20,7 +20,7 @@
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger
+        /// Creates a serverless NServiceBus endpoint.
         /// </summary>
         public ServiceBusTriggeredEndpointConfiguration(IConfiguration configuration)
             : this(GetConfiguredValueOrFallback(configuration, "ENDPOINT_NAME", optional: false), configuration)
@@ -28,7 +28,7 @@
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger
+        /// Creates a serverless NServiceBus endpoint.
         /// </summary>
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration = null)
             : this(endpointName, null, configuration)
@@ -36,7 +36,7 @@
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
+        /// Creates a serverless NServiceBus endpoint.
         /// </summary>
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null)
             : this(endpointName, connectionStringName, null)
@@ -44,7 +44,7 @@
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
+        /// Creates a serverless NServiceBus endpoint.
         /// </summary>
         public ServiceBusTriggeredEndpointConfiguration(string endpointName)
             : this(endpointName, null, null)
@@ -52,7 +52,7 @@
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint running within an Azure Service Bus trigger.
+        /// Creates a serverless NServiceBus endpoint.
         /// </summary>
         internal ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null, IConfiguration configuration = null)
         {
