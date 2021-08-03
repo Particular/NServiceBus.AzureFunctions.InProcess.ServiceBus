@@ -84,12 +84,9 @@
             {
                 Transport.ConnectionString(connectionString);
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(connectionStringName))
             {
-                var message = connectionStringName != null ?
-                    $"Azure Service Bus connection string named '{connectionStringName}' was provided but wasn't found in the environment variables. Make sure the connection string is stored in the environment variable named '{connectionStringName}'." :
-                    "Azure Service Bus connection string was not provided.";
-                throw new Exception(message);
+                throw new Exception($"Azure Service Bus connection string named '{connectionStringName}' was provided but wasn't found in the environment variables. Make sure the connection string is stored in the environment variable named '{connectionStringName}'.");
             }
 
             var recoverability = AdvancedConfiguration.Recoverability();
