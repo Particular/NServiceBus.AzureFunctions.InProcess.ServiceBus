@@ -41,11 +41,14 @@
 
             try
             {
+                await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
+                    .ConfigureAwait(false);
+
                 await Process(message,
-                        functionExecutionContext,
                         tx => messageReceiver.SafeCompleteAsync(message, tx),
                         () => CreateTransaction(),
-                        tx => CreateTransportTransaction(tx))
+                        tx => CreateTransportTransaction(tx),
+                        pipeline)
                     .ConfigureAwait(false);
             }
             catch (Exception)
@@ -81,19 +84,19 @@
 
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
-            await Process(message,
-                    functionExecutionContext,
-                    _ => Task.CompletedTask,
-                    () => null,
-                    _ => new TransportTransaction())
-                .ConfigureAwait(false);
-        }
-
-        async Task Process(Message message, FunctionExecutionContext functionExecutionContext, Func<CommittableTransaction, Task> onComplete, Func<CommittableTransaction> transactionFactory, Func<CommittableTransaction, TransportTransaction> transportTransactionFactory)
-        {
             await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                 .ConfigureAwait(false);
 
+            await Process(message,
+                    _ => Task.CompletedTask,
+                    () => null,
+                    _ => new TransportTransaction(),
+                    pipeline)
+                .ConfigureAwait(false);
+        }
+
+        internal static async Task Process(Message message, Func<CommittableTransaction, Task> onComplete, Func<CommittableTransaction> transactionFactory, Func<CommittableTransaction, TransportTransaction> transportTransactionFactory, PipelineInvoker pipeline)
+        {
             var messageId = message.GetMessageId();
 
             try
