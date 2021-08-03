@@ -2,11 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.ServiceBus.Core;
+    using NServiceBus;
 
     public class FakeMessageReceiver : IMessageReceiver
     {
@@ -20,7 +20,7 @@
         public bool IsClosedOrClosing { get; }
         public string Path { get; } = "TestReceiverPath";
         public TimeSpan OperationTimeout { get; set; }
-        public ServiceBusConnection ServiceBusConnection { get; }
+        public ServiceBusConnection ServiceBusConnection { get; } = new ServiceBusConnection(Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName));
         public bool OwnsConnection { get; }
         public IList<ServiceBusPlugin> RegisteredPlugins { get; }
         public void RegisterMessageHandler(Func<Message, CancellationToken, Task> handler, Func<ExceptionReceivedEventArgs, Task> exceptionReceivedHandler) => throw new NotImplementedException();
