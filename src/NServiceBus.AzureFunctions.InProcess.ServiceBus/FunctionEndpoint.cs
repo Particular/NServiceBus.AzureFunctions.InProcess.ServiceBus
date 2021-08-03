@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Reflection;
     using System.Runtime.Loader;
@@ -12,6 +13,7 @@
     using Logging;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.ServiceBus.Core;
+    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -28,6 +30,42 @@
         {
             this.configuration = configuration;
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
+        }
+
+        /// <summary>
+        /// TODO.
+        /// </summary>
+        public Task AutoDetectProcess(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        {
+            var st = new StackTrace();
+            var frames = st.GetFrames();
+            foreach (var frame in frames)
+            {
+                var method = frame.GetMethod();
+                if (method?.GetCustomAttribute<FunctionNameAttribute>() != null)
+                {
+                    foreach (var parameter in method.GetParameters())
+                    {
+                        ServiceBusTriggerAttribute serviceBusTriggerAttribute;
+                        if (parameter.ParameterType == typeof(Message)
+                            && (serviceBusTriggerAttribute = parameter.GetCustomAttribute<ServiceBusTriggerAttribute>()) != null)
+                        {
+                            if (serviceBusTriggerAttribute.AutoComplete)
+                            {
+                                // Autocomplete enabled -> no transactions
+                                return Process(message, executionContext, functionsLogger);
+                            }
+                            else
+                            {
+                                // Autocomplete disabled -> transactions
+                                return ProcessTransactional(message, executionContext, messageReceiver, functionsLogger);
+                            }
+                        }
+                    }
+                }
+            }
+
+            throw new Exception($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer AutoComplete setting.");
         }
 
         /// <summary>
