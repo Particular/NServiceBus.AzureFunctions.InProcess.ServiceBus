@@ -94,6 +94,8 @@
             await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                 .ConfigureAwait(false);
 
+            var messageId = message.GetMessageId();
+
             try
             {
                 using (var transaction = transactionFactory())
@@ -116,7 +118,7 @@
                     var errorContext = new ErrorContext(
                         exception,
                         message.GetHeaders(),
-                        message.MessageId,
+                        messageId,
                         message.Body,
                         transportTransaction,
                         message.SystemProperties.DeliveryCount);
@@ -137,7 +139,7 @@
 
             MessageContext CreateMessageContext(TransportTransaction transportTransaction) =>
                 new MessageContext(
-                    message.GetMessageId(),
+                    messageId,
                     message.GetHeaders(),
                     message.Body,
                     transportTransaction,
