@@ -66,7 +66,7 @@
                         var errorContext = new ErrorContext(
                             exception,
                             message.GetHeaders(),
-                            message.MessageId,
+                            message.GetMessageId(),
                             message.Body,
                             transportTransaction,
                             message.SystemProperties.DeliveryCount);
