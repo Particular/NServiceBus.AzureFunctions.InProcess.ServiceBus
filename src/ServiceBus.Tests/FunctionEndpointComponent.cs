@@ -169,7 +169,10 @@
                 using (var stream = new MemoryStream())
                 {
                     messageSerializer.Serialize(message, stream);
-                    asbMessage = new Message(stream.ToArray());
+                    asbMessage = new Message(stream.ToArray())
+                    {
+                        MessageId = Guid.NewGuid().ToString()
+                    };
                 }
 
                 asbMessage.UserProperties["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName;

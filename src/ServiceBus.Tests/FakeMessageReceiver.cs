@@ -18,7 +18,7 @@
 
         public string ClientId { get; }
         public bool IsClosedOrClosing { get; }
-        public string Path { get; }
+        public string Path { get; } = "TestReceiverPath";
         public TimeSpan OperationTimeout { get; set; }
         public ServiceBusConnection ServiceBusConnection { get; }
         public bool OwnsConnection { get; }
@@ -28,12 +28,6 @@
         public void RegisterMessageHandler(Func<Message, CancellationToken, Task> handler, MessageHandlerOptions messageHandlerOptions) => throw new NotImplementedException();
 
         public Task UnregisterMessageHandlerAsync(TimeSpan inflightMessageHandlerTasksWaitTimeout) => throw new NotImplementedException();
-
-        public Task CompleteAsync(string lockToken)
-        {
-            CompletedLockTokens.Add(lockToken);
-            return Task.CompletedTask;
-        }
 
         public List<string> AbandonedLockTokens { get; } = new List<string>();
         public Task AbandonAsync(string lockToken, IDictionary<string, object> propertiesToModify = null)
@@ -61,9 +55,16 @@
         public Task<IList<Message>> ReceiveDeferredMessageAsync(IEnumerable<long> sequenceNumbers) => throw new NotImplementedException();
 
         public List<string> CompletedLockTokens { get; } = new List<string>();
+
         public Task CompleteAsync(IEnumerable<string> lockTokens)
         {
             CompletedLockTokens.AddRange(lockTokens);
+            return Task.CompletedTask;
+        }
+
+        public Task CompleteAsync(string lockToken)
+        {
+            CompletedLockTokens.Add(lockToken);
             return Task.CompletedTask;
         }
 
