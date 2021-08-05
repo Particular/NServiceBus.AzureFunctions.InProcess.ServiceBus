@@ -100,7 +100,7 @@
                 {
                     var transportMessage = MessageHelper.GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.Process(transportMessage, context);
+                    await endpoint.ProcessNonTransactional(transportMessage, context, null);
                 }
             }
 
