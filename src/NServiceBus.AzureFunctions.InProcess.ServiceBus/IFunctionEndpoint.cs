@@ -14,6 +14,11 @@
     public interface IFunctionEndpoint
     {
         /// <summary>
+        /// Access advance message processing methods.
+        /// </summary>
+        IAdvancedFunctionEndpoint Advanced { get; }
+
+        /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
         /// </summary>
         Task ProcessTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null);

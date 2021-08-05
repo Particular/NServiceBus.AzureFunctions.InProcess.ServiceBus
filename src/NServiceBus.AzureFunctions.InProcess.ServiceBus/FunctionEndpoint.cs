@@ -22,7 +22,7 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint : IFunctionEndpoint
+    public class FunctionEndpoint : IFunctionEndpoint, IAdvancedFunctionEndpoint
     {
         // This ctor is used for the FunctionsHostBuilder scenario where the endpoint is created already during configuration time using the function host's container.
         internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
@@ -32,40 +32,25 @@
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
+        Task IAdvancedFunctionEndpoint.Process(Message message, ExecutionContext executionContext,
+            IMessageReceiver messageReceiver, bool autoComplete, ILogger logger) => autoComplete
+                ? ProcessTransactional(message, executionContext, messageReceiver, logger)
+                : Process(message, executionContext, logger);
+
+        /// <summary>
+        /// Access advance message processing methods.
+        /// </summary>
+        public IAdvancedFunctionEndpoint Advanced => this;
+
         /// <summary>
         /// TODO.
         /// </summary>
         public Task AutoDetectProcess(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
         {
-            var st = new StackTrace();
-            var frames = st.GetFrames();
-            foreach (var frame in frames)
-            {
-                var method = frame.GetMethod();
-                if (method?.GetCustomAttribute<FunctionNameAttribute>() != null)
-                {
-                    foreach (var parameter in method.GetParameters())
-                    {
-                        ServiceBusTriggerAttribute serviceBusTriggerAttribute;
-                        if (parameter.ParameterType == typeof(Message)
-                            && (serviceBusTriggerAttribute = parameter.GetCustomAttribute<ServiceBusTriggerAttribute>()) != null)
-                        {
-                            if (serviceBusTriggerAttribute.AutoComplete)
-                            {
-                                // Autocomplete enabled -> no transactions
-                                return Process(message, executionContext, functionsLogger);
-                            }
-                            else
-                            {
-                                // Autocomplete disabled -> transactions
-                                return ProcessTransactional(message, executionContext, messageReceiver, functionsLogger);
-                            }
-                        }
-                    }
-                }
-            }
+            var triggerAttribute = TriggerDiscoverer.TryGet<ServiceBusTriggerAttribute>()
+                                   ?? throw new Exception($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer AutoComplete setting. Use `functionEndpoint.Advanced.Process(...)` to specify AutoComplete.");
 
-            throw new Exception($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer AutoComplete setting.");
+            return Advanced.Process(message, executionContext, messageReceiver, triggerAttribute.AutoComplete, functionsLogger);
         }
 
         /// <summary>
