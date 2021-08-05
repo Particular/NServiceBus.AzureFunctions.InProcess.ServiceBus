@@ -34,6 +34,7 @@
         public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
             DeferredLoggerFactory.Instance.FlushAll(FunctionsLoggerFactory.Instance);
 
             var messageContext = CreateMessageContext(message);
