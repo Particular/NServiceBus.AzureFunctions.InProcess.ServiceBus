@@ -33,15 +33,15 @@
         }
 
         /// <summary>
-        /// TODO.
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
-        public Task AutoDetectProcess(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        public Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
         {
             var st = new StackTrace();
             var frames = st.GetFrames();
             foreach (var frame in frames)
             {
-                var method = frame.GetMethod();
+                var method = frame?.GetMethod();
                 if (method?.GetCustomAttribute<FunctionNameAttribute>() != null)
                 {
                     foreach (var parameter in method.GetParameters())
@@ -70,6 +70,7 @@
 
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
+        /// <remarks>Requires <see cref="ServiceBusTriggerAttribute.AutoComplete"/> to be set to false!</remarks>
         /// </summary>
         public async Task ProcessTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
         {
@@ -82,7 +83,7 @@
                 await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                await Process(message,
+                await ProcessInternal(message,
                         tx => messageReceiver.SafeCompleteAsync(message, tx),
                         () => CreateTransaction(),
                         tx => CreateTransportTransaction(tx),
@@ -116,6 +117,15 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
+        public Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null) => Process(message, executionContext, functionsLogger);
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
+        /// </summary>
+        [ObsoleteEx(
+            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
         public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -125,7 +135,7 @@
             await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            await Process(message,
+            await ProcessInternal(message,
                     _ => Task.CompletedTask,
                     () => null,
                     _ => new TransportTransaction(),
@@ -133,7 +143,7 @@
                 .ConfigureAwait(false);
         }
 
-        internal static async Task Process(Message message, Func<CommittableTransaction, Task> onComplete, Func<CommittableTransaction> transactionFactory, Func<CommittableTransaction, TransportTransaction> transportTransactionFactory, PipelineInvoker pipeline)
+        internal static async Task ProcessInternal(Message message, Func<CommittableTransaction, Task> onComplete, Func<CommittableTransaction> transactionFactory, Func<CommittableTransaction, TransportTransaction> transportTransactionFactory, PipelineInvoker pipeline)
         {
             var messageId = message.GetMessageId();
 

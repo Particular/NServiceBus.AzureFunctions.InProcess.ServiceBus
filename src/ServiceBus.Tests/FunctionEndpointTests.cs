@@ -27,7 +27,7 @@
                 });
 
 
-            await FunctionEndpoint.Process(
+            await FunctionEndpoint.ProcessInternal(
                 message,
                 tx =>
                 {
@@ -59,7 +59,7 @@
                     return Task.FromResult(ErrorHandleResult.Handled);
                 });
 
-            await FunctionEndpoint.Process(
+            await FunctionEndpoint.ProcessInternal(
                 message,
                 tx => Task.CompletedTask,
                 () => null,
@@ -89,7 +89,7 @@
                 _ => throw errorPipelineException);
 
             var exception = Assert.ThrowsAsync<Exception>(async () =>
-                await FunctionEndpoint.Process(
+                await FunctionEndpoint.ProcessInternal(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     tx =>
                     {
@@ -112,7 +112,7 @@
                 _ => throw new Exception("main pipeline failure"),
                 _ => Task.FromResult(ErrorHandleResult.Handled));
 
-            await FunctionEndpoint.Process(
+            await FunctionEndpoint.ProcessInternal(
                 MessageHelper.GenerateMessage(new TestMessage()),
                 tx =>
                 {
@@ -136,7 +136,7 @@
                 _ => Task.FromResult(ErrorHandleResult.RetryRequired));
 
             var exception = Assert.ThrowsAsync<Exception>(async () =>
-                await FunctionEndpoint.Process(
+                await FunctionEndpoint.ProcessInternal(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     tx =>
                     {
