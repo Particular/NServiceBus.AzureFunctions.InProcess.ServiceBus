@@ -10,7 +10,7 @@
     {
         public static FunctionsLoggerFactory Instance { get; } = new FunctionsLoggerFactory();
 
-        ILog log;
+        Logger log;
 
         AsyncLocal<ILogger> logger = new AsyncLocal<ILogger>();
 
@@ -22,6 +22,7 @@
         public void SetCurrentLogger(ILogger currentLogger)
         {
             logger.Value = currentLogger;
+            log.Flush(currentLogger);
         }
 
         public ILog GetLogger(Type type)
