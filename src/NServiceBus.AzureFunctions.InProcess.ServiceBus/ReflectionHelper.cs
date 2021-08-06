@@ -29,7 +29,7 @@
                 }
             }
 
-            throw new Exception($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer AutoComplete setting.");
+            throw new Exception($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer the AutoComplete setting. Make sure that the function trigger contains a parameter decorated with {nameof(ServiceBusTriggerAttribute)} or use the advanced APIs exposed via the {nameof(FunctionEndpoint)} type instead.");
         }
     }
 }

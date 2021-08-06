@@ -14,7 +14,7 @@
         {
             var exception = Assert.Throws<Exception>(() => ReflectionHelper.GetAutoCompleteValue());
 
-            StringAssert.Contains($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer AutoComplete setting.", exception.Message);
+            StringAssert.Contains($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer the AutoComplete setting.", exception.Message);
         }
 
         [Test]
@@ -22,7 +22,7 @@
         {
             var exception = Assert.Throws<Exception>(() => FunctionWithNoFunctionNameAttribute(null));
 
-            StringAssert.Contains($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer AutoComplete setting.", exception.Message);
+            StringAssert.Contains($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer the AutoComplete setting.", exception.Message);
 
             void FunctionWithNoFunctionNameAttribute(
                 [ServiceBusTrigger("queueName", "subscriptionname", AutoComplete = true)] Message _)
@@ -36,7 +36,7 @@
         {
             var exception = Assert.Throws<Exception>(() => FunctionWithNoServiceBusTriggerAttribute(null));
 
-            StringAssert.Contains($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer AutoComplete setting.", exception.Message);
+            StringAssert.Contains($"Could not locate {nameof(ServiceBusTriggerAttribute)} to infer the AutoComplete setting.", exception.Message);
 
             [FunctionName("TestFunction")]
             void FunctionWithNoServiceBusTriggerAttribute(
