@@ -8,9 +8,9 @@ using NServiceBus;
 
 class FunctionEndpointTrigger
 {
-    readonly IFunctionEndpoint endpoint;
+    readonly FunctionEndpoint endpoint;
 
-    public FunctionEndpointTrigger(IFunctionEndpoint endpoint)
+    public FunctionEndpointTrigger(FunctionEndpoint endpoint)
     {
         this.endpoint = endpoint;
     }
