@@ -141,27 +141,27 @@
         {
         }
 
-        class TestableFunctionTransactionStrategy : FunctionTransactionStrategy
+        class TestableFunctionTransactionStrategy : ITransactionStrategy
         {
             public bool OnCompleteCalled { get; private set; }
             public CommittableTransaction CompletedTransaction { get; private set; }
             public CommittableTransaction CreatedTransaction { get; private set; }
             public List<TransportTransaction> CreatedTransportTransactions { get; } = new List<TransportTransaction>();
 
-            public override Task Complete(CommittableTransaction transaction)
+            public Task Complete(CommittableTransaction transaction)
             {
                 OnCompleteCalled = true;
                 CompletedTransaction = transaction;
                 return Task.CompletedTask;
             }
 
-            public override CommittableTransaction CreateTransaction()
+            public CommittableTransaction CreateTransaction()
             {
                 CreatedTransaction = new CommittableTransaction();
                 return CreatedTransaction;
             }
 
-            public override TransportTransaction CreateTransportTransaction(CommittableTransaction transaction)
+            public TransportTransaction CreateTransportTransaction(CommittableTransaction transaction)
             {
                 var transportTransaction = new TransportTransaction();
                 CreatedTransportTransactions.Add(transportTransaction);

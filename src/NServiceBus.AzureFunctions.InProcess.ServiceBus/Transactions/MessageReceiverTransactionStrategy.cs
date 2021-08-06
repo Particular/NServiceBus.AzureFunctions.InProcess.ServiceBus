@@ -7,25 +7,25 @@
     using Microsoft.Azure.ServiceBus.Core;
     using Transport;
 
-    class MessageReceiverFunctionTransactionStrategy : FunctionTransactionStrategy
+    class MessageReceiverTransactionStrategy : ITransactionStrategy
     {
         readonly Message message;
         readonly IMessageReceiver messageReceiver;
 
-        public MessageReceiverFunctionTransactionStrategy(Message message, IMessageReceiver messageReceiver)
+        public MessageReceiverTransactionStrategy(Message message, IMessageReceiver messageReceiver)
         {
             this.message = message;
             this.messageReceiver = messageReceiver;
         }
 
-        public override CommittableTransaction CreateTransaction() =>
+        public CommittableTransaction CreateTransaction() =>
             new CommittableTransaction(new TransactionOptions
             {
                 IsolationLevel = IsolationLevel.Serializable,
                 Timeout = TransactionManager.MaximumTimeout
             });
 
-        public override TransportTransaction CreateTransportTransaction(CommittableTransaction transaction)
+        public TransportTransaction CreateTransportTransaction(CommittableTransaction transaction)
         {
             var transportTransaction = new TransportTransaction();
             transportTransaction.Set((messageReceiver.ServiceBusConnection, messageReceiver.Path));
@@ -34,6 +34,6 @@
             return transportTransaction;
         }
 
-        public override Task Complete(CommittableTransaction transaction) => messageReceiver.SafeCompleteAsync(message, transaction);
+        public Task Complete(CommittableTransaction transaction) => messageReceiver.SafeCompleteAsync(message, transaction);
     }
 }
