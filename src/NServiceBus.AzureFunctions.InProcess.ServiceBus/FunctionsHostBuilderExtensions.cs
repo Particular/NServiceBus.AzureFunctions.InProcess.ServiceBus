@@ -2,8 +2,11 @@
 {
     using System;
     using System.IO;
+    using AzureFunctions.InProcess.ServiceBus;
+    using Logging;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Provides extension methods to configure a <see cref="FunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
@@ -41,7 +44,15 @@
                     configuration.EndpointConfiguration,
                     serviceCollection);
 
-            return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
+            return serviceProvider =>
+            {
+                var logger = serviceProvider.GetService<ILogger>();
+                FunctionsLoggerFactory.Instance.SetCurrentLogger(logger);
+                LogManager.UseFactory(FunctionsLoggerFactory.Instance);
+                DeferredLoggerFactory.Instance.FlushAll(FunctionsLoggerFactory.Instance);
+
+                return new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
+            };
         }
     }
 }
