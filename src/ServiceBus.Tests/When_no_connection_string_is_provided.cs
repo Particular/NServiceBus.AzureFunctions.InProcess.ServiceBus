@@ -12,6 +12,7 @@
         public void Should_guide_user_towards_success()
         {
             var endpointConfiguration = new EndpointConfiguration("SampleEndpoint");
+
             endpointConfiguration.UseTransport<ServerlessTransport<AzureServiceBusTransport>>();
 
             var exception = Assert.ThrowsAsync<Exception>(
