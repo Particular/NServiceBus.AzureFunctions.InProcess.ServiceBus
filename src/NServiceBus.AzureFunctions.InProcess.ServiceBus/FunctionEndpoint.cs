@@ -43,7 +43,7 @@
                 await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                await Process(message, new MessageReceiverFunctionTransactionStrategy(message, messageReceiver))
+                await Process(message, new MessageReceiverFunctionTransactionStrategy(message, messageReceiver), pipeline)
                     .ConfigureAwait(false);
             }
             catch (Exception)
@@ -66,11 +66,11 @@
             await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            await Process(message, FunctionTransactionStrategy.None)
+            await Process(message, FunctionTransactionStrategy.None, pipeline)
                 .ConfigureAwait(false);
         }
 
-        async Task Process(Message message, FunctionTransactionStrategy transactionStrategy)
+        internal static async Task Process(Message message, FunctionTransactionStrategy transactionStrategy, PipelineInvoker pipeline)
         {
             var messageId = message.GetMessageId();
 
