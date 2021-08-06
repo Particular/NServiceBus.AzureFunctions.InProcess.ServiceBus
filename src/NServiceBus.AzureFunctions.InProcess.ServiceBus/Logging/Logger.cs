@@ -28,7 +28,6 @@
                 deferredMessageLogs.Enqueue((level, message));
                 return;
             }
-            Flush(concreteLogger);
             concreteLogger.Log(level, message);
         }
 
@@ -40,7 +39,6 @@
                 deferredExceptionLogs.Enqueue((level, message, exception));
                 return;
             }
-            Flush(concreteLogger);
             concreteLogger.Log(level, exception, message);
         }
 
@@ -52,7 +50,6 @@
                 deferredFormatLogs.Enqueue((level, format, args));
                 return;
             }
-            Flush(concreteLogger);
             concreteLogger.Log(level, format, args);
         }
 

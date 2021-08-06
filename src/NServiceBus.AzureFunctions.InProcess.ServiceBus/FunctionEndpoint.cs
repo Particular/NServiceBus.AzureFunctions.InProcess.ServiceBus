@@ -11,7 +11,6 @@
     using Logging;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -34,7 +33,7 @@
         /// </summary>
         public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger ?? NullLogger.Instance);
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
             var messageContext = CreateMessageContext(message);
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
