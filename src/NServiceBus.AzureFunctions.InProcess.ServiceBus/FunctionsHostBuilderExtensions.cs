@@ -3,6 +3,7 @@
     using System;
     using System.IO;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
@@ -10,6 +11,15 @@
     /// </summary>
     public static class FunctionsHostBuilderExtensions
     {
+        /// <summary>
+        /// Use the IConfiguration to configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// </summary>
+        public static void UseNServiceBus(
+            this IFunctionsHostBuilder functionsHostBuilder)
+        {
+            functionsHostBuilder.UseNServiceBus(config => new ServiceBusTriggeredEndpointConfiguration(config));
+        }
+
         /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
         /// </summary>
@@ -19,6 +29,25 @@
         {
             var serviceBusTriggeredEndpointConfiguration = configurationFactory();
 
+            RegisterEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
+        }
+
+        /// <summary>
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// </summary>
+        public static void UseNServiceBus(
+            this IFunctionsHostBuilder functionsHostBuilder,
+            Func<IConfiguration, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
+        {
+            var configuration = functionsHostBuilder.GetContext().Configuration;
+            var serviceBusTriggeredEndpointConfiguration = configurationFactory(configuration);
+
+            RegisterEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
+        }
+
+        static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
+            ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
+        {
             // Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
             var endpointFactory = Configure(serviceBusTriggeredEndpointConfiguration, functionsHostBuilder.Services,
