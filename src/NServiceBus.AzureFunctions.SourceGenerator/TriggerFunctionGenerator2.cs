@@ -59,7 +59,7 @@
                         // 3rd parameter might be trigger function name
                         triggerFunctionName = attributeParametersCount == 3
                             ? AttributeParameterAtPosition(2)
-                            : $"NServiceBusFunctionEndpointTrigger-{endpointName}";
+                            : triggerFunctionName;
                     }
                     else
                     {
