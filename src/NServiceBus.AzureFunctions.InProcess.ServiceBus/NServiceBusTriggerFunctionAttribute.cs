@@ -1,7 +1,7 @@
 ﻿namespace NServiceBus
 {
     ///<summary>
-    /// Assembly attribute to specify NServiceBus logical endpoint name.
+    /// Assembly attribute to configure generated NServiceBus Azure Function.
     /// The attribute is used to wire up an auto-generated Service Bus trigger function, responding to messages in the queue specified by the name provided.
     ///</summary>
     [System.AttributeUsage(System.AttributeTargets.Assembly)]
