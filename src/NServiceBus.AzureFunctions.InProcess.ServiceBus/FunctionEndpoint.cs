@@ -10,6 +10,8 @@
     using Extensibility;
     using Logging;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.Core;
+    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -29,53 +31,117 @@
         }
 
         /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
+        /// </summary>
+        Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger) =>
+            ReflectionHelper.GetAutoCompleteValue()
+                ? ProcessNonTransactional(message, executionContext, messageReceiver, functionsLogger)
+                : ProcessTransactional(message, executionContext, messageReceiver, functionsLogger);
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
+        /// <remarks>Requires <see cref="ServiceBusTriggerAttribute.AutoComplete"/> to be set to false!</remarks>
+        /// </summary>
+        public async Task ProcessTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
+            var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
+
+            try
+            {
+                await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
+                    .ConfigureAwait(false);
+
+                await Process(message, new MessageReceiverTransactionStrategy(message, messageReceiver), pipeline)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // abandon message outside of a transaction scope to ensure the abandon operation can't be rolled back
+                await messageReceiver.AbandonAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
+        public Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null) => Process(message, executionContext, functionsLogger);
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
+        /// </summary>
+        [ObsoleteEx(
+            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
         public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            var messageContext = CreateMessageContext(message);
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
-            await InitializeEndpointIfNecessary(functionExecutionContext,
-                messageContext.ReceiveCancellationTokenSource.Token).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            await Process(message, NoTransactionStrategy.Instance, pipeline)
+                .ConfigureAwait(false);
+        }
+
+        internal static async Task Process(Message message, ITransactionStrategy transactionStrategy, PipelineInvoker pipeline)
+        {
+            var messageId = message.GetMessageId();
 
             try
             {
-                await pipeline.PushMessage(messageContext).ConfigureAwait(false);
+                using (var transaction = transactionStrategy.CreateTransaction())
+                {
+                    var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
+                    var messageContext = CreateMessageContext(transportTransaction);
+
+                    await pipeline.PushMessage(messageContext).ConfigureAwait(false);
+
+                    await transactionStrategy.Complete(transaction).ConfigureAwait(false);
+
+                    transaction?.Commit();
+                }
             }
             catch (Exception exception)
             {
-                var errorContext = new ErrorContext(
-                    exception,
-                    message.GetHeaders(),
-                    messageContext.MessageId,
-                    messageContext.Body,
-                    new TransportTransaction(),
-                    message.SystemProperties.DeliveryCount);
-
-                var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
-
-                if (errorHandleResult == ErrorHandleResult.Handled)
+                using (var transaction = transactionStrategy.CreateTransaction())
                 {
-                    // return to signal to the Functions host it can complete the incoming message
-                    return;
-                }
+                    var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
+                    var errorContext = new ErrorContext(
+                        exception,
+                        message.GetHeaders(),
+                        messageId,
+                        message.Body,
+                        transportTransaction,
+                        message.SystemProperties.DeliveryCount);
 
-                throw;
+                    var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
+
+                    if (errorHandleResult == ErrorHandleResult.Handled)
+                    {
+                        await transactionStrategy.Complete(transaction).ConfigureAwait(false);
+
+                        transaction?.Commit();
+                        return;
+                    }
+
+                    throw;
+                }
             }
 
-            MessageContext CreateMessageContext(Message originalMessage)
-            {
-                return new MessageContext(
-                    originalMessage.GetMessageId(),
-                    originalMessage.GetHeaders(),
-                    originalMessage.Body,
-                    new TransportTransaction(),
+            MessageContext CreateMessageContext(TransportTransaction transportTransaction) =>
+                new MessageContext(
+                    messageId,
+                    message.GetHeaders(),
+                    message.Body,
+                    transportTransaction,
                     new CancellationTokenSource(),
                     new ContextBag());
-            }
         }
 
         /// <summary>

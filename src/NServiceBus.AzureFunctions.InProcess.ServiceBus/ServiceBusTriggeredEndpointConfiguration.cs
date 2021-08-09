@@ -4,7 +4,6 @@
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
     using Logging;
-    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Configuration;
     using Serialization;
     using Transport;
@@ -134,10 +133,10 @@
         /// </summary>
         public static ServiceBusTriggeredEndpointConfiguration FromAttributes()
         {
-            var configuration = TriggerDiscoverer.TryGet<ServiceBusTriggerAttribute>();
-            if (configuration != null)
+            var serviceBusTriggerAttribute = ReflectionHelper.FindBusTriggerAttribute();
+            if (serviceBusTriggerAttribute != null)
             {
-                return new ServiceBusTriggeredEndpointConfiguration(configuration.QueueName, configuration.Connection);
+                return new ServiceBusTriggeredEndpointConfiguration(serviceBusTriggerAttribute.QueueName, serviceBusTriggerAttribute.Connection);
             }
 
             throw new Exception(
