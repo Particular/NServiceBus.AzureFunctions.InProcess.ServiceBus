@@ -10,7 +10,7 @@
         /// <summary>
         /// Endpoint name that is the input queue name.
         /// </summary>
-        public string Name { get; }
+        public string EndpointName { get; }
 
         /// <summary>
         /// Override trigger function name.
@@ -25,10 +25,10 @@
         /// <summary>
         /// Endpoint logical name.
         /// </summary>
-        /// <param name="name">Endpoint name that is the input queue name.</param>
-        public NServiceBusTriggerFunctionAttribute(string name)
+        /// <param name="endpointName">Endpoint name that is the input queue name.</param>
+        public NServiceBusTriggerFunctionAttribute(string endpointName)
         {
-            Name = name;
+            EndpointName = endpointName;
         }
     }
 }
