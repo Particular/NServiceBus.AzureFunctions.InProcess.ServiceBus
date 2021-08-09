@@ -2,7 +2,6 @@
 {
     using System.Threading.Tasks;
     using System.Transactions;
-    using AzureFunctions.InProcess.ServiceBus;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.ServiceBus.Core;
     using Transport;
@@ -34,6 +33,15 @@
             return transportTransaction;
         }
 
-        public Task Complete(CommittableTransaction transaction) => messageReceiver.SafeCompleteAsync(message, transaction);
+        public async Task Complete(CommittableTransaction transaction)
+        {
+            // open short-lived TransactionScope connected to the committable transaction to ensure the message operation has a scope to enlist.
+            using (var scope = new TransactionScope(transaction, TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await messageReceiver.CompleteAsync(message.SystemProperties.LockToken)
+                    .ConfigureAwait(false);
+                scope.Complete();
+            }
+        }
     }
 }
