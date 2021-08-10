@@ -132,7 +132,7 @@ using NServiceBus;
             var source = @"
 using NServiceBus;
 
-[assembly: NServiceBusTriggerFunction(""endpoint"", EnableCrossEntityTransactions = true)]
+[assembly: NServiceBusTriggerFunction(""endpoint"", SendsAtomicWithReceive = true)]
 
 public class Startup
 {
@@ -148,7 +148,7 @@ public class Startup
             var source = @"
 using NServiceBus;
 
-[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"", EnableCrossEntityTransactions = true)]
+[assembly: NServiceBusTriggerFunction(""endpoint"", TriggerFunctionName = ""trigger"", SendsAtomicWithReceive = true)]
 
 public class Startup
 {
@@ -164,7 +164,7 @@ public class Startup
             var source = @"
 using NServiceBus;
 
-[assembly: NServiceBusTriggerFunction(""endpoint"", EnableCrossEntityTransactions = true, TriggerFunctionName = ""trigger"")]
+[assembly: NServiceBusTriggerFunction(""endpoint"", SendsAtomicWithReceive = true, TriggerFunctionName = ""trigger"")]
 
 public class Startup
 {
