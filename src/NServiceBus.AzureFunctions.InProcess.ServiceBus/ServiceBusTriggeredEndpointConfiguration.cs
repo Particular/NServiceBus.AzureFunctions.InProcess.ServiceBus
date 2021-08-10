@@ -131,6 +131,10 @@
         /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via
         /// reflection.
         /// </summary>
+        [ObsoleteEx(
+            Message = "The static hosting model has been deprecated. Refer to the documentation for details on how to use class-instance approach instead.",
+            RemoveInVersion = "3",
+            TreatAsErrorFromVersion = "2")]
         public static ServiceBusTriggeredEndpointConfiguration FromAttributes()
         {
             var serviceBusTriggerAttribute = ReflectionHelper.FindBusTriggerAttribute();
