@@ -84,6 +84,9 @@ namespace NServiceBus
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
         protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
             where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
+        [System.Obsolete("The static hosting model has been deprecated. Refer to the documentation for deta" +
+            "ils on how to use class-instance approach instead. Will be treated as an error f" +
+            "rom version 2.0.0. Will be removed in version 3.0.0.", false)]
         public static NServiceBus.ServiceBusTriggeredEndpointConfiguration FromAttributes() { }
     }
 }
