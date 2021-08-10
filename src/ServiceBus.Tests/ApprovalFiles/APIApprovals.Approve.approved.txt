@@ -66,8 +66,8 @@ namespace NServiceBus
     public sealed class NServiceBusTriggerFunctionAttribute : System.Attribute
     {
         public NServiceBusTriggerFunctionAttribute(string endpointName) { }
-        public bool EnableCrossEntityTransactions { get; set; }
         public string EndpointName { get; }
+        public bool SendsAtomicWithReceive { get; set; }
         public string TriggerFunctionName { get; set; }
     }
     public class ServiceBusTriggeredEndpointConfiguration

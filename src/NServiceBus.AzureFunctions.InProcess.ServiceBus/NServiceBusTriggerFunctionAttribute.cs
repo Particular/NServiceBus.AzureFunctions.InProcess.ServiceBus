@@ -18,9 +18,9 @@
         public string TriggerFunctionName { get; set; }
 
         /// <summary>
-        /// Enable cross-entity transactions.
+        /// Enable Azure Service Bus transactions to provide <see cref="TransportTransactionMode.SendsAtomicWithReceive"/> transport guarantees.
         /// </summary>
-        public bool EnableCrossEntityTransactions { get; set; }
+        public bool SendsAtomicWithReceive { get; set; }
 
         /// <summary>
         /// Endpoint logical name.
