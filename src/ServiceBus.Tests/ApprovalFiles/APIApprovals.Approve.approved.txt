@@ -3,8 +3,9 @@ namespace NServiceBus
 {
     public class FunctionEndpoint : NServiceBus.IFunctionEndpoint
     {
-        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. Will" +
-            " be treated as an error from version 2.0.0. Will be removed in version 3.0.0.", false)]
+        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. The " +
+            "member currently throws a NotImplementedException. Will be removed in version 3." +
+            "0.0.", true)]
         public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
         public System.Threading.Tasks.Task ProcessNonTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
         public System.Threading.Tasks.Task ProcessTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
@@ -36,7 +37,7 @@ namespace NServiceBus
     public interface IFunctionEndpoint
     {
         [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. Will" +
-            " be treated as an error from version 2.0.0. Will be removed in version 3.0.0.", false)]
+            " be removed in version 3.0.0.", true)]
         System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
         System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
         System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
@@ -53,8 +54,8 @@ namespace NServiceBus
         System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
     }
     [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
-    [System.Obsolete("Use `NServiceBusTriggerFunctionAttribute` instead. Will be treated as an error fr" +
-        "om version 2.0.0. Will be removed in version 3.0.0.", false)]
+    [System.Obsolete("Use `NServiceBusTriggerFunctionAttribute` instead. Will be removed in version 3.0" +
+        ".0.", true)]
     public sealed class NServiceBusEndpointNameAttribute : System.Attribute
     {
         public NServiceBusEndpointNameAttribute(string name) { }
@@ -77,16 +78,15 @@ namespace NServiceBus
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Configuration.IConfiguration configuration = null) { }
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
-        public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
+        public NServiceBus.AzureServiceBusTransport Transport { get; }
         public void DoNotSendMessagesToErrorQueue() { }
         public void LogDiagnostics() { }
         public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
-        protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
-            where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
+        protected NServiceBus.AzureServiceBusTransport UseTransport(NServiceBus.AzureServiceBusTransport transport) { }
         [System.Obsolete("The static hosting model has been deprecated. Refer to the documentation for deta" +
-            "ils on how to use class-instance approach instead. Will be treated as an error f" +
-            "rom version 2.0.0. Will be removed in version 3.0.0.", false)]
+            "ils on how to use class-instance approach instead. The member currently throws a" +
+            " NotImplementedException. Will be removed in version 3.0.0.", true)]
         public static NServiceBus.ServiceBusTriggeredEndpointConfiguration FromAttributes() { }
     }
 }

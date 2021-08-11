@@ -67,7 +67,7 @@
                     .Delayed(d => d.NumberOfRetries(0))
                     .Failed(c => c
                         // track messages sent to the error queue to fail the test
-                        .OnMessageSentToErrorQueue(failedMessage =>
+                        .OnMessageSentToErrorQueue((failedMessage, _) =>
                         {
                             scenarioContext.FailedMessages.AddOrUpdate(
                                 Name,
@@ -81,12 +81,12 @@
                             return Task.CompletedTask;
                         }));
 
-                endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
+                endpointConfiguration.RegisterComponents(c => c.AddSingleton(scenarioContext.GetType(), scenarioContext));
 
                 configurationCustomization(functionEndpointConfiguration);
 
                 var serviceCollection = new ServiceCollection();
-                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
+                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
                 endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);

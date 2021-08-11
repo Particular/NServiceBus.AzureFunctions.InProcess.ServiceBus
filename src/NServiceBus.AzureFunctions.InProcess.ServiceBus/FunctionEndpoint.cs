@@ -10,11 +10,11 @@
     using Extensibility;
     using Logging;
     using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.ServiceBus.Core;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
+    using IMessageReceiver = Microsoft.Azure.ServiceBus.Core.IMessageReceiver;
 
     /// <summary>
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
@@ -67,16 +67,8 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null) => Process(message, executionContext, functionsLogger);
-
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-        /// </summary>
-        [ObsoleteEx(
-            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
+        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext,
+            IMessageReceiver messageReceiver, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -87,6 +79,19 @@
 
             await Process(message, NoTransactionStrategy.Instance, pipeline)
                 .ConfigureAwait(false);
+
+        }
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
+        /// </summary>
+        [ObsoleteEx(
+            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
+        public Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
+        {
+            throw new NotImplementedException();
         }
 
         internal static async Task Process(Message message, ITransactionStrategy transactionStrategy, PipelineInvoker pipeline)
@@ -118,7 +123,8 @@
                         messageId,
                         message.Body,
                         transportTransaction,
-                        message.SystemProperties.DeliveryCount);
+                        message.SystemProperties.DeliveryCount,
+                        new ContextBag());
 
                     var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
 
@@ -140,7 +146,6 @@
                     message.GetHeaders(),
                     message.Body,
                     transportTransaction,
-                    new CancellationTokenSource(),
                     new ContextBag());
         }
 
