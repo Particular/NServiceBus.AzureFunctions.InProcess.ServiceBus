@@ -18,8 +18,8 @@
         {
             var message = MessageHelper.GenerateMessage(new TestMessage());
             MessageContext messageContext = null;
-            var pipelineInvoker = await CreatePipeline(
-                ctx =>
+            var pipelineInvoker = CreatePipeline(
+                (ctx, _) =>
                 {
                     messageContext = ctx;
                     return Task.CompletedTask;
@@ -33,7 +33,7 @@
                 pipelineInvoker);
 
             Assert.IsTrue(transactionStrategy.OnCompleteCalled);
-            Assert.AreSame(message.GetMessageId(), messageContext.MessageId);
+            Assert.AreSame(message.GetMessageId(), messageContext.NativeMessageId);
             Assert.AreSame(message.Body, messageContext.Body);
             CollectionAssert.IsSubsetOf(message.GetHeaders(), messageContext.Headers); // the IncomingMessage has an additional MessageId header
             Assert.AreEqual(1, transactionStrategy.CreatedTransportTransactions.Count);
@@ -46,9 +46,9 @@
             var message = MessageHelper.GenerateMessage(new TestMessage());
             var pipelineException = new Exception("test exception");
             ErrorContext errorContext = null;
-            var pipelineInvoker = await CreatePipeline(
-                _ => throw pipelineException,
-                errCtx =>
+            var pipelineInvoker = CreatePipeline(
+                (_, __) => throw pipelineException,
+                (errCtx, _) =>
                 {
                     errorContext = errCtx;
                     return Task.FromResult(ErrorHandleResult.Handled);
@@ -70,12 +70,12 @@
         }
 
         [Test]
-        public async Task When_error_pipeline_fails_should_throw()
+        public void When_error_pipeline_fails_should_throw()
         {
             var errorPipelineException = new Exception("error pipeline failure");
-            var pipelineInvoker = await CreatePipeline(
-                _ => throw new Exception("main pipeline failure"),
-                _ => throw errorPipelineException);
+            var pipelineInvoker = CreatePipeline(
+                (_, __) => throw new Exception("main pipeline failure"),
+                (_, __) => throw errorPipelineException);
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
@@ -92,9 +92,9 @@
         [Test]
         public async Task When_error_pipeline_handles_error_should_complete_message()
         {
-            var pipelineInvoker = await CreatePipeline(
-                _ => throw new Exception("main pipeline failure"),
-                _ => Task.FromResult(ErrorHandleResult.Handled));
+            var pipelineInvoker = CreatePipeline(
+                (_, __) => throw new Exception("main pipeline failure"),
+                (_, __) => Task.FromResult(ErrorHandleResult.Handled));
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
@@ -107,12 +107,12 @@
         }
 
         [Test]
-        public async Task When_error_pipeline_requires_retry_should_throw()
+        public void When_error_pipeline_requires_retry_should_throw()
         {
             var mainPipelineException = new Exception("main pipeline failure");
-            var pipelineInvoker = await CreatePipeline(
-                _ => throw mainPipelineException,
-                _ => Task.FromResult(ErrorHandleResult.RetryRequired));
+            var pipelineInvoker = CreatePipeline(
+                (_, __) => throw mainPipelineException,
+                (_, __) => Task.FromResult(ErrorHandleResult.RetryRequired));
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
@@ -126,14 +126,12 @@
             Assert.AreSame(mainPipelineException, exception);
         }
 
-        static async Task<PipelineInvoker> CreatePipeline(Func<MessageContext, Task> mainPipeline = null, Func<ErrorContext, Task<ErrorHandleResult>> errorPipeline = null)
+        static PipelineInvoker CreatePipeline(OnMessage mainPipeline = null, OnError errorPipeline = null)
         {
             var pipelineInvoker = new PipelineInvoker();
-            await (pipelineInvoker as IPushMessages)
-                .Init(
-                    mainPipeline ?? (_ => Task.CompletedTask),
-                    errorPipeline ?? (_ => Task.FromResult(ErrorHandleResult.Handled)),
-                    null, null);
+            pipelineInvoker.Init(
+                    mainPipeline ?? ((_, __) => Task.CompletedTask),
+                    errorPipeline ?? ((_, __) => Task.FromResult(ErrorHandleResult.Handled)));
             return pipelineInvoker;
         }
 

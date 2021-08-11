@@ -1,45 +1,21 @@
 ﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
 {
-    using System;
     using System.Threading.Tasks;
     using Transport;
 
-    class PipelineInvoker : IPushMessages
+    class PipelineInvoker
     {
-        Task IPushMessages.Init(Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError, CriticalError criticalError, PushSettings settings)
+        internal void Init(OnMessage onMessage, OnError onError)
         {
-            if (this.onMessage == null)
-            {
-                // The core ReceiveComponent calls TransportInfrastructure.MessagePumpFactory() multiple times
-                // the first invocation is for the main pipeline, ignore all other pipelines as we don't want to manually invoke them.
-                this.onMessage = onMessage;
-
-                this.onError = onError;
-            }
-
-            return Task.CompletedTask;
+            this.onMessage = onMessage;
+            this.onError = onError;
         }
 
-        void IPushMessages.Start(PushRuntimeSettings limitations)
-        {
-        }
+        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext) => onError(errorContext);
 
-        Task IPushMessages.Stop()
-        {
-            return Task.CompletedTask;
-        }
+        public Task PushMessage(MessageContext messageContext) => onMessage.Invoke(messageContext);
 
-        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext)
-        {
-            return onError(errorContext);
-        }
-
-        public Task PushMessage(MessageContext messageContext)
-        {
-            return onMessage.Invoke(messageContext);
-        }
-
-        Func<MessageContext, Task> onMessage;
-        Func<ErrorContext, Task<ErrorHandleResult>> onError;
+        OnMessage onMessage;
+        OnError onError;
     }
 }

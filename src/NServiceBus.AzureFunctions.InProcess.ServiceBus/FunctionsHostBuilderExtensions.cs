@@ -66,7 +66,7 @@
             // Load user assemblies from the nested "bin" folder
             FunctionEndpoint.LoadAssemblies(appDirectory);
 
-            var startableEndpoint = EndpointWithExternallyManagedServiceProvider.Create(
+            var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
                     configuration.EndpointConfiguration,
                     serviceCollection);
 

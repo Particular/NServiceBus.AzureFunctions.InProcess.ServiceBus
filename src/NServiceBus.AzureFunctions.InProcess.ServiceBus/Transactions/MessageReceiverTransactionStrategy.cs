@@ -3,8 +3,8 @@
     using System.Threading.Tasks;
     using System.Transactions;
     using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.ServiceBus.Core;
     using Transport;
+    using IMessageReceiver = Microsoft.Azure.ServiceBus.Core.IMessageReceiver;
 
     class MessageReceiverTransactionStrategy : ITransactionStrategy
     {

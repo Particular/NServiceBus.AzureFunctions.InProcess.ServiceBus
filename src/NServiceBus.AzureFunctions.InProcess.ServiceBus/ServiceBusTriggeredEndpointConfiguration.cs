@@ -6,7 +6,6 @@
     using Logging;
     using Microsoft.Extensions.Configuration;
     using Serialization;
-    using Transport;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint.
@@ -62,7 +61,7 @@
 
             // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
             // Can be overriden by ServerlessEndpointConfiguration.LogDiagnostics().
-            EndpointConfiguration.CustomDiagnosticsWriter(_ => Task.CompletedTask);
+            EndpointConfiguration.CustomDiagnosticsWriter((_, __) => Task.CompletedTask);
 
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
             var functionAppName = GetConfiguredValueOrFallback(configuration, "WEBSITE_SITE_NAME", true) ?? Environment.MachineName;
@@ -76,12 +75,11 @@
                 EndpointConfiguration.License(licenseText);
             }
 
-            Transport = UseTransport<AzureServiceBusTransport>();
-
             var connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName ?? DefaultServiceBusConnectionName, optional: true);
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
-                Transport.ConnectionString(connectionString);
+                // TODO: What do we do if we don't have a connectionString?
+                UseTransport(new AzureServiceBusTransport(connectionString));
             }
             else if (!string.IsNullOrWhiteSpace(connectionStringName))
             {
@@ -117,7 +115,7 @@
         /// <summary>
         /// Azure Service Bus transport
         /// </summary>
-        public TransportExtensions<AzureServiceBusTransport> Transport { get; }
+        public AzureServiceBusTransport Transport { get; }
 
         internal EndpointConfiguration EndpointConfiguration { get; }
         internal PipelineInvoker PipelineInvoker { get; private set; }
@@ -137,26 +135,18 @@
             TreatAsErrorFromVersion = "2")]
         public static ServiceBusTriggeredEndpointConfiguration FromAttributes()
         {
-            var serviceBusTriggerAttribute = ReflectionHelper.FindBusTriggerAttribute();
-            if (serviceBusTriggerAttribute != null)
-            {
-                return new ServiceBusTriggeredEndpointConfiguration(serviceBusTriggerAttribute.QueueName, serviceBusTriggerAttribute.Connection);
-            }
-
-            throw new Exception(
-                $"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
+            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Define a transport to be used when sending and publishing messages.
         /// </summary>
-        protected TransportExtensions<TTransport> UseTransport<TTransport>()
-            where TTransport : TransportDefinition, new()
+        protected AzureServiceBusTransport UseTransport(AzureServiceBusTransport transport)
         {
-            var serverlessTransport = EndpointConfiguration.UseTransport<ServerlessTransport<TTransport>>();
-
-            PipelineInvoker = serverlessTransport.PipelineAccess();
-            return serverlessTransport.BaseTransportConfiguration();
+            var serverlessTransport = new ServerlessTransport(transport);
+            EndpointConfiguration.UseTransport(serverlessTransport);
+            PipelineInvoker = serverlessTransport.PipelineInvoker;
+            return transport;
         }
 
         /// <summary>
@@ -180,7 +170,7 @@
         /// </summary>
         public void LogDiagnostics()
         {
-            EndpointConfiguration.CustomDiagnosticsWriter(diagnostics =>
+            EndpointConfiguration.CustomDiagnosticsWriter((diagnostics, cancellationToken) =>
             {
                 LogManager.GetLogger("StartupDiagnostics").Info(diagnostics);
                 return Task.CompletedTask;
