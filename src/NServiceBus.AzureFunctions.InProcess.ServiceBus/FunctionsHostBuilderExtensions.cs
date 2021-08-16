@@ -63,8 +63,9 @@
             IServiceCollection serviceCollection,
             string appDirectory)
         {
-            // Load user assemblies from the nested "bin" folder
-            FunctionEndpoint.LoadAssemblies(appDirectory);
+            var scanner = configuration.EndpointConfiguration.AssemblyScanner();
+            scanner.AdditionalAssemblyScanningPath = appDirectory;
+            scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
 
             var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
                     configuration.EndpointConfiguration,
