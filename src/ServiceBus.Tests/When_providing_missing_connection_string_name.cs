@@ -15,7 +15,7 @@
                 "Exception should be thrown in constructor so that the error will be found during functions startup"
             );
 
-            StringAssert.Contains("environment variable", exception?.Message, "Should mention that there's a missing environment variable");
+            StringAssert.Contains("environment value", exception?.Message, "Should mention that there's a missing environment variable");
             StringAssert.Contains("DOES_NOT_EXIST", exception?.Message, "Should mention the specific environment variable");
         }
     }

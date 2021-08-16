@@ -7,6 +7,9 @@
 
     class ServerlessTransport : TransportDefinition
     {
+        // HINT: This constant is defined in NServiceBus but is not exposed
+        const string MainReceiverId = "Main";
+
         public ServerlessTransport(AzureServiceBusTransport baseTransport) : base(
             baseTransport.TransportTransactionMode,
             baseTransport.SupportsDelayedDelivery,
@@ -27,10 +30,12 @@
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return new ServerlessTransportInfrastructure(baseTransportInfrastructure, PipelineInvoker);
+            var serverlessTransportInfrastructure = new ServerlessTransportInfrastructure(baseTransportInfrastructure);
+            PipelineInvoker = (PipelineInvoker)serverlessTransportInfrastructure.Receivers[MainReceiverId];
+            return serverlessTransportInfrastructure;
         }
 
-        public PipelineInvoker PipelineInvoker { get; } = new PipelineInvoker();
+        public PipelineInvoker PipelineInvoker { get; private set; }
 
         public override string ToTransportAddress(QueueAddress address) => baseTransport.ToTransportAddress(address);
 

@@ -18,7 +18,7 @@
         {
             var message = MessageHelper.GenerateMessage(new TestMessage());
             MessageContext messageContext = null;
-            var pipelineInvoker = CreatePipeline(
+            var pipelineInvoker = await CreatePipeline(
                 (ctx, _) =>
                 {
                     messageContext = ctx;
@@ -46,7 +46,7 @@
             var message = MessageHelper.GenerateMessage(new TestMessage());
             var pipelineException = new Exception("test exception");
             ErrorContext errorContext = null;
-            var pipelineInvoker = CreatePipeline(
+            var pipelineInvoker = await CreatePipeline(
                 (_, __) => throw pipelineException,
                 (errCtx, _) =>
                 {
@@ -70,10 +70,10 @@
         }
 
         [Test]
-        public void When_error_pipeline_fails_should_throw()
+        public async Task When_error_pipeline_fails_should_throw()
         {
             var errorPipelineException = new Exception("error pipeline failure");
-            var pipelineInvoker = CreatePipeline(
+            var pipelineInvoker = await CreatePipeline(
                 (_, __) => throw new Exception("main pipeline failure"),
                 (_, __) => throw errorPipelineException);
 
@@ -92,7 +92,7 @@
         [Test]
         public async Task When_error_pipeline_handles_error_should_complete_message()
         {
-            var pipelineInvoker = CreatePipeline(
+            var pipelineInvoker = await CreatePipeline(
                 (_, __) => throw new Exception("main pipeline failure"),
                 (_, __) => Task.FromResult(ErrorHandleResult.Handled));
 
@@ -107,10 +107,10 @@
         }
 
         [Test]
-        public void When_error_pipeline_requires_retry_should_throw()
+        public async Task When_error_pipeline_requires_retry_should_throw()
         {
             var mainPipelineException = new Exception("main pipeline failure");
-            var pipelineInvoker = CreatePipeline(
+            var pipelineInvoker = await CreatePipeline(
                 (_, __) => throw mainPipelineException,
                 (_, __) => Task.FromResult(ErrorHandleResult.RetryRequired));
 
@@ -126,10 +126,10 @@
             Assert.AreSame(mainPipelineException, exception);
         }
 
-        static PipelineInvoker CreatePipeline(OnMessage mainPipeline = null, OnError errorPipeline = null)
+        static async Task<PipelineInvoker> CreatePipeline(OnMessage mainPipeline = null, OnError errorPipeline = null)
         {
-            var pipelineInvoker = new PipelineInvoker();
-            pipelineInvoker.Init(
+            var pipelineInvoker = new PipelineInvoker(null);
+            await pipelineInvoker.Initialize(null,
                     mainPipeline ?? ((_, __) => Task.CompletedTask),
                     errorPipeline ?? ((_, __) => Task.FromResult(ErrorHandleResult.Handled)));
             return pipelineInvoker;

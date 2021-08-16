@@ -7,15 +7,19 @@
 
     class ServerlessTransportInfrastructure : TransportInfrastructure
     {
-        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure, PipelineInvoker pipelineInvoker)
+        readonly TransportInfrastructure baseTransportInfrastructure;
+
+        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure)
         {
+            this.baseTransportInfrastructure = baseTransportInfrastructure;
             Dispatcher = baseTransportInfrastructure.Dispatcher;
             Receivers = baseTransportInfrastructure.Receivers.ToDictionary(
                 r => r.Key,
-                r => (IMessageReceiver)new ServerlessMessageReceiver(r.Value, pipelineInvoker)
+                r => (IMessageReceiver)new PipelineInvoker(r.Value)
                 );
         }
 
-        public override Task Shutdown(CancellationToken cancellationToken = new CancellationToken()) => Task.CompletedTask;
+        public override Task Shutdown(CancellationToken cancellationToken = new CancellationToken())
+            => baseTransportInfrastructure.Shutdown(cancellationToken);
     }
 }
