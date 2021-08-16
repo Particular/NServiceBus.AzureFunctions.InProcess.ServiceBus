@@ -1,14 +1,10 @@
 ﻿namespace NServiceBus
 {
     using System;
-    using System.IO;
-    using System.Reflection;
-    using System.Runtime.Loader;
     using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
     using Extensibility;
-    using Logging;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
@@ -93,6 +89,8 @@
         {
             throw new NotImplementedException();
         }
+
+        internal static readonly string[] AssembliesToExcludeFromScanning = { "NCrontab.Signed.dll" };
 
         internal static async Task Process(Message message, ITransactionStrategy transactionStrategy, PipelineInvoker pipeline)
         {
@@ -274,61 +272,6 @@
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
             await InitializeEndpointIfNecessary(functionExecutionContext).ConfigureAwait(false);
-        }
-
-        internal static void LoadAssemblies(string assemblyDirectory)
-        {
-            var binFiles = Directory.EnumerateFiles(
-                assemblyDirectory,
-                "*.dll",
-                SearchOption.TopDirectoryOnly);
-
-            var assemblyLoadContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
-            foreach (var binFile in binFiles)
-            {
-                try
-                {
-                    var assemblyName = AssemblyName.GetAssemblyName(binFile);
-                    if (IsRuntimeAssembly(assemblyName.GetPublicKeyToken()))
-                    {
-                        continue;
-                    }
-
-                    // LoadFromAssemblyName works when actually running inside a function as FunctionAssemblyLoadContext probes the "bin" folder for the assembly name
-                    // this doesn't work when running with a different AssemblyLoadContext (e.g. tests) and the assembly needs to be loaded by the full path instead.
-                    assemblyLoadContext.LoadFromAssemblyPath(binFile);
-                    //assemblyLoadContext.LoadFromAssemblyName(assemblyName);
-                }
-                catch (Exception e)
-                {
-                    LogManager.GetLogger<FunctionEndpoint>().DebugFormat(
-                        "Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.{1}{2}",
-                        binFile, Environment.NewLine, e);
-                }
-            }
-        }
-
-        static bool IsRuntimeAssembly(byte[] publicKeyToken)
-        {
-            var tokenString = BitConverter.ToString(publicKeyToken).Replace("-", string.Empty).ToLowerInvariant();
-
-            switch (tokenString)
-            {
-                case "b77a5c561934e089": // Microsoft
-                case "7cec85d7bea7798e":
-                case "b03f5f7f11d50a3a":
-                case "31bf3856ad364e35":
-                case "cc7b13ffcd2ddd51":
-                case "adb9793829ddae60":
-                case "7e34167dcc6d6d8c": // Microsoft.Azure.ServiceBus
-                case "23ec7fc2d6eaa4a5": // Microsoft.Data.SqlClient
-                case "50cebf1cceb9d05e": // Mono.Cecil
-                case "30ad4fe6b2a6aeed": // Newtonsoft.Json
-                case "9fc386479f8a226c": // NServiceBus
-                    return true;
-                default:
-                    return false;
-            }
         }
 
         readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
