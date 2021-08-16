@@ -23,8 +23,7 @@
     public class FunctionEndpoint : IFunctionEndpoint
     {
         // This ctor is used for the FunctionsHostBuilder scenario where the endpoint is created already during configuration time using the function host's container.
-        internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
-            ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
+        internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
         {
             this.configuration = configuration;
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
@@ -67,8 +66,7 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext,
-            IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 

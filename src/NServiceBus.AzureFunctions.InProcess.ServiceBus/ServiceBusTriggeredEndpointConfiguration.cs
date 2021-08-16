@@ -75,16 +75,9 @@
                 EndpointConfiguration.License(licenseText);
             }
 
-            var connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName ?? DefaultServiceBusConnectionName, optional: true);
-            if (!string.IsNullOrWhiteSpace(connectionString))
-            {
-                // TODO: What do we do if we don't have a connectionString?
-                UseTransport(new AzureServiceBusTransport(connectionString));
-            }
-            else if (!string.IsNullOrWhiteSpace(connectionStringName))
-            {
-                throw new Exception($"Azure Service Bus connection string named '{connectionStringName}' was provided but wasn't found in the environment variables. Make sure the connection string is stored in the environment variable named '{connectionStringName}'.");
-            }
+            var connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName ?? DefaultServiceBusConnectionName, optional: false);
+
+            UseTransport(new AzureServiceBusTransport(connectionString));
 
             var recoverability = AdvancedConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
@@ -115,10 +108,15 @@
         /// <summary>
         /// Azure Service Bus transport
         /// </summary>
-        public AzureServiceBusTransport Transport { get; }
+        public AzureServiceBusTransport Transport { get; private set; }
+
+        /// <summary>
+        /// Routing settings.
+        /// </summary>
+        public RoutingSettings Routing { get; private set; }
 
         internal EndpointConfiguration EndpointConfiguration { get; }
-        internal PipelineInvoker PipelineInvoker { get; private set; }
+        internal PipelineInvoker PipelineInvoker => serverlessTransport.PipelineInvoker;
 
         /// <summary>
         /// Gives access to the underlying endpoint configuration for advanced configuration options.
@@ -143,9 +141,9 @@
         /// </summary>
         protected AzureServiceBusTransport UseTransport(AzureServiceBusTransport transport)
         {
-            var serverlessTransport = new ServerlessTransport(transport);
-            EndpointConfiguration.UseTransport(serverlessTransport);
-            PipelineInvoker = serverlessTransport.PipelineInvoker;
+            Transport = transport;
+            serverlessTransport = new ServerlessTransport(transport);
+            Routing = EndpointConfiguration.UseTransport(serverlessTransport);
             return transport;
         }
 
@@ -177,6 +175,7 @@
             });
         }
 
+        ServerlessTransport serverlessTransport;
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
         internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
     }
