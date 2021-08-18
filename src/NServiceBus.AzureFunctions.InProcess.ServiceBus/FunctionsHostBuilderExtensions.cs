@@ -63,12 +63,13 @@
             IServiceCollection serviceCollection,
             string appDirectory)
         {
-            var scanner = configuration.EndpointConfiguration.AssemblyScanner();
+            var endpointConfiguration = configuration.CreateEndpointConfiguration();
+            var scanner = endpointConfiguration.AssemblyScanner();
             scanner.AdditionalAssemblyScanningPath = appDirectory;
             scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
 
             var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
-                    configuration.EndpointConfiguration,
+                    endpointConfiguration,
                     serviceCollection);
 
             return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);

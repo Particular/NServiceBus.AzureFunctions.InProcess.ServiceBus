@@ -59,7 +59,8 @@
             public override Task Start(CancellationToken token)
             {
                 var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name);
-                var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
+                configurationCustomization(functionEndpointConfiguration);
+                var endpointConfiguration = functionEndpointConfiguration.CreateEndpointConfiguration();
 
                 endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
 
@@ -88,10 +89,8 @@
                 // in real Azure functions the input queue is assumed to exist
                 endpointConfiguration.EnableInstallers();
 
-                configurationCustomization(functionEndpointConfiguration);
-
                 var serviceCollection = new ServiceCollection();
-                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
+                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
                 endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
