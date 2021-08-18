@@ -39,8 +39,14 @@
 
         public override string ToTransportAddress(QueueAddress address) => baseTransport.ToTransportAddress(address);
 
-        public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() => baseTransport.GetSupportedTransactionModes();
+        public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() =>
+            supportedTransactionModes;
 
         readonly AzureServiceBusTransport baseTransport;
+        readonly TransportTransactionMode[] supportedTransactionModes =
+        {
+            TransportTransactionMode.ReceiveOnly,
+            TransportTransactionMode.SendsAtomicWithReceive
+        };
     }
 }
