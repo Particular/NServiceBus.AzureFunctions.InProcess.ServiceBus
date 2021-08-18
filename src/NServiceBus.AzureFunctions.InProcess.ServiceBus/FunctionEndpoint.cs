@@ -28,16 +28,17 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
-        Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger) =>
+        Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger, CancellationToken cancellationToken) =>
             ReflectionHelper.GetAutoCompleteValue()
-                ? ProcessNonTransactional(message, executionContext, messageReceiver, functionsLogger)
-                : ProcessTransactional(message, executionContext, messageReceiver, functionsLogger);
+                ? ProcessNonTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken)
+                : ProcessTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken);
 
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
         /// <remarks>Requires <see cref="ServiceBusTriggerAttribute.AutoComplete"/> to be set to false!</remarks>
         /// </summary>
-        public async Task ProcessTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        public async Task ProcessTransactional(Message message, ExecutionContext executionContext,
+            IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -48,7 +49,7 @@
                 await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                await Process(message, new MessageReceiverTransactionStrategy(message, messageReceiver), pipeline)
+                await Process(message, new MessageReceiverTransactionStrategy(message, messageReceiver), pipeline, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception)
@@ -62,7 +63,8 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext,
+            IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -71,9 +73,8 @@
             await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            await Process(message, NoTransactionStrategy.Instance, pipeline)
+            await Process(message, NoTransactionStrategy.Instance, pipeline, cancellationToken)
                 .ConfigureAwait(false);
-
         }
 
         /// <summary>
@@ -90,7 +91,8 @@
 
         internal static readonly string[] AssembliesToExcludeFromScanning = { "NCrontab.Signed.dll" };
 
-        internal static async Task Process(Message message, ITransactionStrategy transactionStrategy, PipelineInvoker pipeline)
+        internal static async Task Process(Message message, ITransactionStrategy transactionStrategy,
+            PipelineInvoker pipeline, CancellationToken cancellationToken = default)
         {
             var messageId = message.GetMessageId();
 
@@ -101,7 +103,7 @@
                     var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
                     var messageContext = CreateMessageContext(transportTransaction);
 
-                    await pipeline.PushMessage(messageContext).ConfigureAwait(false);
+                    await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
                     await transactionStrategy.Complete(transaction).ConfigureAwait(false);
 
@@ -122,7 +124,7 @@
                         message.SystemProperties.DeliveryCount,
                         new ContextBag());
 
-                    var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
+                    var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
 
                     if (errorHandleResult == ErrorHandleResult.Handled)
                     {

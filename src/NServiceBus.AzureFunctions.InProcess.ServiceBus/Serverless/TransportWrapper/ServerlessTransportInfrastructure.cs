@@ -19,7 +19,7 @@
                 );
         }
 
-        public override Task Shutdown(CancellationToken cancellationToken = new CancellationToken())
+        public override Task Shutdown(CancellationToken cancellationToken = default)
             => baseTransportInfrastructure.Shutdown(cancellationToken);
     }
 }

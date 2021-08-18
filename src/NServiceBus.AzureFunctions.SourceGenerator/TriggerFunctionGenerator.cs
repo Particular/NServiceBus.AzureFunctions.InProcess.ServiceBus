@@ -101,9 +101,10 @@ class FunctionEndpointTrigger
         [ServiceBusTrigger(queueName: ""{syntaxReceiver.endpointName}"")]
         Message message,
         ILogger logger,
-        ExecutionContext executionContext)
+        ExecutionContext executionContext,
+        CancellationToken cancellationToken)
     {{
-        await endpoint.Process(message, executionContext, logger);
+        await endpoint.Process(message, executionContext, logger, cancellationToken);
     }}
 }}";
             context.AddSource("NServiceBus__FunctionEndpointTrigger", SourceText.From(source, Encoding.UTF8));

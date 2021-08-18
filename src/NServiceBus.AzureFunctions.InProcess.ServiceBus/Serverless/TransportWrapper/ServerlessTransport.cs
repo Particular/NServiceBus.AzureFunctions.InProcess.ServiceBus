@@ -21,7 +21,7 @@
 
         public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers,
             string[] sendingAddresses,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = default)
         {
             var baseTransportInfrastructure = await baseTransport.Initialize(
                     hostSettings,

@@ -129,11 +129,12 @@ class FunctionEndpointTrigger
         Message message,
         MessageReceiver messageReceiver,
         ILogger logger,
-        ExecutionContext executionContext)
+        ExecutionContext executionContext,
+        CancellationToken cancellationToken)
     {{
         {(syntaxReceiver.enableCrossEntityTransactions
-            ? "await endpoint.ProcessTransactional(message, executionContext, messageReceiver, logger);"
-            : "await endpoint.ProcessNonTransactional(message, executionContext, messageReceiver, logger);")}
+            ? "await endpoint.ProcessTransactional(message, executionContext, messageReceiver, logger, cancellationToken);"
+            : "await endpoint.ProcessNonTransactional(message, executionContext, messageReceiver, logger, cancellationToken);")}
     }}
 }}";
             context.AddSource("NServiceBus__FunctionEndpointTrigger", SourceText.From(source, Encoding.UTF8));
