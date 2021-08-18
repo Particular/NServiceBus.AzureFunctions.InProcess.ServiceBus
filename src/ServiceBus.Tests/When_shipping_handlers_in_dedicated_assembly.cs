@@ -12,6 +12,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.Configuration.AdvancedExtensibility;
+    using NServiceBus.Settings;
     using NServiceBus.Unicast;
     using NUnit.Framework;
 
@@ -27,10 +28,15 @@
 
             var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest");
             configuration.UseSerialization<XmlSerializer>();
-            configuration.EndpointConfiguration.UsePersistence<LearningPersistence>();
-            configuration.EndpointConfiguration.EnableInstallers();
 
-            var settings = configuration.AdvancedConfiguration.GetSettings();
+            SettingsHolder settings = default;
+
+            configuration.Advanced(endpointConfiguration =>
+            {
+                endpointConfiguration.UsePersistence<LearningPersistence>();
+                endpointConfiguration.EnableInstallers();
+                settings = endpointConfiguration.GetSettings();
+            });
 
             var endpointFactory = FunctionsHostBuilderExtensions.Configure(configuration, serviceCollection,
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));

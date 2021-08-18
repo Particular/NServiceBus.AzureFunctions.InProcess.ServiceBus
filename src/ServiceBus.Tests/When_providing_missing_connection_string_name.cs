@@ -11,8 +11,9 @@
         public void Should_guide_user_towards_success()
         {
             var exception = Assert.Throws<Exception>(() =>
-                _ = new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", "DOES_NOT_EXIST"),
-                "Exception should be thrown in constructor so that the error will be found during functions startup"
+                _ = new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", "DOES_NOT_EXIST")
+                    .CreateEndpointConfiguration(),
+                "Exception should be thrown at endpoint creation so that the error will be found during functions startup"
             );
 
             StringAssert.Contains("environment value", exception?.Message, "Should mention that there's a missing environment variable");

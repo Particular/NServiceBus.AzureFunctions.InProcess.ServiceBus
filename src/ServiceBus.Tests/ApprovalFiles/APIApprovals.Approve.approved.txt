@@ -77,14 +77,13 @@ namespace NServiceBus
         public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Configuration.IConfiguration configuration = null) { }
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
-        public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
-        public NServiceBus.RoutingSettings Routing { get; }
-        public NServiceBus.AzureServiceBusTransport Transport { get; }
+        public void Advanced(System.Action<NServiceBus.EndpointConfiguration> customConfiguration) { }
         public void DoNotSendMessagesToErrorQueue() { }
         public void LogDiagnostics() { }
+        public void Routing(System.Action<NServiceBus.RoutingSettings> configureRouting) { }
+        public void ServiceBusConnectionString(string connectionString) { }
         public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
-        protected NServiceBus.AzureServiceBusTransport UseTransport(NServiceBus.AzureServiceBusTransport transport) { }
         [System.Obsolete("The static hosting model has been deprecated. Refer to the documentation for deta" +
             "ils on how to use class-instance approach instead. The member currently throws a" +
             " NotImplementedException. Will be removed in version 3.0.0.", true)]
