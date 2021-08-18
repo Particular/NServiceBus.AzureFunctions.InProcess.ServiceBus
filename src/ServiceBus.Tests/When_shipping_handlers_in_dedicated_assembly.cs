@@ -28,6 +28,7 @@
             var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest");
             configuration.UseSerialization<XmlSerializer>();
             configuration.EndpointConfiguration.UsePersistence<LearningPersistence>();
+            configuration.EndpointConfiguration.EnableInstallers();
 
             var settings = configuration.AdvancedConfiguration.GetSettings();
 
