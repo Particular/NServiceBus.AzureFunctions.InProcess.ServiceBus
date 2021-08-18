@@ -20,7 +20,10 @@
         {
             this.onMessage = onMessage;
             this.onError = onError;
-            return Task.CompletedTask;
+            return baseTransportReceiver?.Initialize(limitations,
+                (_, __) => Task.CompletedTask,
+                (_, __) => Task.FromResult(ErrorHandleResult.Handled),
+                cancellationToken) ?? Task.CompletedTask;
         }
 
         public Task StartReceive(CancellationToken cancellationToken = new CancellationToken()) => Task.CompletedTask;
