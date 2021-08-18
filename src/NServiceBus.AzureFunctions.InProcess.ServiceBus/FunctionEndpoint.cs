@@ -70,7 +70,7 @@
 
             var functionExecutionContext = new FunctionExecutionContext(executionContext, functionsLogger);
 
-            await InitializeEndpointIfNecessary(functionExecutionContext, CancellationToken.None)
+            await InitializeEndpointIfNecessary(functionExecutionContext, cancellationToken)
                 .ConfigureAwait(false);
 
             await Process(message, NoTransactionStrategy.Instance, pipeline, cancellationToken)
