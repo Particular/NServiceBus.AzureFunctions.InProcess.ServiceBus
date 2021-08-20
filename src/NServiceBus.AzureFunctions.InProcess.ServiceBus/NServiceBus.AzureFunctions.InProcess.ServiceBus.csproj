@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="ServiceBus.Tests" Key="$(NServiceBusTestsKey)" />
+    <InternalsVisibleTo Include="ServiceBus.AcceptanceTests" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
 
 </Project>
