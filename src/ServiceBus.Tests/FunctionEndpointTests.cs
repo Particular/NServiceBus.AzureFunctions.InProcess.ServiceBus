@@ -30,7 +30,8 @@
             await FunctionEndpoint.Process(
                 message,
                 transactionStrategy,
-                pipelineInvoker);
+                pipelineInvoker,
+                default);
 
             Assert.IsTrue(transactionStrategy.OnCompleteCalled);
             Assert.AreSame(message.GetMessageId(), messageContext.NativeMessageId);
@@ -59,7 +60,8 @@
             await FunctionEndpoint.Process(
                 message,
                 transactionStrategy,
-                pipelineInvoker);
+                pipelineInvoker,
+                default);
 
             Assert.AreSame(pipelineException, errorContext.Exception);
             Assert.AreSame(message.GetMessageId(), errorContext.Message.NativeMessageId);
@@ -83,7 +85,8 @@
                 await FunctionEndpoint.Process(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     transactionStrategy,
-                    pipelineInvoker));
+                    pipelineInvoker,
+                    default));
 
             Assert.IsFalse(transactionStrategy.OnCompleteCalled);
             Assert.AreSame(errorPipelineException, exception);
@@ -101,7 +104,8 @@
             await FunctionEndpoint.Process(
                 MessageHelper.GenerateMessage(new TestMessage()),
                 transactionStrategy,
-                pipelineInvoker);
+                pipelineInvoker,
+                default);
 
             Assert.IsTrue(transactionStrategy.OnCompleteCalled);
         }
@@ -120,7 +124,8 @@
                 await FunctionEndpoint.Process(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     transactionStrategy,
-                    pipelineInvoker));
+                    pipelineInvoker,
+                    default));
 
             Assert.IsFalse(transactionStrategy.OnCompleteCalled);
             Assert.AreSame(mainPipelineException, exception);
@@ -131,7 +136,8 @@
             var pipelineInvoker = new PipelineInvoker(null);
             await pipelineInvoker.Initialize(null,
                     mainPipeline ?? ((_, __) => Task.CompletedTask),
-                    errorPipeline ?? ((_, __) => Task.FromResult(ErrorHandleResult.Handled)));
+                    errorPipeline ?? ((_, __) => Task.FromResult(ErrorHandleResult.Handled)),
+                    default);
             return pipelineInvoker;
         }
 
