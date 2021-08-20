@@ -39,7 +39,7 @@
 
 
             // we need to process an actual message to have the endpoint being created
-            await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null);
+            await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null, default, default);
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
             Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
