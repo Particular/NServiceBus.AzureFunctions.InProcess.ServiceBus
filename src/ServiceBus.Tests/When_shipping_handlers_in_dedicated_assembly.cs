@@ -9,6 +9,7 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.Configuration.AdvancedExtensibility;
@@ -26,7 +27,7 @@
 
             var serviceCollection = new ServiceCollection();
 
-            var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest");
+            var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest", default(IConfiguration));
             configuration.UseSerialization<XmlSerializer>();
 
             SettingsHolder settings = default;
