@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Reflection;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -12,24 +13,55 @@
     public static class FunctionsHostBuilderExtensions
     {
         /// <summary>
-        /// Use the IConfiguration to configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
-            this IFunctionsHostBuilder functionsHostBuilder)
+            this IFunctionsHostBuilder functionsHostBuilder,
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
-            functionsHostBuilder.UseNServiceBus(config => new ServiceBusTriggeredEndpointConfiguration(config));
+            var hostConfiguration = functionsHostBuilder.GetContext().Configuration;
+            var endpointName = hostConfiguration.GetValue<string>("ENDPOINT_NAME")
+                ?? Assembly.GetCallingAssembly()
+                    .GetCustomAttribute<NServiceBusTriggerFunctionAttribute>()
+                    ?.EndpointName;
+
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
+- Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
+- Use `functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory)` 
+- Add a configuration or environment variable with the key ENDPOINT_NAME");
+            }
+
+            functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory);
+        }
+
+        /// <summary>
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
+        /// </summary>
+        public static void UseNServiceBus(
+            this IFunctionsHostBuilder functionsHostBuilder,
+            string endpointName,
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
+        {
+            var config = functionsHostBuilder.GetContext().Configuration;
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config);
+            configurationFactory?.Invoke(serviceBusConfiguration);
+            RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }
 
         /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
         /// </summary>
+        [ObsoleteEx(
+            ReplacementTypeOrMember = "UseNServiceBus(string, Action<ServiceBusTriggeredEndpointConfiguration>)",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
             Func<ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
-            var serviceBusTriggeredEndpointConfiguration = configurationFactory();
-
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
+            throw new NotImplementedException();
         }
 
         /// <summary>
