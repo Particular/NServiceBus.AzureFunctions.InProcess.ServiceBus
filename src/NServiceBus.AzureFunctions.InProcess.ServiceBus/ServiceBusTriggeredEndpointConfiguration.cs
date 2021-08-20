@@ -18,38 +18,6 @@
             LogManager.UseFactory(FunctionsLoggerFactory.Instance);
         }
 
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(IConfiguration configuration)
-            : this(GetConfiguredValueOrFallback(configuration, "ENDPOINT_NAME", optional: false), configuration)
-        {
-        }
-
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration = null)
-            : this(endpointName, null, configuration)
-        {
-        }
-
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null)
-            : this(endpointName, connectionStringName, null)
-        {
-        }
-
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName)
-            : this(endpointName, null, null)
-        {
-        }
-
         // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
         Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
         readonly string endpointName;
@@ -149,10 +117,9 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint.
         /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null, IConfiguration configuration = null)
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration)
         {
             this.endpointName = endpointName;
-            this.connectionStringName = connectionStringName;
             this.configuration = configuration;
         }
 

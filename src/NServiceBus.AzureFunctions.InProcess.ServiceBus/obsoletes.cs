@@ -7,8 +7,9 @@ namespace NServiceBus
     using System.Threading.Tasks;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
+    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     public static partial class FunctionsHostBuilderExtensions
     {
@@ -78,5 +79,22 @@ namespace NServiceBus
             RemoveInVersion = "3")]
         protected AzureServiceBusTransport UseTransport(AzureServiceBusTransport transport) =>
             throw new NotImplementedException();
+
+        [ObsoleteEx(Message = "Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServiceBus` overloads instead.",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
+        public ServiceBusTriggeredEndpointConfiguration(IConfiguration configuration) =>
+            throw new NotImplementedException();
+
+        [ObsoleteEx(Message = "Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServiceBus` overloads instead.",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) =>
+            throw new NotImplementedException();
+
+        [ObsoleteEx(Message = "Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServiceBus` overloads instead.",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
+        public ServiceBusTriggeredEndpointConfiguration(string endpointName) => throw new NotImplementedException();
     }
 }
