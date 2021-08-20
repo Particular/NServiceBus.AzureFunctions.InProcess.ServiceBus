@@ -97,7 +97,20 @@
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName ?? DefaultServiceBusConnectionName, optional: false);
+                if (string.IsNullOrWhiteSpace(connectionStringName))
+                {
+                    connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
+                }
+                else
+                {
+                    connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName, optional: false);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {DefaultServiceBusConnectionName} or using:
+  `serviceBusTriggeredEndpointConfiguration.{nameof(ServiceBusConnectionString)}(connectionString);`");
             }
 
             var transport = new AzureServiceBusTransport(connectionString);
