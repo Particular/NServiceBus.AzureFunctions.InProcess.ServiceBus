@@ -16,7 +16,7 @@
     /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
     /// messages explicitly passed to it by the caller.
     /// </summary>
-    public class FunctionEndpoint : IFunctionEndpoint
+    public partial class FunctionEndpoint : IFunctionEndpoint
     {
         // This ctor is used for the FunctionsHostBuilder scenario where the endpoint is created already during configuration time using the function host's container.
         internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
@@ -75,18 +75,6 @@
 
             await Process(message, NoTransactionStrategy.Instance, pipeline, cancellationToken)
                 .ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-        /// </summary>
-        [ObsoleteEx(
-            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        public Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
-        {
-            throw new NotImplementedException();
         }
 
         internal static readonly string[] AssembliesToExcludeFromScanning = { "NCrontab.Signed.dll" };
