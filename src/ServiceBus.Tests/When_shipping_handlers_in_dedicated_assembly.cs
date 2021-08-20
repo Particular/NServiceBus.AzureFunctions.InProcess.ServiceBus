@@ -17,6 +17,7 @@
     using NServiceBus.Unicast;
     using NUnit.Framework;
 
+    [TestFixture]
     public class When_shipping_handlers_in_dedicated_assembly
     {
         [Test]
