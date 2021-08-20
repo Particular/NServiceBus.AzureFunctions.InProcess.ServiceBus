@@ -10,7 +10,7 @@
     /// <summary>
     /// Provides extension methods to configure a <see cref="FunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
     /// </summary>
-    public static class FunctionsHostBuilderExtensions
+    public static partial class FunctionsHostBuilderExtensions
     {
         /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
@@ -48,20 +48,6 @@
             var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config);
             configurationFactory?.Invoke(serviceBusConfiguration);
             RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
-        }
-
-        /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
-        /// </summary>
-        [ObsoleteEx(
-            ReplacementTypeOrMember = "UseNServiceBus(string, Action<ServiceBusTriggeredEndpointConfiguration>)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        public static void UseNServiceBus(
-            this IFunctionsHostBuilder functionsHostBuilder,
-            Func<ServiceBusTriggeredEndpointConfiguration> configurationFactory)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
