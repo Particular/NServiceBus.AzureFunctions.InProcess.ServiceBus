@@ -11,12 +11,12 @@
             this.baseTransportReceiver = baseTransportReceiver;
         }
 
-        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext, CancellationToken cancellationToken = default) => onError(errorContext, cancellationToken);
+        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext, CancellationToken cancellationToken) => onError(errorContext, cancellationToken);
 
-        public Task PushMessage(MessageContext messageContext, CancellationToken cancellationToken = default) => onMessage.Invoke(messageContext, cancellationToken);
+        public Task PushMessage(MessageContext messageContext, CancellationToken cancellationToken) => onMessage.Invoke(messageContext, cancellationToken);
 
         public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             this.onMessage = onMessage;
             this.onError = onError;
