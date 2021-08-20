@@ -88,11 +88,13 @@ namespace NServiceBus
             "ImplementedException. Will be removed in version 3.0.0.", true)]
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
         public void Advanced(System.Action<NServiceBus.EndpointConfiguration> customConfiguration) { }
+        public void ConfigureTransport(System.Action<NServiceBus.AzureServiceBusTransport> configureTransport) { }
         public void DoNotSendMessagesToErrorQueue() { }
         public void LogDiagnostics() { }
         public void Routing(System.Action<NServiceBus.RoutingSettings> configureRouting) { }
         public void ServiceBusConnectionString(string connectionString) { }
-        public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
+        public void ServiceBusConnectionStringName(string connectionStringName) { }
+        public void UseSerialization<T>(System.Action<NServiceBus.Serialization.SerializationExtensions<T>> advancedConfiguration = null)
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
         [System.Obsolete("Use `ConfigureTransport(Action<AzureServiceBusTransport>)` instead. The member cu" +
             "rrently throws a NotImplementedException. Will be removed in version 3.0.0.", true)]

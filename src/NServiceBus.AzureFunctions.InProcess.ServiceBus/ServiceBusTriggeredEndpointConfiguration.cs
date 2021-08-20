@@ -52,17 +52,15 @@
 
         // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
         Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
-        string endpointName;
-        IConfiguration configuration;
+        readonly string endpointName;
+        readonly IConfiguration configuration;
         string connectionString;
         string connectionStringName;
         bool sendFailedMessagesToErrorQueue = true;
 
-        Action<EndpointConfiguration> setSerializer = endpointConfig =>
-            endpointConfig.UseSerialization<NewtonsoftSerializer>();
-
+        ISerializationConfigurationStrategy serializationConfigurationStrategy = new SerializationConfigurationStrategy<NewtonsoftSerializer>();
         Action<RoutingSettings> configureRouting;
-
+        Action<AzureServiceBusTransport> configureTransport;
         Action<EndpointConfiguration> customConfiguration;
 
 
@@ -83,11 +81,27 @@
         }
 
         /// <summary>
+        /// Configure the key used to look up the ServiceBus connection string in configuration or environment variables.
+        /// </summary>
+        public void ServiceBusConnectionStringName(string connectionStringName)
+        {
+            this.connectionStringName = connectionStringName;
+        }
+
+        /// <summary>
         /// Configure the ServiceBus connection string used to send messages.
         /// </summary>
         public void ServiceBusConnectionString(string connectionString)
         {
             this.connectionString = connectionString;
+        }
+
+        /// <summary>
+        /// Apply custom configuration to the NServiceBus Azure Service Bus transport.
+        /// </summary>
+        public void ConfigureTransport(Action<AzureServiceBusTransport> configureTransport)
+        {
+            this.configureTransport = configureTransport;
         }
 
         internal EndpointConfiguration CreateEndpointConfiguration()
@@ -119,13 +133,13 @@
             }
 
             var transport = new AzureServiceBusTransport(connectionString);
+            configureTransport?.Invoke(transport);
             serverlessTransport = new ServerlessTransport(transport);
-
             var routing = endpointConfiguration.UseTransport(serverlessTransport);
 
             configureRouting?.Invoke(routing);
 
-            setSerializer(endpointConfiguration);
+            serializationConfigurationStrategy.ApplyTo(endpointConfiguration);
 
             customConfiguration?.Invoke(endpointConfiguration);
 
@@ -166,12 +180,9 @@
         /// <summary>
         /// Define the serializer to be used.
         /// </summary>
-        public SerializationExtensions<T> UseSerialization<T>() where T : SerializationDefinition, new()
+        public void UseSerialization<T>(Action<SerializationExtensions<T>> advancedConfiguration = null) where T : SerializationDefinition, new()
         {
-            setSerializer = config => config.UseSerialization<T>();
-            // TODO: Figure this out
-            return default;
-            //return EndpointConfiguration.UseSerialization<T>();
+            serializationConfigurationStrategy = new SerializationConfigurationStrategy<T>(advancedConfiguration);
         }
 
         /// <summary>
@@ -192,5 +203,26 @@
         ServerlessTransport serverlessTransport;
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
         internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
+
+        interface ISerializationConfigurationStrategy
+        {
+            void ApplyTo(EndpointConfiguration endpointConfiguration);
+        }
+
+        class SerializationConfigurationStrategy<T> : ISerializationConfigurationStrategy where T : SerializationDefinition, new()
+        {
+            readonly Action<SerializationExtensions<T>> configurationAction;
+
+            public SerializationConfigurationStrategy(Action<SerializationExtensions<T>> configurationAction = null)
+            {
+                this.configurationAction = configurationAction;
+            }
+
+            public void ApplyTo(EndpointConfiguration endpointConfiguration)
+            {
+                var serializationSettings = endpointConfiguration.UseSerialization<T>();
+                configurationAction?.Invoke(serializationSettings);
+            }
+        }
     }
 }
