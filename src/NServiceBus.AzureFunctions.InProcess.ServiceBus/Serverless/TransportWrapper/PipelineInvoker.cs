@@ -23,9 +23,9 @@
             return Task.CompletedTask;
         }
 
-        public Task StartReceive(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task StartReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task StopReceive(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task StopReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
         public ISubscriptionManager Subscriptions => baseTransportReceiver.Subscriptions;
         public string Id => baseTransportReceiver.Id;
