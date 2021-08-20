@@ -11,12 +11,12 @@
             this.baseTransportReceiver = baseTransportReceiver;
         }
 
-        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext) => onError(errorContext);
+        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext, CancellationToken cancellationToken) => onError(errorContext, cancellationToken);
 
-        public Task PushMessage(MessageContext messageContext) => onMessage.Invoke(messageContext);
+        public Task PushMessage(MessageContext messageContext, CancellationToken cancellationToken) => onMessage.Invoke(messageContext, cancellationToken);
 
         public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken)
         {
             this.onMessage = onMessage;
             this.onError = onError;
@@ -26,9 +26,9 @@
                 cancellationToken) ?? Task.CompletedTask;
         }
 
-        public Task StartReceive(CancellationToken cancellationToken = new CancellationToken()) => Task.CompletedTask;
+        public Task StartReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task StopReceive(CancellationToken cancellationToken = new CancellationToken()) => Task.CompletedTask;
+        public Task StopReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
         public ISubscriptionManager Subscriptions => baseTransportReceiver.Subscriptions;
         public string Id => baseTransportReceiver.Id;
