@@ -23,7 +23,6 @@
         readonly string endpointName;
         readonly IConfiguration configuration;
         string connectionString;
-        string connectionStringName;
         bool sendFailedMessagesToErrorQueue = true;
 
         ISerializationConfigurationStrategy serializationConfigurationStrategy = new SerializationConfigurationStrategy<NewtonsoftSerializer>();
@@ -46,14 +45,6 @@
         public void Routing(Action<RoutingSettings> configureRouting)
         {
             this.configureRouting = configureRouting;
-        }
-
-        /// <summary>
-        /// Configure the key used to look up the ServiceBus connection string in configuration or environment variables.
-        /// </summary>
-        public void ServiceBusConnectionStringName(string connectionStringName)
-        {
-            this.connectionStringName = connectionStringName;
         }
 
         /// <summary>
@@ -97,14 +88,7 @@
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                if (string.IsNullOrWhiteSpace(connectionStringName))
-                {
-                    connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-                }
-                else
-                {
-                    connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName, optional: false);
-                }
+                connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
             }
 
             if (string.IsNullOrWhiteSpace(connectionString))

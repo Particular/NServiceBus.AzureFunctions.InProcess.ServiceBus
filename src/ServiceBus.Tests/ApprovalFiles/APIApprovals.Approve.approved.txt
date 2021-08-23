@@ -102,7 +102,6 @@ namespace NServiceBus
         public void LogDiagnostics() { }
         public void Routing(System.Action<NServiceBus.RoutingSettings> configureRouting) { }
         public void ServiceBusConnectionString(string connectionString) { }
-        public void ServiceBusConnectionStringName(string connectionStringName) { }
         public void UseSerialization<T>(System.Action<NServiceBus.Serialization.SerializationExtensions<T>> advancedConfiguration = null)
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
         [System.Obsolete("Use `ConfigureTransport(Action<AzureServiceBusTransport>)` instead. The member cu" +
