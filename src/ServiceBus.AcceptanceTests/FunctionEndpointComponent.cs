@@ -5,11 +5,13 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
+    using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     abstract class FunctionEndpointComponent : IComponentBehavior
@@ -50,15 +52,16 @@
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
-                Name = functionComponentType.FullName;
+                Name = Conventions.EndpointNamingConvention(functionComponentType);
             }
 
             public override string Name { get; }
 
             public override Task Start(CancellationToken token)
             {
-                var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name);
-                var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
+                var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name, default(IConfiguration));
+                configurationCustomization(functionEndpointConfiguration);
+                var endpointConfiguration = functionEndpointConfiguration.CreateEndpointConfiguration();
 
                 endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
 
@@ -67,7 +70,7 @@
                     .Delayed(d => d.NumberOfRetries(0))
                     .Failed(c => c
                         // track messages sent to the error queue to fail the test
-                        .OnMessageSentToErrorQueue(failedMessage =>
+                        .OnMessageSentToErrorQueue((failedMessage, _) =>
                         {
                             scenarioContext.FailedMessages.AddOrUpdate(
                                 Name,
@@ -81,12 +84,14 @@
                             return Task.CompletedTask;
                         }));
 
-                endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
+                endpointConfiguration.RegisterComponents(c => c.AddSingleton(scenarioContext.GetType(), scenarioContext));
 
-                configurationCustomization(functionEndpointConfiguration);
+                // enable installers to auto-create the input queue for tests
+                // in real Azure functions the input queue is assumed to exist
+                endpointConfiguration.EnableInstallers();
 
                 var serviceCollection = new ServiceCollection();
-                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
+                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
                 endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
@@ -100,7 +105,7 @@
                 {
                     var transportMessage = MessageHelper.GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.ProcessNonTransactional(transportMessage, context, null);
+                    await endpoint.ProcessNonTransactional(transportMessage, context, null, null, token);
                 }
             }
 

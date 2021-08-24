@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Reflection;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -9,27 +10,44 @@
     /// <summary>
     /// Provides extension methods to configure a <see cref="FunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
     /// </summary>
-    public static class FunctionsHostBuilderExtensions
+    public static partial class FunctionsHostBuilderExtensions
     {
         /// <summary>
-        /// Use the IConfiguration to configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
-        /// </summary>
-        public static void UseNServiceBus(
-            this IFunctionsHostBuilder functionsHostBuilder)
-        {
-            functionsHostBuilder.UseNServiceBus(config => new ServiceBusTriggeredEndpointConfiguration(config));
-        }
-
-        /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
-            Func<ServiceBusTriggeredEndpointConfiguration> configurationFactory)
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
-            var serviceBusTriggeredEndpointConfiguration = configurationFactory();
+            var hostConfiguration = functionsHostBuilder.GetContext().Configuration;
+            var endpointName = hostConfiguration.GetValue<string>("ENDPOINT_NAME")
+                ?? Assembly.GetCallingAssembly()
+                    .GetCustomAttribute<NServiceBusTriggerFunctionAttribute>()
+                    ?.EndpointName;
 
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
+- Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
+- Use `functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory)` 
+- Add a configuration or environment variable with the key ENDPOINT_NAME");
+            }
+
+            functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory);
+        }
+
+        /// <summary>
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
+        /// </summary>
+        public static void UseNServiceBus(
+            this IFunctionsHostBuilder functionsHostBuilder,
+            string endpointName,
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
+        {
+            var config = functionsHostBuilder.GetContext().Configuration;
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config);
+            configurationFactory?.Invoke(serviceBusConfiguration);
+            RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }
 
         /// <summary>
@@ -63,11 +81,13 @@
             IServiceCollection serviceCollection,
             string appDirectory)
         {
-            // Load user assemblies from the nested "bin" folder
-            FunctionEndpoint.LoadAssemblies(appDirectory);
+            var endpointConfiguration = configuration.CreateEndpointConfiguration();
+            var scanner = endpointConfiguration.AssemblyScanner();
+            scanner.AdditionalAssemblyScanningPath = appDirectory;
+            scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
 
-            var startableEndpoint = EndpointWithExternallyManagedServiceProvider.Create(
-                    configuration.EndpointConfiguration,
+            var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
+                    endpointConfiguration,
                     serviceCollection);
 
             return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);

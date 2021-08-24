@@ -1,45 +1,40 @@
 ﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
 {
-    using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using Transport;
 
-    class PipelineInvoker : IPushMessages
+    class PipelineInvoker : IMessageReceiver
     {
-        Task IPushMessages.Init(Func<MessageContext, Task> onMessage, Func<ErrorContext, Task<ErrorHandleResult>> onError, CriticalError criticalError, PushSettings settings)
+        public PipelineInvoker(IMessageReceiver baseTransportReceiver)
         {
-            if (this.onMessage == null)
-            {
-                // The core ReceiveComponent calls TransportInfrastructure.MessagePumpFactory() multiple times
-                // the first invocation is for the main pipeline, ignore all other pipelines as we don't want to manually invoke them.
-                this.onMessage = onMessage;
-
-                this.onError = onError;
-            }
-
-            return Task.CompletedTask;
+            this.baseTransportReceiver = baseTransportReceiver;
         }
 
-        void IPushMessages.Start(PushRuntimeSettings limitations)
+        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext, CancellationToken cancellationToken) => onError(errorContext, cancellationToken);
+
+        public Task PushMessage(MessageContext messageContext, CancellationToken cancellationToken) => onMessage.Invoke(messageContext, cancellationToken);
+
+        public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError,
+            CancellationToken cancellationToken)
         {
+            this.onMessage = onMessage;
+            this.onError = onError;
+            return baseTransportReceiver?.Initialize(limitations,
+                (_, __) => Task.CompletedTask,
+                (_, __) => Task.FromResult(ErrorHandleResult.Handled),
+                cancellationToken) ?? Task.CompletedTask;
         }
 
-        Task IPushMessages.Stop()
-        {
-            return Task.CompletedTask;
-        }
+        public Task StartReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task<ErrorHandleResult> PushFailedMessage(ErrorContext errorContext)
-        {
-            return onError(errorContext);
-        }
+        public Task StopReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task PushMessage(MessageContext messageContext)
-        {
-            return onMessage.Invoke(messageContext);
-        }
+        public ISubscriptionManager Subscriptions => baseTransportReceiver.Subscriptions;
+        public string Id => baseTransportReceiver.Id;
 
-        Func<MessageContext, Task> onMessage;
-        Func<ErrorContext, Task<ErrorHandleResult>> onError;
+        readonly IMessageReceiver baseTransportReceiver;
+        OnMessage onMessage;
+        OnError onError;
     }
 }

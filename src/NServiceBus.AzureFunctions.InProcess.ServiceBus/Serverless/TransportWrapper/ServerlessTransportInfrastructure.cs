@@ -1,66 +1,25 @@
 ﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
 {
-    using System;
-    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
-    using Routing;
-    using Settings;
     using Transport;
 
     class ServerlessTransportInfrastructure : TransportInfrastructure
     {
-        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure, SettingsHolder settings)
+        readonly TransportInfrastructure baseTransportInfrastructure;
+
+        public ServerlessTransportInfrastructure(TransportInfrastructure baseTransportInfrastructure)
         {
             this.baseTransportInfrastructure = baseTransportInfrastructure;
-            this.settings = settings;
+            Dispatcher = baseTransportInfrastructure.Dispatcher;
+            Receivers = baseTransportInfrastructure.Receivers.ToDictionary(
+                r => r.Key,
+                r => (IMessageReceiver)new PipelineInvoker(r.Value)
+                );
         }
 
-        public override IEnumerable<Type> DeliveryConstraints =>
-            baseTransportInfrastructure.DeliveryConstraints;
-
-        //support ReceiveOnly so that we can use immediate retries
-        public override TransportTransactionMode TransactionMode { get; } = TransportTransactionMode.ReceiveOnly;
-
-        public override OutboundRoutingPolicy OutboundRoutingPolicy =>
-            baseTransportInfrastructure.OutboundRoutingPolicy;
-
-        public override TransportReceiveInfrastructure ConfigureReceiveInfrastructure()
-        {
-            var pipelineInvoker = settings.GetOrCreate<PipelineInvoker>();
-            return new ManualPipelineInvocationInfrastructure(pipelineInvoker);
-        }
-
-        public override TransportSendInfrastructure ConfigureSendInfrastructure()
-        {
-            return baseTransportInfrastructure.ConfigureSendInfrastructure();
-        }
-
-        public override TransportSubscriptionInfrastructure ConfigureSubscriptionInfrastructure()
-        {
-            return baseTransportInfrastructure.ConfigureSubscriptionInfrastructure();
-        }
-
-        public override EndpointInstance BindToLocalEndpoint(EndpointInstance instance)
-        {
-            return baseTransportInfrastructure.BindToLocalEndpoint(instance);
-        }
-
-        public override Task Start()
-        {
-            return baseTransportInfrastructure.Start();
-        }
-
-        public override Task Stop()
-        {
-            return baseTransportInfrastructure.Stop();
-        }
-
-        public override string ToTransportAddress(LogicalAddress logicalAddress)
-        {
-            return baseTransportInfrastructure.ToTransportAddress(logicalAddress);
-        }
-
-        readonly TransportInfrastructure baseTransportInfrastructure;
-        readonly SettingsHolder settings;
+        public override Task Shutdown(CancellationToken cancellationToken = default)
+            => baseTransportInfrastructure.Shutdown(cancellationToken);
     }
 }

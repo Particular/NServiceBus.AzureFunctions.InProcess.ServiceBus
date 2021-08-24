@@ -9,12 +9,15 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.Configuration.AdvancedExtensibility;
+    using NServiceBus.Settings;
     using NServiceBus.Unicast;
     using NUnit.Framework;
 
+    [TestFixture]
     public class When_shipping_handlers_in_dedicated_assembly
     {
         [Test]
@@ -25,14 +28,17 @@
 
             var serviceCollection = new ServiceCollection();
 
-            var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest");
+            var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest", default(IConfiguration));
             configuration.UseSerialization<XmlSerializer>();
-            configuration.EndpointConfiguration.UsePersistence<LearningPersistence>();
 
-            var scanner = configuration.EndpointConfiguration.AssemblyScanner();
-            scanner.ThrowExceptions = false;
+            SettingsHolder settings = default;
 
-            var settings = configuration.AdvancedConfiguration.GetSettings();
+            configuration.Advanced(endpointConfiguration =>
+            {
+                endpointConfiguration.UsePersistence<LearningPersistence>();
+                endpointConfiguration.EnableInstallers();
+                settings = endpointConfiguration.GetSettings();
+            });
 
             var endpointFactory = FunctionsHostBuilderExtensions.Configure(configuration, serviceCollection,
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
@@ -42,7 +48,7 @@
 
 
             // we need to process an actual message to have the endpoint being created
-            await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null);
+            await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null, default, default);
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
             Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));

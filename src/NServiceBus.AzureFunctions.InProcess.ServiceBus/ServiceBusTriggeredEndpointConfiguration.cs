@@ -1,98 +1,123 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
     using Logging;
     using Microsoft.Extensions.Configuration;
     using Serialization;
-    using Transport;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint.
     /// </summary>
-    public class ServiceBusTriggeredEndpointConfiguration
+    public partial class ServiceBusTriggeredEndpointConfiguration
     {
         static ServiceBusTriggeredEndpointConfiguration()
         {
             LogManager.UseFactory(FunctionsLoggerFactory.Instance);
         }
 
+        // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
+        Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
+        readonly string endpointName;
+        readonly IConfiguration configuration;
+        string connectionString;
+        bool sendFailedMessagesToErrorQueue = true;
+
+        ISerializationConfigurationStrategy serializationConfigurationStrategy = new SerializationConfigurationStrategy<NewtonsoftSerializer>();
+        Action<RoutingSettings> configureRouting;
+        Action<AzureServiceBusTransport> configureTransport;
+        Action<EndpointConfiguration> customConfiguration;
+
+
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
+        /// Configure the underlying Endpoint Configuration directly.
         /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(IConfiguration configuration)
-            : this(GetConfiguredValueOrFallback(configuration, "ENDPOINT_NAME", optional: false), configuration)
+        public void Advanced(Action<EndpointConfiguration> customConfiguration)
         {
+            this.customConfiguration = customConfiguration;
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
+        /// Configure message routing.
         /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration = null)
-            : this(endpointName, null, configuration)
+        public void Routing(Action<RoutingSettings> configureRouting)
         {
+            this.configureRouting = configureRouting;
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
+        /// Configure the ServiceBus connection string used to send messages.
         /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null)
-            : this(endpointName, connectionStringName, null)
+        public void ServiceBusConnectionString(string connectionString)
         {
+            this.connectionString = connectionString;
         }
 
         /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
+        /// Apply custom configuration to the NServiceBus Azure Service Bus transport.
         /// </summary>
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName)
-            : this(endpointName, null, null)
+        public void ConfigureTransport(Action<AzureServiceBusTransport> configureTransport)
         {
+            this.configureTransport = configureTransport;
         }
 
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null, IConfiguration configuration = null)
+        internal EndpointConfiguration CreateEndpointConfiguration()
         {
-            EndpointConfiguration = new EndpointConfiguration(endpointName);
+            var endpointConfiguration = new EndpointConfiguration(endpointName);
+            var recoverability = endpointConfiguration.Recoverability();
+            recoverability.Immediate(settings => settings.NumberOfRetries(5));
+            recoverability.Delayed(settings => settings.NumberOfRetries(3));
+            recoverabilityPolicy.SendFailedMessagesToErrorQueue = sendFailedMessagesToErrorQueue;
+            recoverability.CustomPolicy(recoverabilityPolicy.Invoke);
 
-            recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
-            EndpointConfiguration.Recoverability().CustomPolicy(recoverabilityPolicy.Invoke);
-
-            // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
-            // Can be overriden by ServerlessEndpointConfiguration.LogDiagnostics().
-            EndpointConfiguration.CustomDiagnosticsWriter(_ => Task.CompletedTask);
+            endpointConfiguration.CustomDiagnosticsWriter(customDiagnosticsWriter);
 
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
             var functionAppName = GetConfiguredValueOrFallback(configuration, "WEBSITE_SITE_NAME", true) ?? Environment.MachineName;
-            EndpointConfiguration.UniquelyIdentifyRunningInstance()
+            endpointConfiguration.UniquelyIdentifyRunningInstance()
                 .UsingCustomDisplayName(functionAppName)
                 .UsingCustomIdentifier(DeterministicGuid.Create(functionAppName));
 
             var licenseText = GetConfiguredValueOrFallback(configuration, "NSERVICEBUS_LICENSE", optional: true);
             if (!string.IsNullOrWhiteSpace(licenseText))
             {
-                EndpointConfiguration.License(licenseText);
+                endpointConfiguration.License(licenseText);
             }
 
-            Transport = UseTransport<AzureServiceBusTransport>();
-
-            var connectionString = GetConfiguredValueOrFallback(configuration, connectionStringName ?? DefaultServiceBusConnectionName, optional: true);
-            if (!string.IsNullOrWhiteSpace(connectionString))
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                Transport.ConnectionString(connectionString);
+                connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
             }
-            else if (!string.IsNullOrWhiteSpace(connectionStringName))
+
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new Exception($"Azure Service Bus connection string named '{connectionStringName}' was provided but wasn't found in the environment variables. Make sure the connection string is stored in the environment variable named '{connectionStringName}'.");
+                throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {DefaultServiceBusConnectionName} or using:
+  `serviceBusTriggeredEndpointConfiguration.{nameof(ServiceBusConnectionString)}(connectionString);`");
             }
 
-            var recoverability = AdvancedConfiguration.Recoverability();
-            recoverability.Immediate(settings => settings.NumberOfRetries(5));
-            recoverability.Delayed(settings => settings.NumberOfRetries(3));
+            var transport = new AzureServiceBusTransport(connectionString);
+            configureTransport?.Invoke(transport);
+            serverlessTransport = new ServerlessTransport(transport);
+            var routing = endpointConfiguration.UseTransport(serverlessTransport);
 
-            EndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
+            configureRouting?.Invoke(routing);
+
+            serializationConfigurationStrategy.ApplyTo(endpointConfiguration);
+
+            customConfiguration?.Invoke(endpointConfiguration);
+
+            return endpointConfiguration;
+        }
+
+        /// <summary>
+        /// Creates a serverless NServiceBus endpoint.
+        /// </summary>
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration)
+        {
+            this.endpointName = endpointName;
+            this.configuration = configuration;
         }
 
         static string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)
@@ -114,80 +139,54 @@
             return environmentVariable;
         }
 
-        /// <summary>
-        /// Azure Service Bus transport
-        /// </summary>
-        public TransportExtensions<AzureServiceBusTransport> Transport { get; }
-
-        internal EndpointConfiguration EndpointConfiguration { get; }
-        internal PipelineInvoker PipelineInvoker { get; private set; }
-
-        /// <summary>
-        /// Gives access to the underlying endpoint configuration for advanced configuration options.
-        /// </summary>
-        public EndpointConfiguration AdvancedConfiguration => EndpointConfiguration;
-
-        /// <summary>
-        /// Attempts to derive the required configuration parameters automatically from the Azure Functions related attributes via
-        /// reflection.
-        /// </summary>
-        [ObsoleteEx(
-            Message = "The static hosting model has been deprecated. Refer to the documentation for details on how to use class-instance approach instead.",
-            RemoveInVersion = "3",
-            TreatAsErrorFromVersion = "2")]
-        public static ServiceBusTriggeredEndpointConfiguration FromAttributes()
-        {
-            var serviceBusTriggerAttribute = ReflectionHelper.FindBusTriggerAttribute();
-            if (serviceBusTriggerAttribute != null)
-            {
-                return new ServiceBusTriggeredEndpointConfiguration(serviceBusTriggerAttribute.QueueName, serviceBusTriggerAttribute.Connection);
-            }
-
-            throw new Exception(
-                $"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
-        }
-
-        /// <summary>
-        /// Define a transport to be used when sending and publishing messages.
-        /// </summary>
-        protected TransportExtensions<TTransport> UseTransport<TTransport>()
-            where TTransport : TransportDefinition, new()
-        {
-            var serverlessTransport = EndpointConfiguration.UseTransport<ServerlessTransport<TTransport>>();
-
-            PipelineInvoker = serverlessTransport.PipelineAccess();
-            return serverlessTransport.BaseTransportConfiguration();
-        }
+        internal PipelineInvoker PipelineInvoker => serverlessTransport.PipelineInvoker;
 
         /// <summary>
         /// Define the serializer to be used.
         /// </summary>
-        public SerializationExtensions<T> UseSerialization<T>() where T : SerializationDefinition, new()
+        public void UseSerialization<T>(Action<SerializationExtensions<T>> advancedConfiguration = null) where T : SerializationDefinition, new()
         {
-            return EndpointConfiguration.UseSerialization<T>();
+            serializationConfigurationStrategy = new SerializationConfigurationStrategy<T>(advancedConfiguration);
         }
 
         /// <summary>
         /// Disables moving messages to the error queue even if an error queue name is configured.
         /// </summary>
-        public void DoNotSendMessagesToErrorQueue()
-        {
-            recoverabilityPolicy.SendFailedMessagesToErrorQueue = false;
-        }
+        public void DoNotSendMessagesToErrorQueue() => sendFailedMessagesToErrorQueue = false;
 
         /// <summary>
         /// Logs endpoint diagnostics information to the log. Diagnostics are logged on level <see cref="LogLevel.Info" />.
         /// </summary>
-        public void LogDiagnostics()
-        {
-            EndpointConfiguration.CustomDiagnosticsWriter(diagnostics =>
+        public void LogDiagnostics() =>
+            customDiagnosticsWriter = (diagnostics, cancellationToken) =>
             {
                 LogManager.GetLogger("StartupDiagnostics").Info(diagnostics);
                 return Task.CompletedTask;
-            });
-        }
+            };
 
+        ServerlessTransport serverlessTransport;
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
         internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
+
+        interface ISerializationConfigurationStrategy
+        {
+            void ApplyTo(EndpointConfiguration endpointConfiguration);
+        }
+
+        class SerializationConfigurationStrategy<T> : ISerializationConfigurationStrategy where T : SerializationDefinition, new()
+        {
+            readonly Action<SerializationExtensions<T>> configurationAction;
+
+            public SerializationConfigurationStrategy(Action<SerializationExtensions<T>> configurationAction = null)
+            {
+                this.configurationAction = configurationAction;
+            }
+
+            public void ApplyTo(EndpointConfiguration endpointConfiguration)
+            {
+                var serializationSettings = endpointConfiguration.UseSerialization<T>();
+                configurationAction?.Invoke(serializationSettings);
+            }
+        }
     }
 }

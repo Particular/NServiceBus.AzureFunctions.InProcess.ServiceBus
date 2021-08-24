@@ -1,25 +1,27 @@
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(@"ServiceBus.AcceptanceTests, PublicKey=00240000048000009400000006020000002400005253413100040000010001007f16e21368ff041183fab592d9e8ed37e7be355e93323147a1d29983d6e591b04282e4da0c9e18bd901e112c0033925eb7d7872c2f1706655891c5c9d57297994f707d16ee9a8f40d978f064ee1ffc73c0db3f4712691b23bf596f75130f4ec978cf78757ec034625a5f27e6bb50c618931ea49f6f628fd74271c32959efb1c5")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo(@"ServiceBus.Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001007f16e21368ff041183fab592d9e8ed37e7be355e93323147a1d29983d6e591b04282e4da0c9e18bd901e112c0033925eb7d7872c2f1706655891c5c9d57297994f707d16ee9a8f40d978f064ee1ffc73c0db3f4712691b23bf596f75130f4ec978cf78757ec034625a5f27e6bb50c618931ea49f6f628fd74271c32959efb1c5")]
 namespace NServiceBus
 {
     public class FunctionEndpoint : NServiceBus.IFunctionEndpoint
     {
-        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. Will" +
-            " be treated as an error from version 2.0.0. Will be removed in version 3.0.0.", false)]
+        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. The " +
+            "member currently throws a NotImplementedException. Will be removed in version 3." +
+            "0.0.", true)]
         public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task ProcessNonTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task ProcessTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Publish(object message, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Send(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Send(object message, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Subscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Subscribe(System.Type eventType, NServiceBus.SubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Unsubscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
-        public System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
+        public System.Threading.Tasks.Task ProcessNonTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task ProcessTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Publish(object message, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Send(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Send(object message, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Subscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Subscribe(System.Type eventType, NServiceBus.SubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Unsubscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public class FunctionExecutionContext
     {
@@ -29,32 +31,36 @@ namespace NServiceBus
     }
     public static class FunctionsHostBuilderExtensions
     {
-        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder) { }
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
+        [System.Obsolete("Use `UseNServiceBus(string, Action<ServiceBusTriggeredEndpointConfiguration>)` in" +
+            "stead. The member currently throws a NotImplementedException. Will be removed in" +
+            " version 3.0.0.", true)]
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<Microsoft.Extensions.Configuration.IConfiguration, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, string endpointName, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
     }
     public interface IFunctionEndpoint
     {
         [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. Will" +
-            " be treated as an error from version 2.0.0. Will be removed in version 3.0.0.", false)]
+            " be removed in version 3.0.0.", true)]
         System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Publish(object message, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Send(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Send(object message, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Subscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Subscribe(System.Type eventType, NServiceBus.SubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Unsubscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
-        System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
+        System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish(object message, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send(object message, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Subscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Subscribe(System.Type eventType, NServiceBus.SubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Unsubscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
     }
     [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
-    [System.Obsolete("Use `NServiceBusTriggerFunctionAttribute` instead. Will be treated as an error fr" +
-        "om version 2.0.0. Will be removed in version 3.0.0.", false)]
+    [System.Obsolete("Use `NServiceBusTriggerFunctionAttribute` instead. Will be removed in version 3.0" +
+        ".0.", true)]
     public sealed class NServiceBusEndpointNameAttribute : System.Attribute
     {
         public NServiceBusEndpointNameAttribute(string name) { }
@@ -72,21 +78,38 @@ namespace NServiceBus
     }
     public class ServiceBusTriggeredEndpointConfiguration
     {
+        [System.Obsolete("Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServi" +
+            "ceBus` overloads instead. The member currently throws a NotImplementedException." +
+            " Will be removed in version 3.0.0.", true)]
         public ServiceBusTriggeredEndpointConfiguration(Microsoft.Extensions.Configuration.IConfiguration configuration) { }
+        [System.Obsolete("Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServi" +
+            "ceBus` overloads instead. The member currently throws a NotImplementedException." +
+            " Will be removed in version 3.0.0.", true)]
         public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Configuration.IConfiguration configuration = null) { }
+        [System.Obsolete("Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServi" +
+            "ceBus` overloads instead. The member currently throws a NotImplementedException." +
+            " Will be removed in version 3.0.0.", true)]
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
+        [System.Obsolete("Use `Advanced(Action<EndpointConfiguration>)` instead. The member currently throw" +
+            "s a NotImplementedException. Will be removed in version 3.0.0.", true)]
         public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
+        [System.Obsolete("Use `Routing(Action<RoutingSettings>)` instead. The member currently throws a Not" +
+            "ImplementedException. Will be removed in version 3.0.0.", true)]
         public NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport> Transport { get; }
+        public void Advanced(System.Action<NServiceBus.EndpointConfiguration> customConfiguration) { }
+        public void ConfigureTransport(System.Action<NServiceBus.AzureServiceBusTransport> configureTransport) { }
         public void DoNotSendMessagesToErrorQueue() { }
         public void LogDiagnostics() { }
-        public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
+        public void Routing(System.Action<NServiceBus.RoutingSettings> configureRouting) { }
+        public void ServiceBusConnectionString(string connectionString) { }
+        public void UseSerialization<T>(System.Action<NServiceBus.Serialization.SerializationExtensions<T>> advancedConfiguration = null)
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
-        protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
-            where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
+        [System.Obsolete("Use `ConfigureTransport(Action<AzureServiceBusTransport>)` instead. The member cu" +
+            "rrently throws a NotImplementedException. Will be removed in version 3.0.0.", true)]
+        protected NServiceBus.AzureServiceBusTransport UseTransport(NServiceBus.AzureServiceBusTransport transport) { }
         [System.Obsolete("The static hosting model has been deprecated. Refer to the documentation for deta" +
-            "ils on how to use class-instance approach instead. Will be treated as an error f" +
-            "rom version 2.0.0. Will be removed in version 3.0.0.", false)]
+            "ils on how to use class-instance approach instead. The member currently throws a" +
+            " NotImplementedException. Will be removed in version 3.0.0.", true)]
         public static NServiceBus.ServiceBusTriggeredEndpointConfiguration FromAttributes() { }
     }
 }
