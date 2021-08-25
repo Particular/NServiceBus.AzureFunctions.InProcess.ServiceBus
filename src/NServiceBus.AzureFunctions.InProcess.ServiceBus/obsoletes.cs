@@ -68,7 +68,7 @@ namespace NServiceBus
             TreatAsErrorFromVersion = "2",
             RemoveInVersion = "3")]
         protected AzureServiceBusTransport UseTransport(AzureServiceBusTransport transport) =>
-            throw new NotImplementedException();
+            throw new NotImplementedException(); //TODO update obsolete messages
 
         [ObsoleteEx(Message = "Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServiceBus` overloads instead.",
             TreatAsErrorFromVersion = "2",

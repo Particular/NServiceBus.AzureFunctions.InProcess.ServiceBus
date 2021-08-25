@@ -1,11 +1,13 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
     using Configuration.AdvancedExtensibility;
     using Logging;
+    using Microsoft.Azure.WebJobs.Description;
     using Microsoft.Extensions.Configuration;
     using Serialization;
 
