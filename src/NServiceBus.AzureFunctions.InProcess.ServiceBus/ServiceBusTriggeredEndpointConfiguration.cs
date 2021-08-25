@@ -1,10 +1,12 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
     using Logging;
+    using Microsoft.Azure.WebJobs.Description;
     using Microsoft.Extensions.Configuration;
     using Serialization;
 
@@ -20,52 +22,47 @@
 
         // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
         Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
-        readonly string endpointName;
-        readonly IConfiguration configuration;
-        string connectionString;
         bool sendFailedMessagesToErrorQueue = true;
 
-        ISerializationConfigurationStrategy serializationConfigurationStrategy = new SerializationConfigurationStrategy<NewtonsoftSerializer>();
-        Action<RoutingSettings> configureRouting;
-        Action<AzureServiceBusTransport> configureTransport;
-        Action<EndpointConfiguration> customConfiguration;
-
+        /// <summary>
+        /// 
+        /// </summary>
+        public AzureServiceBusTransport Transport { get; }
 
         /// <summary>
-        /// Configure the underlying Endpoint Configuration directly.
+        /// 
         /// </summary>
-        public void Advanced(Action<EndpointConfiguration> customConfiguration)
-        {
-            this.customConfiguration = customConfiguration;
-        }
+        public RoutingSettings Routing { get; }
 
         /// <summary>
-        /// Configure message routing.
+        /// 
         /// </summary>
-        public void Routing(Action<RoutingSettings> configureRouting)
-        {
-            this.configureRouting = configureRouting;
-        }
+        public EndpointConfiguration AdvancedConfiguration { get; }
 
         /// <summary>
-        /// Configure the ServiceBus connection string used to send messages.
+        /// 
         /// </summary>
-        public void ServiceBusConnectionString(string connectionString)
+        public string ServiceBusConnectionString
         {
-            this.connectionString = connectionString;
+            get => connectionString;
+            set
+            {
+                //TODO throw if nullofwhitespace
+                connectionString = value;
+                var property = typeof(AzureServiceBusTransport).GetProperty("ConnectionString", BindingFlags.Instance | BindingFlags.NonPublic); //TODO use correct bindingflags
+                property.SetValue(Transport, connectionString);
+            }
         }
+
+        private string connectionString;
 
         /// <summary>
-        /// Apply custom configuration to the NServiceBus Azure Service Bus transport.
+        /// Creates a serverless NServiceBus endpoint.
         /// </summary>
-        public void ConfigureTransport(Action<AzureServiceBusTransport> configureTransport)
-        {
-            this.configureTransport = configureTransport;
-        }
-
-        internal EndpointConfiguration CreateEndpointConfiguration()
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration)
         {
             var endpointConfiguration = new EndpointConfiguration(endpointName);
+
             var recoverability = endpointConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
@@ -86,38 +83,16 @@
                 endpointConfiguration.License(licenseText);
             }
 
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-            }
+            connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
+            Transport = new AzureServiceBusTransport(connectionString ?? "missing");
 
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {DefaultServiceBusConnectionName} or using:
-  `serviceBusTriggeredEndpointConfiguration.{nameof(ServiceBusConnectionString)}(connectionString);`");
-            }
 
-            var transport = new AzureServiceBusTransport(connectionString);
-            configureTransport?.Invoke(transport);
-            serverlessTransport = new ServerlessTransport(transport);
-            var routing = endpointConfiguration.UseTransport(serverlessTransport);
+            serverlessTransport = new ServerlessTransport(Transport);
+            Routing = endpointConfiguration.UseTransport(serverlessTransport);
 
-            configureRouting?.Invoke(routing);
+            endpointConfiguration.UseSerialization<NewtonsoftSerializer>();
 
-            serializationConfigurationStrategy.ApplyTo(endpointConfiguration);
-
-            customConfiguration?.Invoke(endpointConfiguration);
-
-            return endpointConfiguration;
-        }
-
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration)
-        {
-            this.endpointName = endpointName;
-            this.configuration = configuration;
+            AdvancedConfiguration = endpointConfiguration;
         }
 
         static string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)
@@ -125,14 +100,14 @@
             if (configuration != null)
             {
                 var configuredValue = configuration.GetValue<string>(key);
-                if (configuredValue != null)
+                if (!string.IsNullOrWhiteSpace(configuredValue))
                 {
                     return configuredValue;
                 }
             }
 
             var environmentVariable = Environment.GetEnvironmentVariable(key);
-            if (string.IsNullOrEmpty(environmentVariable) && !optional)
+            if (string.IsNullOrWhiteSpace(environmentVariable) && !optional)
             {
                 throw new Exception($"Configuration or environment value for '{key}' was not set or was empty.");
             }
@@ -144,9 +119,9 @@
         /// <summary>
         /// Define the serializer to be used.
         /// </summary>
-        public void UseSerialization<T>(Action<SerializationExtensions<T>> advancedConfiguration = null) where T : SerializationDefinition, new()
+        public SerializationExtensions<T> UseSerialization<T>() where T : SerializationDefinition, new()
         {
-            serializationConfigurationStrategy = new SerializationConfigurationStrategy<T>(advancedConfiguration);
+            return AdvancedConfiguration.UseSerialization<T>();
         }
 
         /// <summary>
@@ -167,26 +142,5 @@
         ServerlessTransport serverlessTransport;
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
         internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
-
-        interface ISerializationConfigurationStrategy
-        {
-            void ApplyTo(EndpointConfiguration endpointConfiguration);
-        }
-
-        class SerializationConfigurationStrategy<T> : ISerializationConfigurationStrategy where T : SerializationDefinition, new()
-        {
-            readonly Action<SerializationExtensions<T>> configurationAction;
-
-            public SerializationConfigurationStrategy(Action<SerializationExtensions<T>> configurationAction = null)
-            {
-                this.configurationAction = configurationAction;
-            }
-
-            public void ApplyTo(EndpointConfiguration endpointConfiguration)
-            {
-                var serializationSettings = endpointConfiguration.UseSerialization<T>();
-                configurationAction?.Invoke(serializationSettings);
-            }
-        }
     }
 }

@@ -81,10 +81,17 @@
             IServiceCollection serviceCollection,
             string appDirectory)
         {
-            var endpointConfiguration = configuration.CreateEndpointConfiguration();
+            var endpointConfiguration = configuration.AdvancedConfiguration;
+
             var scanner = endpointConfiguration.AssemblyScanner();
             scanner.AdditionalAssemblyScanningPath = appDirectory;
             scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
+
+            if (string.IsNullOrWhiteSpace(configuration.ServiceBusConnectionString))
+            {
+                throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName} or using:
+            `serviceBusTriggeredEndpointConfiguration.{nameof(ServiceBusTriggeredEndpointConfiguration.ServiceBusConnectionString)}");
+            }
 
             var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
                     endpointConfiguration,
