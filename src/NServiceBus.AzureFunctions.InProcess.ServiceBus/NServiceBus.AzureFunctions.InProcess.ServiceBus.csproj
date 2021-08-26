@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="4.3.0" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="3.0.0-alpha.153" />
-    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="2.0.0-alpha.284" />
+    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="2.0.0-azure-functions-api-changes.1" />
     <PackageReference Include="NServiceBus.Extensions.DependencyInjection" Version="2.0.0-alpha.140" />
     <PackageReference Include="Obsolete.Fody" Version="5.2.1" PrivateAssets="All" />
     <PackageReference Include="Particular.Packaging" Version="1.3.0" PrivateAssets="All" />
