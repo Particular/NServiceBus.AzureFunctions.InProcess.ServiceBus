@@ -6,7 +6,6 @@
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
     using Logging;
-    using Microsoft.Azure.WebJobs.Description;
     using Microsoft.Extensions.Configuration;
     using Serialization;
 
@@ -22,32 +21,31 @@
 
         // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
         Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
-        bool sendFailedMessagesToErrorQueue = true;
 
         /// <summary>
-        /// 
+        /// Azure Service Bus transport
         /// </summary>
         public AzureServiceBusTransport Transport { get; }
 
         /// <summary>
-        /// 
+        /// NServiceBus message routing
         /// </summary>
         public RoutingSettings Routing { get; }
 
         /// <summary>
-        /// 
+        /// Gives access to the underlying endpoint configuration for advanced configuration options.
         /// </summary>
         public EndpointConfiguration AdvancedConfiguration { get; }
 
         /// <summary>
-        /// 
+        /// Azure Service Bus connection string used to send  messages.
         /// </summary>
         public string ServiceBusConnectionString
         {
             get => connectionString;
             set
             {
-                //TODO throw if nullofwhitespace
+                Guard.AgainstNullAndEmpty(nameof(value), value);
                 connectionString = value;
                 var property = typeof(AzureServiceBusTransport).GetProperty("ConnectionString", BindingFlags.Instance | BindingFlags.NonPublic); //TODO use correct bindingflags
                 property.SetValue(Transport, connectionString);
@@ -66,7 +64,7 @@
             var recoverability = endpointConfiguration.Recoverability();
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
-            recoverabilityPolicy.SendFailedMessagesToErrorQueue = sendFailedMessagesToErrorQueue;
+            recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             recoverability.CustomPolicy(recoverabilityPolicy.Invoke);
 
             endpointConfiguration.CustomDiagnosticsWriter(customDiagnosticsWriter);
@@ -127,7 +125,7 @@
         /// <summary>
         /// Disables moving messages to the error queue even if an error queue name is configured.
         /// </summary>
-        public void DoNotSendMessagesToErrorQueue() => sendFailedMessagesToErrorQueue = false;
+        public void DoNotSendMessagesToErrorQueue() => recoverabilityPolicy.SendFailedMessagesToErrorQueue = false;
 
         /// <summary>
         /// Logs endpoint diagnostics information to the log. Diagnostics are logged on level <see cref="LogLevel.Info" />.
