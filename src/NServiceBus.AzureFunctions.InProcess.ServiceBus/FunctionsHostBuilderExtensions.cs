@@ -29,7 +29,7 @@
             {
                 throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
 - Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
-- Use `functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory)` 
+- Use `functionsHostBuilder.UseNServiceBus(endpointName, configuration)` 
 - Add a configuration or environment variable with the key ENDPOINT_NAME");
             }
 
@@ -68,7 +68,9 @@
         {
             // Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
-            var endpointFactory = Configure(serviceBusTriggeredEndpointConfiguration, functionsHostBuilder.Services,
+            var endpointFactory = Configure(
+                serviceBusTriggeredEndpointConfiguration,
+                functionsHostBuilder.Services,
                 Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
 
             // for backward compatibility
@@ -79,12 +81,22 @@
         internal static Func<IServiceProvider, FunctionEndpoint> Configure(
             ServiceBusTriggeredEndpointConfiguration configuration,
             IServiceCollection serviceCollection,
-            string appDirectory)
+            string appDirectory = null)
         {
-            var endpointConfiguration = configuration.CreateEndpointConfiguration();
+            var endpointConfiguration = configuration.AdvancedConfiguration;
+
             var scanner = endpointConfiguration.AssemblyScanner();
-            scanner.AdditionalAssemblyScanningPath = appDirectory;
+            if (appDirectory != null)
+            {
+                scanner.AdditionalAssemblyScanningPath = appDirectory;
+            }
             scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
+
+            if (string.IsNullOrWhiteSpace(configuration.ServiceBusConnectionString))
+            {
+                throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName} or using:
+            `serviceBusTriggeredEndpointConfiguration.{nameof(ServiceBusTriggeredEndpointConfiguration.ServiceBusConnectionString)}");
+            }
 
             var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
                     endpointConfiguration,

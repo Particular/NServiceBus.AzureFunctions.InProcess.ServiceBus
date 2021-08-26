@@ -2,6 +2,7 @@
 {
     using System;
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NUnit.Framework;
 
@@ -20,12 +21,16 @@
                 var serviceBusTriggeredEndpointConfiguration =
                     new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", default(IConfiguration));
 
+                var serviceCollection = new ServiceCollection();
+
                 var exception = Assert.Throws<Exception>(
-                    () => serviceBusTriggeredEndpointConfiguration.CreateEndpointConfiguration(),
+                    () => FunctionsHostBuilderExtensions.Configure(
+                        serviceBusTriggeredEndpointConfiguration,
+                        serviceCollection),
                     "Exception should be thrown at endpoint creation so that the error will be found during functions startup"
                 );
 
-                StringAssert.Contains(".ServiceBusConnectionString(", exception?.Message, "Should mention the code-first approach");
+                StringAssert.Contains(nameof(ServiceBusTriggeredEndpointConfiguration.ServiceBusConnectionString), exception?.Message, "Should mention the code-first approach");
                 StringAssert.Contains("environment variable", exception?.Message, "Should mention the environment variable approach");
             }
             finally

@@ -61,7 +61,7 @@
             {
                 var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name, default(IConfiguration));
                 configurationCustomization(functionEndpointConfiguration);
-                var endpointConfiguration = functionEndpointConfiguration.CreateEndpointConfiguration();
+                var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
 
                 endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
 

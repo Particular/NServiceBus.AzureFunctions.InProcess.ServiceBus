@@ -64,17 +64,7 @@ namespace NServiceBus
             TreatAsErrorFromVersion = "2")]
         public static ServiceBusTriggeredEndpointConfiguration FromAttributes() => throw new NotImplementedException();
 
-        [ObsoleteEx(ReplacementTypeOrMember = "Advanced(Action<EndpointConfiguration>)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        public EndpointConfiguration AdvancedConfiguration => throw new NotImplementedException();
-
-        [ObsoleteEx(ReplacementTypeOrMember = "Routing(Action<RoutingSettings>)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        public TransportExtensions<AzureServiceBusTransport> Transport => throw new NotImplementedException();
-
-        [ObsoleteEx(ReplacementTypeOrMember = "ConfigureTransport(Action<AzureServiceBusTransport>)",
+        [ObsoleteEx(Message = "Do not override the AzureServiceBusTransport. Use the properties on `ServiceBusTriggeredEndpointConfiguration instead.",
             TreatAsErrorFromVersion = "2",
             RemoveInVersion = "3")]
         protected AzureServiceBusTransport UseTransport(AzureServiceBusTransport transport) =>
