@@ -31,7 +31,7 @@ namespace NServiceBus
     }
     public static class FunctionsHostBuilderExtensions
     {
-        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configuration = null) { }
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
         [System.Obsolete("Use `UseNServiceBus(string, Action<ServiceBusTriggeredEndpointConfiguration>)` in" +
             "stead. The member currently throws a NotImplementedException. Will be removed in" +
             " version 3.0.0.", true)]

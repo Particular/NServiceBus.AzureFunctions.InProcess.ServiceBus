@@ -17,7 +17,7 @@
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
-            Action<ServiceBusTriggeredEndpointConfiguration> configuration = null)
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
             var hostConfiguration = functionsHostBuilder.GetContext().Configuration;
             var endpointName = hostConfiguration.GetValue<string>("ENDPOINT_NAME")
@@ -33,7 +33,7 @@
 - Add a configuration or environment variable with the key ENDPOINT_NAME");
             }
 
-            functionsHostBuilder.UseNServiceBus(endpointName, configuration);
+            functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory);
         }
 
         /// <summary>
