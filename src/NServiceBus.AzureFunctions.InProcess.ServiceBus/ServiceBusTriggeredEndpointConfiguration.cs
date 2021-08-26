@@ -47,8 +47,7 @@
             {
                 Guard.AgainstNullAndEmpty(nameof(value), value);
                 connectionString = value;
-                var property = typeof(AzureServiceBusTransport).GetProperty("ConnectionString", BindingFlags.Instance | BindingFlags.NonPublic); //TODO use correct bindingflags
-                property.SetValue(Transport, connectionString);
+                Transport.ChangeConnectionString(value);
             }
         }
 
