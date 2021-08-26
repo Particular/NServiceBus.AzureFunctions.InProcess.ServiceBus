@@ -22,12 +22,12 @@
         Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
 
         /// <summary>
-        /// Azure Service Bus transport
+        /// The Azure Service Bus Transport configuration.
         /// </summary>
         public AzureServiceBusTransport Transport { get; }
 
         /// <summary>
-        /// NServiceBus message routing
+        /// The routing configuration.
         /// </summary>
         public RoutingSettings Routing { get; }
 
@@ -80,8 +80,7 @@
             }
 
             connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-            Transport = new AzureServiceBusTransport(connectionString ?? "missing");
-
+            Transport = new AzureServiceBusTransport(connectionString ?? "missing"); // connection string will be checked before creating the startable endpoint as it might be configured within UseNServiceBus().
 
             serverlessTransport = new ServerlessTransport(Transport);
             Routing = endpointConfiguration.UseTransport(serverlessTransport);

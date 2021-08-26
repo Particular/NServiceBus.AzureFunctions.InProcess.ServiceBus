@@ -18,7 +18,7 @@
             var transport = new AzureServiceBusTransport("OldValue");
             transport.ChangeConnectionString("NewValue");
 
-            var recoveredValue = (string) property.GetValue(transport);
+            var recoveredValue = (string)property.GetValue(transport);
             Assert.AreEqual("NewValue", recoveredValue, "ConnectionString was not set.");
         }
     }

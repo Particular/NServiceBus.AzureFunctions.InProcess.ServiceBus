@@ -6,7 +6,7 @@
     {
         public static void ChangeConnectionString(this AzureServiceBusTransport transport, string connectionString)
         {
-            var property = typeof(AzureServiceBusTransport).GetProperty("ConnectionString", BindingFlags.Instance | BindingFlags.NonPublic); //TODO use correct bindingflags
+            var property = typeof(AzureServiceBusTransport).GetProperty("ConnectionString", BindingFlags.Instance | BindingFlags.NonPublic);
             property.SetValue(transport, connectionString);
         }
     }
