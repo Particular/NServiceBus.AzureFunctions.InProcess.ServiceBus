@@ -79,12 +79,15 @@
         internal static Func<IServiceProvider, FunctionEndpoint> Configure(
             ServiceBusTriggeredEndpointConfiguration configuration,
             IServiceCollection serviceCollection,
-            string appDirectory)
+            string appDirectory = null)
         {
             var endpointConfiguration = configuration.AdvancedConfiguration;
 
             var scanner = endpointConfiguration.AssemblyScanner();
-            scanner.AdditionalAssemblyScanningPath = appDirectory;
+            if (appDirectory != null)
+            {
+                scanner.AdditionalAssemblyScanningPath = appDirectory;
+            }
             scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
 
             if (string.IsNullOrWhiteSpace(configuration.ServiceBusConnectionString))
