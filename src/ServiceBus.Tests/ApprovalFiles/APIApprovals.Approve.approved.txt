@@ -98,8 +98,9 @@ namespace NServiceBus
         public void LogDiagnostics() { }
         public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
-        [System.Obsolete("Use `ConfigureTransport(Action<AzureServiceBusTransport>)` instead. The member cu" +
-            "rrently throws a NotImplementedException. Will be removed in version 3.0.0.", true)]
+        [System.Obsolete("Do not override the AzureServiceBusTransport. Use the properties on `ServiceBusTr" +
+            "iggeredEndpointConfiguration instead. The member currently throws a NotImplement" +
+            "edException. Will be removed in version 3.0.0.", true)]
         protected NServiceBus.AzureServiceBusTransport UseTransport(NServiceBus.AzureServiceBusTransport transport) { }
         [System.Obsolete("The static hosting model has been deprecated. Refer to the documentation for deta" +
             "ils on how to use class-instance approach instead. The member currently throws a" +
