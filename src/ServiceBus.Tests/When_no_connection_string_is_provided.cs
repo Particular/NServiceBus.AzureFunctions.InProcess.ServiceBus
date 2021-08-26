@@ -25,7 +25,7 @@
 
                 var exception = Assert.Throws<Exception>(
                     () => FunctionsHostBuilderExtensions.Configure(
-                        serviceBusTriggeredEndpointConfiguration, 
+                        serviceBusTriggeredEndpointConfiguration,
                         serviceCollection),
                     "Exception should be thrown at endpoint creation so that the error will be found during functions startup"
                 );
