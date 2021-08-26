@@ -35,7 +35,9 @@
             endpointConfiguration.EnableInstallers();
             var settings = endpointConfiguration.GetSettings();
 
-            var endpointFactory = FunctionsHostBuilderExtensions.Configure(configuration, serviceCollection,
+            var endpointFactory = FunctionsHostBuilderExtensions.Configure(
+                configuration,
+                serviceCollection,
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
