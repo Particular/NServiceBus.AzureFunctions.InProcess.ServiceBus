@@ -17,7 +17,7 @@
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
-            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
+            Action<ServiceBusTriggeredEndpointConfiguration> configuration = null)
         {
             var hostConfiguration = functionsHostBuilder.GetContext().Configuration;
             var endpointName = hostConfiguration.GetValue<string>("ENDPOINT_NAME")
@@ -29,11 +29,11 @@
             {
                 throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
 - Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
-- Use `functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory)` 
+- Use `functionsHostBuilder.UseNServiceBus(endpointName, configuration)` 
 - Add a configuration or environment variable with the key ENDPOINT_NAME");
             }
 
-            functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory);
+            functionsHostBuilder.UseNServiceBus(endpointName, configuration);
         }
 
         /// <summary>
