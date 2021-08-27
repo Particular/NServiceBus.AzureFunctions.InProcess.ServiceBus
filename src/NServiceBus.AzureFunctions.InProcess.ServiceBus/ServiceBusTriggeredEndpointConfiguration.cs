@@ -4,6 +4,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
+    using Configuration.AdvancedExtensibility;
     using Logging;
     using Microsoft.Extensions.Configuration;
     using Serialization;
@@ -29,7 +30,7 @@
         /// <summary>
         /// The routing configuration.
         /// </summary>
-        public RoutingSettings Routing { get; }
+        public RoutingSettings<AzureServiceBusTransport> Routing { get; }
 
         /// <summary>
         /// Gives access to the underlying endpoint configuration for advanced configuration options.
@@ -83,7 +84,8 @@
             Transport = new AzureServiceBusTransport(connectionString ?? "missing"); // connection string will be checked before creating the startable endpoint as it might be configured within UseNServiceBus().
 
             serverlessTransport = new ServerlessTransport(Transport);
-            Routing = endpointConfiguration.UseTransport(serverlessTransport);
+            var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
+            Routing = new RoutingSettings<AzureServiceBusTransport>(serverlessRouting.GetSettings());
 
             endpointConfiguration.UseSerialization<NewtonsoftSerializer>();
 
