@@ -91,7 +91,7 @@ namespace NServiceBus
             " Will be removed in version 3.0.0.", true)]
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
-        public NServiceBus.RoutingSettings Routing { get; }
+        public NServiceBus.RoutingSettings<NServiceBus.AzureServiceBusTransport> Routing { get; }
         public string ServiceBusConnectionString { get; set; }
         public NServiceBus.AzureServiceBusTransport Transport { get; }
         public void DoNotSendMessagesToErrorQueue() { }
