@@ -27,7 +27,7 @@
         /// </summary>
         public AzureServiceBusTransport Transport => transport;
 
-        private ServerlessAzureServiceBusTransport transport;
+        readonly ServerlessAzureServiceBusTransport transport;
 
         /// <summary>
         /// The routing configuration.
