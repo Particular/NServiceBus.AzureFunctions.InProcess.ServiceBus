@@ -1,25 +1,18 @@
 ﻿namespace ServiceBus.Tests
 {
-    using System.Reflection;
     using NServiceBus;
     using NUnit.Framework;
 
     [TestFixture]
-    class AzureServiceBusTransportExtensionsTests
+    class ServerlessAzureServiceBusTransportTests
     {
         [Test]
-        public void Can_change_connection_string()
+        public void Can_change_connection_string_after_construction()
         {
-            var property = typeof(AzureServiceBusTransport).GetProperty("ConnectionString",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-
-            Assert.IsNotNull(property, "AzureServiceBusTransport.ConnectionString not found");
-
-            var transport = new AzureServiceBusTransport("OldValue");
+            var transport = new ServerlessAzureServiceBusTransport();
             transport.ChangeConnectionString("NewValue");
 
-            var recoveredValue = (string)property.GetValue(transport);
-            Assert.AreEqual("NewValue", recoveredValue, "ConnectionString was not set.");
+            Assert.AreEqual("NewValue", transport.ReadConnectionString(), "ConnectionString was not set.");
         }
     }
 }

@@ -35,7 +35,7 @@
 
             Assert.IsTrue(transactionStrategy.OnCompleteCalled);
             Assert.AreSame(message.GetMessageId(), messageContext.NativeMessageId);
-            Assert.AreSame(message.Body, messageContext.Body);
+            Assert.AreEqual(message.Body, messageContext.Body.ToArray());
             CollectionAssert.IsSubsetOf(message.GetHeaders(), messageContext.Headers); // the IncomingMessage has an additional MessageId header
             Assert.AreEqual(1, transactionStrategy.CreatedTransportTransactions.Count);
             Assert.AreSame(transactionStrategy.CreatedTransportTransactions[0], messageContext.TransportTransaction);
@@ -65,7 +65,7 @@
 
             Assert.AreSame(pipelineException, errorContext.Exception);
             Assert.AreSame(message.GetMessageId(), errorContext.Message.NativeMessageId);
-            Assert.AreSame(message.Body, errorContext.Message.Body);
+            CollectionAssert.AreEqual(message.Body, errorContext.Message.Body.ToArray());
             CollectionAssert.IsSubsetOf(message.GetHeaders(), errorContext.Message.Headers); // the IncomingMessage has an additional MessageId header
             Assert.AreSame(transactionStrategy.CreatedTransportTransactions.Last(), errorContext.TransportTransaction); // verify usage of the correct transport transaction instance
             Assert.AreEqual(2, transactionStrategy.CreatedTransportTransactions.Count); // verify that a new transport transaction has been created for the error handling

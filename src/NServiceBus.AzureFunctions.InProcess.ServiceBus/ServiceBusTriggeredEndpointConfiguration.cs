@@ -25,7 +25,9 @@
         /// <summary>
         /// The Azure Service Bus Transport configuration.
         /// </summary>
-        public AzureServiceBusTransport Transport { get; }
+        public AzureServiceBusTransport Transport => transport;
+
+        readonly ServerlessAzureServiceBusTransport transport;
 
         /// <summary>
         /// The routing configuration.
@@ -47,7 +49,7 @@
             {
                 Guard.AgainstNullAndEmpty(nameof(value), value);
                 connectionString = value;
-                Transport.ChangeConnectionString(value);
+                transport.ChangeConnectionString(value);
             }
         }
 
@@ -80,8 +82,12 @@
                 endpointConfiguration.License(licenseText);
             }
 
+            transport = new ServerlessAzureServiceBusTransport();
             connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-            Transport = new AzureServiceBusTransport(connectionString ?? "missing"); // connection string will be checked before creating the startable endpoint as it might be configured within UseNServiceBus().
+            if (!string.IsNullOrWhiteSpace(connectionString))
+            {
+                transport.ChangeConnectionString(connectionString);
+            }
 
             serverlessTransport = new ServerlessTransport(Transport);
             var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
