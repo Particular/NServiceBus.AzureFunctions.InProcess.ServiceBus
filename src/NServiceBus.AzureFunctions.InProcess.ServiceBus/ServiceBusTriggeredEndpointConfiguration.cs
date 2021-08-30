@@ -84,7 +84,10 @@
 
             transport = new ServerlessAzureServiceBusTransport();
             connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-            transport.ChangeConnectionString(connectionString);
+            if (!string.IsNullOrWhiteSpace(connectionString))
+            {
+                transport.ChangeConnectionString(connectionString);
+            }
 
             serverlessTransport = new ServerlessTransport(Transport);
             var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
