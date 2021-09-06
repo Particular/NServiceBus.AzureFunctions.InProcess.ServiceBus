@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <ParticularAnalyzersVersion>0.9.0</ParticularAnalyzersVersion>
+
+    <!-- Disable GitVersion normalization for build agents to generate correct versions from tags -->
+    <!-- See https://github.com/GitTools/GitVersion/issues/2838 for further details -->
+    <GitVersion_NoNormalizeEnabled>true</GitVersion_NoNormalizeEnabled>
   </PropertyGroup>
 
 </Project>
