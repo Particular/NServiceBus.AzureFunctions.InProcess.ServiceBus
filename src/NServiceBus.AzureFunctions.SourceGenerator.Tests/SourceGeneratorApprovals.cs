@@ -13,7 +13,7 @@
     using Particular.Approvals;
 
     [TestFixture]
-    public class SourceGeneratorApprovals2
+    public class SourceGeneratorApprovals
     {
         [Test]
         public void UsingNamespace()
