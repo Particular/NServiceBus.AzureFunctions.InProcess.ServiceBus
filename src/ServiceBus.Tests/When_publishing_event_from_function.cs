@@ -11,7 +11,7 @@
         public async Task Should_publish_to_subscribers()
         {
             var context = await Scenario.Define<Context>()
-                .WithEndpoint<SubscriberEndpoint>()
+                .WithEndpoint<InsideSubscriberEndpoint>()
                 .WithComponent(new PublishingFunction())
                 .Done(c => c.EventReceived)
                 .Run();
@@ -24,14 +24,14 @@
             public bool EventReceived { get; set; }
         }
 
-        class SubscriberEndpoint : EndpointConfigurationBuilder
+        class InsideSubscriberEndpoint : EndpointConfigurationBuilder
         {
-            public SubscriberEndpoint()
+            public InsideSubscriberEndpoint()
             {
                 EndpointSetup<DefaultEndpoint>();
             }
 
-            public class EventHandler : IHandleMessages<TestEvent>
+            public class EventHandler : IHandleMessages<InsideTestEvent>
             {
                 Context testContext;
 
@@ -40,7 +40,7 @@
                     this.testContext = testContext;
                 }
 
-                public Task Handle(TestEvent message, IMessageHandlerContext context)
+                public Task Handle(InsideTestEvent message, IMessageHandlerContext context)
                 {
                     testContext.EventReceived = true;
                     return Task.CompletedTask;
@@ -59,7 +59,7 @@
             {
                 public Task Handle(TriggerMessage message, IMessageHandlerContext context)
                 {
-                    return context.Publish(new TestEvent());
+                    return context.Publish(new InsideTestEvent());
                 }
             }
         }
@@ -68,7 +68,7 @@
         {
         }
 
-        class TestEvent : IEvent
+        class InsideTestEvent : IEvent
         {
         }
     }
