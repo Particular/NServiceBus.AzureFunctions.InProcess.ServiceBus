@@ -65,7 +65,16 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null) => Process(message, executionContext, functionsLogger);
+        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            await Process(message, NoTransactionStrategy.Instance, pipeline)
+                .ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
