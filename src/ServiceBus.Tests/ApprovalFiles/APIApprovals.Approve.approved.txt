@@ -3,8 +3,9 @@ namespace NServiceBus
 {
     public class FunctionEndpoint : NServiceBus.IFunctionEndpoint
     {
-        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. Will" +
-            " be removed in version 3.0.0.", true)]
+        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. The " +
+            "member currently throws a NotImplementedException. Will be removed in version 3." +
+            "0.0.", true)]
         public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
         public System.Threading.Tasks.Task ProcessNonTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
         public System.Threading.Tasks.Task ProcessTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
@@ -81,8 +82,8 @@ namespace NServiceBus
         protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
             where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
         [System.Obsolete("The static hosting model has been deprecated. Refer to the documentation for deta" +
-            "ils on how to use class-instance approach instead. Will be removed in version 3." +
-            "0.0.", true)]
+            "ils on how to use class-instance approach instead. The member currently throws a" +
+            " NotImplementedException. Will be removed in version 3.0.0.", true)]
         public static NServiceBus.ServiceBusTriggeredEndpointConfiguration FromAttributes() { }
     }
 }
