@@ -137,14 +137,7 @@
             TreatAsErrorFromVersion = "2")]
         public static ServiceBusTriggeredEndpointConfiguration FromAttributes()
         {
-            var serviceBusTriggerAttribute = ReflectionHelper.FindBusTriggerAttribute();
-            if (serviceBusTriggerAttribute != null)
-            {
-                return new ServiceBusTriggeredEndpointConfiguration(serviceBusTriggerAttribute.QueueName, serviceBusTriggerAttribute.Connection);
-            }
-
-            throw new Exception(
-                $"Unable to automatically derive the endpoint name from the ServiceBusTrigger attribute. Make sure the attribute exists or create the {nameof(ServiceBusTriggeredEndpointConfiguration)} with the required parameter manually.");
+            throw new NotImplementedException();
         }
 
         /// <summary>

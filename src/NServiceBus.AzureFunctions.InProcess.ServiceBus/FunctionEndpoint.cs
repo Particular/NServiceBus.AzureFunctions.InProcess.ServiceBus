@@ -74,15 +74,9 @@
             ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
             TreatAsErrorFromVersion = "2",
             RemoveInVersion = "3")]
-        public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
+        public Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
-
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, CancellationToken.None)
-                .ConfigureAwait(false);
-
-            await Process(message, NoTransactionStrategy.Instance, pipeline)
-                .ConfigureAwait(false);
+            throw new NotImplementedException();
         }
 
         internal static async Task Process(Message message, ITransactionStrategy transactionStrategy, PipelineInvoker pipeline)
