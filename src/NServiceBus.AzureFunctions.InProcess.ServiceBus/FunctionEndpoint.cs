@@ -65,16 +65,7 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null) => Process(message, executionContext, functionsLogger);
-
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-        /// </summary>
-        [ObsoleteEx(
-            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        public async Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
+        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -83,6 +74,18 @@
 
             await Process(message, NoTransactionStrategy.Instance, pipeline)
                 .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
+        /// </summary>
+        [ObsoleteEx(
+            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
+            TreatAsErrorFromVersion = "2",
+            RemoveInVersion = "3")]
+        public Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
+        {
+            throw new NotImplementedException();
         }
 
         internal static async Task Process(Message message, ITransactionStrategy transactionStrategy, PipelineInvoker pipeline)

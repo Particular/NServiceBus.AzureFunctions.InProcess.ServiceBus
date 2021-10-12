@@ -37,7 +37,7 @@
             public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
             {
                 if (context.Node is AttributeSyntax attributeSyntax
-                    && IsNServiceBusEndpointNameAttribute(context.SemanticModel.GetTypeInfo(attributeSyntax).Type?.ToDisplayString()))
+                    && IsNServiceBusTriggerFunctionAttribute(context.SemanticModel.GetTypeInfo(attributeSyntax).Type?.ToDisplayString()))
                 {
                     attributeFound = true;
 
@@ -71,7 +71,7 @@
                     }
                 }
 
-                bool IsNServiceBusEndpointNameAttribute(string value) => value?.Equals("NServiceBus.NServiceBusTriggerFunctionAttribute") ?? false;
+                bool IsNServiceBusTriggerFunctionAttribute(string value) => value?.Equals("NServiceBus.NServiceBusTriggerFunctionAttribute") ?? false;
                 string AttributeParameterAtPosition(int position) => context.SemanticModel.GetConstantValue(attributeSyntax.ArgumentList.Arguments[position].Expression).ToString();
                 int AttributeParametersCount() => attributeSyntax.ArgumentList.Arguments.Count;
             }
