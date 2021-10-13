@@ -12,7 +12,7 @@
     /// <summary>
     /// Represents a serverless NServiceBus endpoint.
     /// </summary>
-    public class ServiceBusTriggeredEndpointConfiguration
+    public partial class ServiceBusTriggeredEndpointConfiguration
     {
         static ServiceBusTriggeredEndpointConfiguration()
         {

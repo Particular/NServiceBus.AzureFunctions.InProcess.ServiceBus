@@ -65,7 +65,6 @@
             RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }
 
-
         /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
         /// </summary>
