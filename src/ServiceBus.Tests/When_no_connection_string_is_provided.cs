@@ -19,7 +19,7 @@
             {
                 Environment.SetEnvironmentVariable(defaultConnectionStringKey, null, EnvironmentVariableTarget.Process);
                 var serviceBusTriggeredEndpointConfiguration =
-                   new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", default(IConfiguration));
+                   new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", default);
 
                 var serviceCollection = new ServiceCollection();
 
