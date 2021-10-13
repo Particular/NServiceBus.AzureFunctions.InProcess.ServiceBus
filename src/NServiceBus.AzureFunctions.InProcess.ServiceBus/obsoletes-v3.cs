@@ -1,6 +1,6 @@
 ﻿#pragma warning disable 1591
 
-namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
+namespace NServiceBus
 {
     public partial class ServiceBusTriggeredEndpointConfiguration
     {
