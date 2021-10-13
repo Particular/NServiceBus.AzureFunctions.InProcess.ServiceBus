@@ -51,6 +51,22 @@
         }
 
         /// <summary>
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
+        /// </summary>
+        public static void UseNServiceBus(
+            this IFunctionsHostBuilder functionsHostBuilder,
+            string endpointName,
+            string connectionString,
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
+        {
+            var config = functionsHostBuilder.GetContext().Configuration;
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, connectionString);
+            configurationFactory?.Invoke(serviceBusConfiguration);
+            RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
+        }
+
+
+        /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
@@ -90,13 +106,8 @@
             {
                 scanner.AdditionalAssemblyScanningPath = appDirectory;
             }
-            scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
 
-            if (string.IsNullOrWhiteSpace(configuration.ServiceBusConnectionString))
-            {
-                throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName} or using:
-            `serviceBusTriggeredEndpointConfiguration.{nameof(ServiceBusTriggeredEndpointConfiguration.ServiceBusConnectionString)}");
-            }
+            scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
 
             var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
                     endpointConfiguration,

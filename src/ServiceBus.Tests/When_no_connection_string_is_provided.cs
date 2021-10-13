@@ -18,19 +18,13 @@
             try
             {
                 Environment.SetEnvironmentVariable(defaultConnectionStringKey, null, EnvironmentVariableTarget.Process);
-                var serviceBusTriggeredEndpointConfiguration =
-                   new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", default);
-
-                var serviceCollection = new ServiceCollection();
 
                 var exception = Assert.Throws<Exception>(
-                    () => FunctionsHostBuilderExtensions.Configure(
-                        serviceBusTriggeredEndpointConfiguration,
-                        serviceCollection),
+                    () => new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", default),
                     "Exception should be thrown at endpoint creation so that the error will be found during functions startup"
                 );
 
-                StringAssert.Contains(nameof(ServiceBusTriggeredEndpointConfiguration.ServiceBusConnectionString), exception?.Message, "Should mention the code-first approach");
+                StringAssert.Contains("UseNServiceBus", exception?.Message, "Should mention the code-first approach");
                 StringAssert.Contains("environment variable", exception?.Message, "Should mention the environment variable approach");
             }
             finally
