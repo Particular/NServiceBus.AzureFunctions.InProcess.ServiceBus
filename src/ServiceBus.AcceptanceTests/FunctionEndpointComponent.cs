@@ -12,7 +12,6 @@
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
-    using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     abstract class FunctionEndpointComponent : IComponentBehavior
     {
@@ -104,8 +103,7 @@
                 foreach (var message in messages)
                 {
                     var transportMessage = MessageHelper.GenerateMessage(message);
-                    var context = new ExecutionContext();
-                    await endpoint.ProcessNonTransactional(transportMessage, context, null, null, token);
+                    await endpoint.ProcessNonTransactional(transportMessage, null, null, token);
                 }
             }
 
