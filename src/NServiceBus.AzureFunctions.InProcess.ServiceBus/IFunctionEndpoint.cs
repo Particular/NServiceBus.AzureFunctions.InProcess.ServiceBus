@@ -23,6 +23,10 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -33,6 +37,10 @@
         /// <summary>
         /// Sends the provided message.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -43,6 +51,10 @@
         /// <summary>
         /// Sends the provided message.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -53,6 +65,10 @@
         /// <summary>
         /// Instantiates a message of type T and sends it.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -63,6 +79,10 @@
         /// <summary>
         /// Instantiates a message of type T and sends it.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -73,6 +93,10 @@
         /// <summary>
         /// Publish the message to subscribers.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -83,6 +107,10 @@
         /// <summary>
         /// Instantiates a message of type T and publishes it.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -93,6 +121,10 @@
         /// <summary>
         /// Instantiates a message of type T and publishes it.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -103,6 +135,10 @@
         /// <summary>
         /// Instantiates a message of type T and publishes it.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -115,6 +151,10 @@
         /// Subscribes to receive published messages of the specified type.
         /// This method is only necessary if you turned off auto-subscribe.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -127,6 +167,10 @@
         /// Subscribes to receive published messages of the specified type.
         /// This method is only necessary if you turned off auto-subscribe.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -137,6 +181,10 @@
         /// <summary>
         /// Unsubscribes to receive published messages of the specified type.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -147,6 +195,10 @@
         /// <summary>
         /// Unsubscribes to receive published messages of the specified type.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
     }
 }

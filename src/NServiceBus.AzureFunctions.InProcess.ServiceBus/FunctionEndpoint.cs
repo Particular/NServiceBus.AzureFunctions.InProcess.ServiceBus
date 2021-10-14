@@ -36,6 +36,10 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger, CancellationToken cancellationToken) =>
             ReflectionHelper.GetAutoCompleteValue()
                 ? ProcessNonTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken)
@@ -70,6 +74,10 @@
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
         /// <remarks>Requires <see cref="ServiceBusTriggerAttribute.AutoComplete"/> to be set to false!</remarks>
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task ProcessTransactional(Message message, ExecutionContext executionContext,
             IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => ProcessTransactional(message, messageReceiver, functionsLogger, cancellationToken);
@@ -92,6 +100,10 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task ProcessNonTransactional(Message message, ExecutionContext executionContext,
             IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => ProcessNonTransactional(message, messageReceiver, functionsLogger, cancellationToken);
@@ -186,10 +198,18 @@
         }
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Send(message, new SendOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Send(message, new SendOptions(), functionsLogger, cancellationToken);
 
@@ -207,10 +227,18 @@
         }
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Send(messageConstructor, new SendOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Send(messageConstructor, new SendOptions(), functionsLogger, cancellationToken);
 
@@ -228,10 +256,18 @@
         }
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Publish(message, new PublishOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Publish(message, new PublishOptions(), functionsLogger, cancellationToken);
 
@@ -249,10 +285,18 @@
         }
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Publish(messageConstructor, new PublishOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Publish(messageConstructor, new PublishOptions(), functionsLogger, cancellationToken);
 
@@ -270,10 +314,18 @@
         }
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Subscribe(eventType, new SubscribeOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Subscribe(eventType, new SubscribeOptions(), functionsLogger, cancellationToken);
 
@@ -291,10 +343,18 @@
         }
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Unsubscribe(eventType, options, functionsLogger, cancellationToken);
 
         /// <inheritdoc />
+        [ObsoleteEx(
+            TreatAsErrorFromVersion = "3",
+            RemoveInVersion = "4",
+            Message = "Use the overload without the ExecutionContext parameter")]
         public Task Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
             => Unsubscribe(eventType, new UnsubscribeOptions(), functionsLogger, cancellationToken);
 
