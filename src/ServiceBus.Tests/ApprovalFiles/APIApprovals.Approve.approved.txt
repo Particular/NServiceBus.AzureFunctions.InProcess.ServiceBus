@@ -4,10 +4,6 @@ namespace NServiceBus
 {
     public class FunctionEndpoint : NServiceBus.IFunctionEndpoint
     {
-        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. The " +
-            "member currently throws a NotImplementedException. Will be removed in version 3." +
-            "0.0.", true)]
-        public System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null) { }
         public System.Threading.Tasks.Task ProcessNonTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
         public System.Threading.Tasks.Task ProcessTransactional(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
         public System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
@@ -32,18 +28,12 @@ namespace NServiceBus
     public static class FunctionsHostBuilderExtensions
     {
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
-        [System.Obsolete("Use `UseNServiceBus(string, Action<ServiceBusTriggeredEndpointConfiguration>)` in" +
-            "stead. The member currently throws a NotImplementedException. Will be removed in" +
-            " version 3.0.0.", true)]
-        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<Microsoft.Extensions.Configuration.IConfiguration, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, string endpointName, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
+        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, string endpointName, string connectionString, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
     }
     public interface IFunctionEndpoint
     {
-        [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. Will" +
-            " be removed in version 3.0.0.", true)]
-        System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
         System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Azure.ServiceBus.Core.IMessageReceiver messageReceiver, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
         System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
         System.Threading.Tasks.Task Publish(object message, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
@@ -59,16 +49,6 @@ namespace NServiceBus
         System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
     }
     [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
-    [System.Obsolete("Use `NServiceBusTriggerFunctionAttribute` instead. Will be removed in version 3.0" +
-        ".0.", true)]
-    public sealed class NServiceBusEndpointNameAttribute : System.Attribute
-    {
-        public NServiceBusEndpointNameAttribute(string name) { }
-        public NServiceBusEndpointNameAttribute(string name, string triggerFunctionName) { }
-        public string Name { get; }
-        public string TriggerFunctionName { get; }
-    }
-    [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
     public sealed class NServiceBusTriggerFunctionAttribute : System.Attribute
     {
         public NServiceBusTriggerFunctionAttribute(string endpointName) { }
@@ -78,33 +58,15 @@ namespace NServiceBus
     }
     public class ServiceBusTriggeredEndpointConfiguration
     {
-        [System.Obsolete("Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServi" +
-            "ceBus` overloads instead. The member currently throws a NotImplementedException." +
-            " Will be removed in version 3.0.0.", true)]
-        public ServiceBusTriggeredEndpointConfiguration(Microsoft.Extensions.Configuration.IConfiguration configuration) { }
-        [System.Obsolete("Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServi" +
-            "ceBus` overloads instead. The member currently throws a NotImplementedException." +
-            " Will be removed in version 3.0.0.", true)]
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
-        [System.Obsolete("Do not create ServiceBusTriggeredEndpointConfiguration. Use one of the `UseNServi" +
-            "ceBus` overloads instead. The member currently throws a NotImplementedException." +
-            " Will be removed in version 3.0.0.", true)]
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
         public NServiceBus.RoutingSettings<NServiceBus.AzureServiceBusTransport> Routing { get; }
+        [System.Obsolete("Use `UseNServiceBus(ENDPOINTNAME, CONNECTIONSTRING)` instead. Will be removed in " +
+            "version 4.0.0.", true)]
         public string ServiceBusConnectionString { get; set; }
         public NServiceBus.AzureServiceBusTransport Transport { get; }
         public void DoNotSendMessagesToErrorQueue() { }
         public void LogDiagnostics() { }
         public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
-        [System.Obsolete("Do not override the AzureServiceBusTransport. Use the properties on `ServiceBusTr" +
-            "iggeredEndpointConfiguration instead. The member currently throws a NotImplement" +
-            "edException. Will be removed in version 3.0.0.", true)]
-        protected NServiceBus.AzureServiceBusTransport UseTransport(NServiceBus.AzureServiceBusTransport transport) { }
-        [System.Obsolete("The static hosting model has been deprecated. Refer to the documentation for deta" +
-            "ils on how to use class-instance approach instead. The member currently throws a" +
-            " NotImplementedException. Will be removed in version 3.0.0.", true)]
-        public static NServiceBus.ServiceBusTriggeredEndpointConfiguration FromAttributes() { }
     }
 }

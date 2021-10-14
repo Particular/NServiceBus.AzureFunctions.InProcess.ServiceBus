@@ -25,9 +25,7 @@
         /// <summary>
         /// The Azure Service Bus Transport configuration.
         /// </summary>
-        public AzureServiceBusTransport Transport => transport;
-
-        readonly ServerlessAzureServiceBusTransport transport;
+        public AzureServiceBusTransport Transport { get; }
 
         /// <summary>
         /// The routing configuration.
@@ -40,25 +38,9 @@
         public EndpointConfiguration AdvancedConfiguration { get; }
 
         /// <summary>
-        /// Azure Service Bus connection string used to send  messages.
-        /// </summary>
-        public string ServiceBusConnectionString
-        {
-            get => connectionString;
-            set
-            {
-                Guard.AgainstNullAndEmpty(nameof(value), value);
-                connectionString = value;
-                transport.ChangeConnectionString(value);
-            }
-        }
-
-        string connectionString;
-
-        /// <summary>
         /// Creates a serverless NServiceBus endpoint.
         /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration)
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, string connectionString = default)
         {
             var endpointConfiguration = new EndpointConfiguration(endpointName);
 
@@ -82,12 +64,17 @@
                 endpointConfiguration.License(licenseText);
             }
 
-            transport = new ServerlessAzureServiceBusTransport();
-            connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-            if (!string.IsNullOrWhiteSpace(connectionString))
+            if (connectionString == null)
             {
-                transport.ChangeConnectionString(connectionString);
+                connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
+
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {DefaultServiceBusConnectionName} or passing it to `UseNServiceBus(ENDPOINTNAME,CONNECTIONSTRING)`");
+                }
             }
+
+            Transport = new AzureServiceBusTransport(connectionString);
 
             serverlessTransport = new ServerlessTransport(Transport);
             var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
