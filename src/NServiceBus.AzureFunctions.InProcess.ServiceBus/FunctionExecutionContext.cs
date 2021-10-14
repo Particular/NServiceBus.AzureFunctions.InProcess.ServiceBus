@@ -11,16 +11,15 @@ namespace NServiceBus
         /// <summary>
         /// Creates a new <see cref="FunctionExecutionContext"/>.
         /// </summary>
-        public FunctionExecutionContext(ExecutionContext executionContext, ILogger logger)
+        public FunctionExecutionContext(ILogger logger)
         {
             Logger = logger;
-            ExecutionContext = executionContext;
         }
 
         /// <summary>
         /// The <see cref="ExecutionContext"/> associated with the current function invocation.
         /// </summary>
-        public ExecutionContext ExecutionContext { get; }
+        public ExecutionContext ExecutionContext => null;
 
         /// <summary>
         /// The <see cref="ILogger"/> associated with the current function invocation.

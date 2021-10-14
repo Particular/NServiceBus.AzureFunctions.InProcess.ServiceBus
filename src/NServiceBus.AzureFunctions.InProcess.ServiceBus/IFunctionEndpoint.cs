@@ -18,7 +18,17 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
+        Task Process(Message message, IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
+        /// </summary>
         Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sends the provided message.
+        /// </summary>
+        Task Send(object message, SendOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sends the provided message.
@@ -28,7 +38,17 @@
         /// <summary>
         /// Sends the provided message.
         /// </summary>
+        Task Send(object message, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sends the provided message.
+        /// </summary>
         Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Instantiates a message of type T and sends it.
+        /// </summary>
+        Task Send<T>(Action<T> messageConstructor, SendOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Instantiates a message of type T and sends it.
@@ -38,7 +58,17 @@
         /// <summary>
         /// Instantiates a message of type T and sends it.
         /// </summary>
+        Task Send<T>(Action<T> messageConstructor, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Instantiates a message of type T and sends it.
+        /// </summary>
         Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Publish the message to subscribers.
+        /// </summary>
+        Task Publish(object message, PublishOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Publish the message to subscribers.
@@ -48,7 +78,17 @@
         /// <summary>
         /// Instantiates a message of type T and publishes it.
         /// </summary>
+        Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Instantiates a message of type T and publishes it.
+        /// </summary>
         Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Instantiates a message of type T and publishes it.
+        /// </summary>
+        Task Publish(object message, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Instantiates a message of type T and publishes it.
@@ -58,7 +98,18 @@
         /// <summary>
         /// Instantiates a message of type T and publishes it.
         /// </summary>
+        Task Publish<T>(Action<T> messageConstructor, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Instantiates a message of type T and publishes it.
+        /// </summary>
         Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Subscribes to receive published messages of the specified type.
+        /// This method is only necessary if you turned off auto-subscribe.
+        /// </summary>
+        Task Subscribe(Type eventType, SubscribeOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Subscribes to receive published messages of the specified type.
@@ -70,12 +121,28 @@
         /// Subscribes to receive published messages of the specified type.
         /// This method is only necessary if you turned off auto-subscribe.
         /// </summary>
+        Task Subscribe(Type eventType, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Subscribes to receive published messages of the specified type.
+        /// This method is only necessary if you turned off auto-subscribe.
+        /// </summary>
         Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Unsubscribes to receive published messages of the specified type.
         /// </summary>
+        Task Unsubscribe(Type eventType, UnsubscribeOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Unsubscribes to receive published messages of the specified type.
+        /// </summary>
         Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Unsubscribes to receive published messages of the specified type.
+        /// </summary>
+        Task Unsubscribe(Type eventType, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Unsubscribes to receive published messages of the specified type.

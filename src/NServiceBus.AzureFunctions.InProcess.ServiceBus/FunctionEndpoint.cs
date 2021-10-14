@@ -28,6 +28,14 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
+        Task IFunctionEndpoint.Process(Message message, IMessageReceiver messageReceiver, ILogger functionsLogger, CancellationToken cancellationToken) =>
+            ReflectionHelper.GetAutoCompleteValue()
+                ? ProcessNonTransactional(message, messageReceiver, functionsLogger, cancellationToken)
+                : ProcessTransactional(message, messageReceiver, functionsLogger, cancellationToken);
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
+        /// </summary>
         Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger, CancellationToken cancellationToken) =>
             ReflectionHelper.GetAutoCompleteValue()
                 ? ProcessNonTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken)
@@ -37,14 +45,14 @@
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
         /// <remarks>Requires <see cref="ServiceBusTriggerAttribute.AutoComplete"/> to be set to false!</remarks>
         /// </summary>
-        public async Task ProcessTransactional(Message message, ExecutionContext executionContext,
+        public async Task ProcessTransactional(Message message,
             IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
             try
             {
-                await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
+                await InitializeEndpointIfNecessary(functionsLogger, cancellationToken)
                     .ConfigureAwait(false);
 
                 await Process(message, new MessageReceiverTransactionStrategy(message, messageReceiver), pipeline, cancellationToken)
@@ -59,19 +67,34 @@
         }
 
         /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
+        /// <remarks>Requires <see cref="ServiceBusTriggerAttribute.AutoComplete"/> to be set to false!</remarks>
+        /// </summary>
+        public Task ProcessTransactional(Message message, ExecutionContext executionContext,
+            IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => ProcessTransactional(message, messageReceiver, functionsLogger, cancellationToken);
+
+        /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext,
+        public async Task ProcessNonTransactional(Message message,
             IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
+            await InitializeEndpointIfNecessary(functionsLogger, cancellationToken)
                 .ConfigureAwait(false);
 
             await Process(message, NoTransactionStrategy.Instance, pipeline, cancellationToken)
                 .ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
+        /// </summary>
+        public Task ProcessNonTransactional(Message message, ExecutionContext executionContext,
+            IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => ProcessNonTransactional(message, messageReceiver, functionsLogger, cancellationToken);
 
         internal static readonly string[] AssembliesToExcludeFromScanning = { "NCrontab.Signed.dll" };
 
@@ -131,7 +154,7 @@
                     new ContextBag());
         }
 
-        async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
+        async Task InitializeEndpointIfNecessary(ILogger logger, CancellationToken cancellationToken)
         {
             if (pipeline == null)
             {
@@ -140,7 +163,7 @@
                 {
                     if (pipeline == null)
                     {
-                        var functionExecutionContext = new FunctionExecutionContext(executionContext, logger);
+                        var functionExecutionContext = new FunctionExecutionContext(logger);
                         endpoint = await endpointFactory(functionExecutionContext).ConfigureAwait(false);
 
                         pipeline = configuration.PipelineInvoker;
@@ -154,94 +177,130 @@
         }
 
         /// <inheritdoc />
-        public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public async Task Send(object message, SendOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionsLogger, cancellationToken).ConfigureAwait(false);
             await endpoint.Send(message, options, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Send(message, new SendOptions(), executionContext, functionsLogger, cancellationToken);
-        }
+        public Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Send(message, new SendOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
-        public async Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Send(message, new SendOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public Task Send(object message, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Send(message, new SendOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task Send<T>(Action<T> messageConstructor, SendOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionsLogger, cancellationToken).ConfigureAwait(false);
             await endpoint.Send(messageConstructor, options, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Send(messageConstructor, new SendOptions(), executionContext, functionsLogger, cancellationToken);
-        }
+        public Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Send(messageConstructor, new SendOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
-        public async Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Send(messageConstructor, new SendOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public Task Send<T>(Action<T> messageConstructor, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Send(messageConstructor, new SendOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task Publish(object message, PublishOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionsLogger, cancellationToken).ConfigureAwait(false);
             await endpoint.Publish(message, options, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Publish(message, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
-        }
+        public Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Publish(message, new PublishOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
-        public async Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Publish(message, new PublishOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public Task Publish(object message, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Publish(message, new PublishOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionsLogger, cancellationToken).ConfigureAwait(false);
             await endpoint.Publish(messageConstructor, options, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Publish(messageConstructor, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
-        }
+        public Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Publish(messageConstructor, new PublishOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
-        public async Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Publish(messageConstructor, new PublishOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public Task Publish<T>(Action<T> messageConstructor, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Publish(messageConstructor, new PublishOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task Subscribe(Type eventType, SubscribeOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionsLogger, cancellationToken).ConfigureAwait(false);
             await endpoint.Subscribe(eventType, options, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Subscribe(eventType, new SubscribeOptions(), executionContext, functionsLogger, cancellationToken);
-        }
+        public Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Subscribe(eventType, new SubscribeOptions(), functionsLogger, cancellationToken);
 
         /// <inheritdoc />
-        public async Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Subscribe(eventType, new SubscribeOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public Task Subscribe(Type eventType, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Subscribe(eventType, new SubscribeOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task Unsubscribe(Type eventType, UnsubscribeOptions options, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(functionsLogger, cancellationToken).ConfigureAwait(false);
             await endpoint.Unsubscribe(eventType, options, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
+        public Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Unsubscribe(eventType, options, functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
         public Task Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
-        }
+            => Unsubscribe(eventType, new UnsubscribeOptions(), functionsLogger, cancellationToken);
+
+        /// <inheritdoc />
+        public Task Unsubscribe(Type eventType, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+            => Unsubscribe(eventType, new UnsubscribeOptions(), functionsLogger, cancellationToken);
 
         readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
 
