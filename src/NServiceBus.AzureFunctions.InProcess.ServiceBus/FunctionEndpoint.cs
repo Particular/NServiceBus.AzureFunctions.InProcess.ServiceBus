@@ -73,7 +73,13 @@
                 .ConfigureAwait(false);
         }
 
-        internal static readonly string[] AssembliesToExcludeFromScanning = { "NCrontab.Signed.dll" };
+        internal static readonly string[] AssembliesToExcludeFromScanning = {
+            "NCrontab.Signed.dll",
+            "Azure.Core.dll",
+            "Grpc.Core.Api.dll",
+            "Grpc.Net.Common.dll",
+            "Grpc.Net.Client.dll",
+        "Grpc.Net.ClientFactory.dll"};
 
         internal static async Task Process(Message message, ITransactionStrategy transactionStrategy,
             PipelineInvoker pipeline, CancellationToken cancellationToken)

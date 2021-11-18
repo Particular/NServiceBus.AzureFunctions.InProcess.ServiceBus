@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29025.244
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.InProcess.ServiceBus", "NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj", "{C42A99C9-8FD6-4848-8E8C-1E3DB4963F98}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.SourceGenerator.Tests", "NServiceBus.AzureFunctions.SourceGenerator.Tests\NServiceBus.AzureFunctions.SourceGenerator.Tests.csproj", "{22BE8002-D99B-461B-B472-F2361A849E47}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.AcceptanceTests", "ServiceBus.AcceptanceTests\ServiceBus.AcceptanceTests.csproj", "{259C7716-0038-493C-831F-A9193C94741C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManualTests.HostV4", "ManualTests.HostV4\ManualTests.HostV4.csproj", "{D4B26C04-CD88-4356-922F-CCF69D74F442}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{259C7716-0038-493C-831F-A9193C94741C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{259C7716-0038-493C-831F-A9193C94741C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{259C7716-0038-493C-831F-A9193C94741C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4B26C04-CD88-4356-922F-CCF69D74F442}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4B26C04-CD88-4356-922F-CCF69D74F442}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4B26C04-CD88-4356-922F-CCF69D74F442}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4B26C04-CD88-4356-922F-CCF69D74F442}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
