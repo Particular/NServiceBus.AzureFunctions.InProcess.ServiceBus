@@ -15,7 +15,7 @@ class HttpSender
         this.functionEndpoint = functionEndpoint;
     }
 
-    [FunctionName("InProcessHttpSenderV4")]
+    [FunctionName("InProcessHttpSenderV3")]
     public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest request, ExecutionContext executionContext, ILogger logger)
     {
