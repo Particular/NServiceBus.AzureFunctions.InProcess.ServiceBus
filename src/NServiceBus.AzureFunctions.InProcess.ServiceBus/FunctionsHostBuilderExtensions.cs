@@ -81,25 +81,23 @@
         static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
             ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
         {
-            // Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
-            var endpointFactory = Configure(
-                serviceBusTriggeredEndpointConfiguration,
+            var startableEndpoint = Configure(
+                serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration,
                 functionsHostBuilder.Services,
                 Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
 
-            // for backward compatibility
-            functionsHostBuilder.Services.AddSingleton(endpointFactory);
+            functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
+            functionsHostBuilder.Services.AddSingleton(startableEndpoint);
+            functionsHostBuilder.Services.AddSingleton<FunctionEndpoint>();
             functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<FunctionEndpoint>());
         }
 
-        internal static Func<IServiceProvider, FunctionEndpoint> Configure(
-            ServiceBusTriggeredEndpointConfiguration configuration,
+        internal static IStartableEndpointWithExternallyManagedContainer Configure(
+            EndpointConfiguration endpointConfiguration,
             IServiceCollection serviceCollection,
             string appDirectory = null)
         {
-            var endpointConfiguration = configuration.AdvancedConfiguration;
-
             var scanner = endpointConfiguration.AssemblyScanner();
             if (appDirectory != null)
             {
@@ -108,11 +106,9 @@
 
             scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
 
-            var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
+            return EndpointWithExternallyManagedContainer.Create(
                     endpointConfiguration,
                     serviceCollection);
-
-            return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
         }
     }
 }

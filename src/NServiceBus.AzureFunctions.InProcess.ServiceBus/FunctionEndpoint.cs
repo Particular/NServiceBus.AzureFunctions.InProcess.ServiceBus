@@ -18,8 +18,13 @@
     /// </summary>
     public partial class FunctionEndpoint : IFunctionEndpoint
     {
-        // This ctor is used for the FunctionsHostBuilder scenario where the endpoint is created already during configuration time using the function host's container.
-        internal FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
+        /// <summary>
+        /// Creates the function endpoint.
+        /// </summary>
+        /// <param name="externallyManagedContainerEndpoint">The startable endpoint.</param>
+        /// <param name="configuration">Configuration to use.</param>
+        /// <param name="serviceProvider">The service provider managed by the functions host.</param>
+        public FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
         {
             this.configuration = configuration;
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);

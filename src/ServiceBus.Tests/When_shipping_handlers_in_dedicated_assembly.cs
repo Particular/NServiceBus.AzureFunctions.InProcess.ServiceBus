@@ -35,13 +35,13 @@
             endpointConfiguration.EnableInstallers();
             var settings = endpointConfiguration.GetSettings();
 
-            var endpointFactory = FunctionsHostBuilderExtensions.Configure(
-                configuration,
+            var startableEndpoint = FunctionsHostBuilderExtensions.Configure(
+                configuration.AdvancedConfiguration,
                 serviceCollection,
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            var endpoint = endpointFactory(serviceProvider);
+            var endpoint = new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
 
             // we need to process an actual message to have the endpoint being created
