@@ -85,7 +85,13 @@
                 using (var transaction = transactionStrategy.CreateTransaction())
                 {
                     var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
-                    var messageContext = CreateMessageContext(transportTransaction);
+                    var messageContext = new MessageContext(
+                        messageId,
+                        message.GetHeaders(),
+                        message.Body,
+                        transportTransaction,
+                        pipeline.ReceiveAddress,
+                        new ContextBag());
 
                     await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
@@ -106,6 +112,7 @@
                         message.Body,
                         transportTransaction,
                         message.SystemProperties.DeliveryCount,
+                        pipeline.ReceiveAddress,
                         new ContextBag());
 
                     var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
@@ -121,14 +128,6 @@
                     throw;
                 }
             }
-
-            MessageContext CreateMessageContext(TransportTransaction transportTransaction) =>
-                new MessageContext(
-                    messageId,
-                    message.GetHeaders(),
-                    message.Body,
-                    transportTransaction,
-                    new ContextBag());
         }
 
         async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
