@@ -33,6 +33,8 @@
         public ISubscriptionManager Subscriptions => baseTransportReceiver.Subscriptions;
         public string Id => baseTransportReceiver.Id;
 
+        public string ReceiveAddress => baseTransportReceiver.ReceiveAddress;
+
         readonly IMessageReceiver baseTransportReceiver;
         OnMessage onMessage;
         OnError onError;
