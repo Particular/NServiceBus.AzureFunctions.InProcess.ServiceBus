@@ -8,7 +8,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
-    /// Provides extension methods to configure a <see cref="InProcessFunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
+    /// Provides extension methods to configure a <see cref="IFunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
     /// </summary>
     public static partial class FunctionsHostBuilderExtensions
     {
@@ -66,7 +66,7 @@
         }
 
         /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="InProcessFunctionEndpoint"/> via dependency injection.
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
