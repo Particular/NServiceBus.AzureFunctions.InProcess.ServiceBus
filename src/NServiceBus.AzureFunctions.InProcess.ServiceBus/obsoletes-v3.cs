@@ -10,3 +10,13 @@ namespace NServiceBus
         public string ServiceBusConnectionString { get; set; }
     }
 }
+
+namespace NServiceBus
+{
+    [ObsoleteEx(ReplacementTypeOrMember = nameof(IFunctionEndpoint),
+                  TreatAsErrorFromVersion = "3",
+                  RemoveInVersion = "4")]
+    public class FunctionEndpoint
+    {
+    }
+}
