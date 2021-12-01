@@ -5,7 +5,6 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -94,7 +93,7 @@
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-                endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
+                endpoint = new FunctionEndpoint2(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
 
                 return Task.CompletedTask;
             }
@@ -105,7 +104,7 @@
                 {
                     var transportMessage = MessageHelper.GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.ProcessNonTransactional(transportMessage, context, null, null, token);
+                    await endpoint.ProcessNonTransactional(transportMessage, context, null, token);
                 }
             }
 
@@ -123,7 +122,7 @@
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             IList<object> messages;
-            FunctionEndpoint endpoint;
+            FunctionEndpoint2 endpoint;
         }
     }
 }

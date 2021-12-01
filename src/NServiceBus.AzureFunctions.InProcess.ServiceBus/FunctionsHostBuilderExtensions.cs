@@ -8,7 +8,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
-    /// Provides extension methods to configure a <see cref="FunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
+    /// Provides extension methods to configure a <see cref="FunctionEndpoint2"/> using <see cref="IFunctionsHostBuilder"/>.
     /// </summary>
     public static partial class FunctionsHostBuilderExtensions
     {
@@ -66,7 +66,7 @@
         }
 
         /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint2"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
@@ -89,8 +89,8 @@
 
             functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
             functionsHostBuilder.Services.AddSingleton(startableEndpoint);
-            functionsHostBuilder.Services.AddSingleton<FunctionEndpoint>();
-            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<FunctionEndpoint>());
+            functionsHostBuilder.Services.AddSingleton<FunctionEndpoint2>();
+            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<FunctionEndpoint2>());
         }
 
         internal static IStartableEndpointWithExternallyManagedContainer Configure(
@@ -104,7 +104,7 @@
                 scanner.AdditionalAssemblyScanningPath = appDirectory;
             }
 
-            scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
+            scanner.ExcludeAssemblies(FunctionEndpoint2.AssembliesToExcludeFromScanning);
 
             return EndpointWithExternallyManagedContainer.Create(
                     endpointConfiguration,

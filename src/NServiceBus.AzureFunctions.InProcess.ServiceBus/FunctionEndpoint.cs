@@ -6,42 +6,33 @@
     using AzureFunctions.InProcess.ServiceBus;
     using Extensibility;
     using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
     using IMessageReceiver = Microsoft.Azure.ServiceBus.Core.IMessageReceiver;
 
-    /// <summary>
-    /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
-    /// messages explicitly passed to it by the caller.
-    /// </summary>
-    public partial class FunctionEndpoint : IFunctionEndpoint
+    class FunctionEndpoint2 : IFunctionEndpoint
     {
-        /// <summary>
-        /// Creates the function endpoint.
-        /// </summary>
-        /// <param name="externallyManagedContainerEndpoint">The startable endpoint.</param>
-        /// <param name="configuration">Configuration to use.</param>
-        /// <param name="serviceProvider">The service provider managed by the functions host.</param>
-        public FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
+        public FunctionEndpoint2(
+            IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
+            ServiceBusTriggeredEndpointConfiguration configuration,
+            IServiceProvider serviceProvider)
         {
             this.configuration = configuration;
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
-        /// </summary>
-        Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger, CancellationToken cancellationToken) =>
-            ReflectionHelper.GetAutoCompleteValue()
-                ? ProcessNonTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken)
-                : ProcessTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken);
+        Task IFunctionEndpoint.Process(
+            Message message,
+            ExecutionContext executionContext,
+            IMessageReceiver messageReceiver,
+            ILogger functionsLogger,
+            bool enableCrossEntityTransactions,
+            CancellationToken cancellationToken) =>
+            enableCrossEntityTransactions
+                ? ProcessTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken)
+                : ProcessNonTransactional(message, executionContext, functionsLogger, cancellationToken);
 
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
-        /// <remarks>Requires <see cref="ServiceBusTriggerAttribute.AutoComplete"/> to be set to false!</remarks>
-        /// </summary>
         public async Task ProcessTransactional(Message message, ExecutionContext executionContext,
             IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
@@ -63,11 +54,11 @@
             }
         }
 
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-        /// </summary>
-        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext,
-            IMessageReceiver messageReceiver, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public async Task ProcessNonTransactional(
+            Message message,
+            ExecutionContext executionContext,
+            ILogger functionsLogger = null,
+            CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -163,7 +154,6 @@
             }
         }
 
-        /// <inheritdoc />
         public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -172,13 +162,11 @@
             await endpoint.Send(message, options, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <inheritdoc />
         public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             return Send(message, new SendOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        /// <inheritdoc />
         public async Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -187,13 +175,11 @@
             await endpoint.Send(messageConstructor, options, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <inheritdoc />
         public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             return Send(messageConstructor, new SendOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        /// <inheritdoc />
         public async Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -202,13 +188,11 @@
             await endpoint.Publish(message, options, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <inheritdoc />
         public Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             return Publish(message, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        /// <inheritdoc />
         public async Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -217,13 +201,11 @@
             await endpoint.Publish(messageConstructor, options, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <inheritdoc />
         public Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             return Publish(messageConstructor, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        /// <inheritdoc />
         public async Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -232,13 +214,11 @@
             await endpoint.Subscribe(eventType, options, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <inheritdoc />
         public Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             return Subscribe(eventType, new SubscribeOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        /// <inheritdoc />
         public async Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -247,18 +227,16 @@
             await endpoint.Unsubscribe(eventType, options, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <inheritdoc />
         public Task Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
-
-        readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-        ServiceBusTriggeredEndpointConfiguration configuration;
-
         PipelineInvoker pipeline;
         IEndpointInstance endpoint;
+
+        readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
+        readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+        readonly ServiceBusTriggeredEndpointConfiguration configuration;
     }
 }
