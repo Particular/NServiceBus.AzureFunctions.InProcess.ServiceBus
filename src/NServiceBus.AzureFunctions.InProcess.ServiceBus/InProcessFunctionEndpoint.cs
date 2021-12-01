@@ -11,9 +11,9 @@
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
     using IMessageReceiver = Microsoft.Azure.ServiceBus.Core.IMessageReceiver;
 
-    class FunctionEndpoint2 : IFunctionEndpoint
+    class InProcessFunctionEndpoint : IFunctionEndpoint
     {
-        public FunctionEndpoint2(
+        public InProcessFunctionEndpoint(
             IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
             ServiceBusTriggeredEndpointConfiguration configuration,
             IServiceProvider serviceProvider)

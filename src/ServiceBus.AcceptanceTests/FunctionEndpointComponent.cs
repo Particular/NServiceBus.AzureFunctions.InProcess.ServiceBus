@@ -93,7 +93,7 @@
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-                endpoint = new FunctionEndpoint2(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
+                endpoint = new InProcessFunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
 
                 return Task.CompletedTask;
             }
@@ -122,7 +122,7 @@
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             IList<object> messages;
-            FunctionEndpoint2 endpoint;
+            InProcessFunctionEndpoint endpoint;
         }
     }
 }

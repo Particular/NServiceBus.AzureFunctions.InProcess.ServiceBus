@@ -40,7 +40,7 @@
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            var endpoint = new FunctionEndpoint2(startableEndpoint, configuration, serviceProvider);
+            var endpoint = new InProcessFunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
 
             // we need to process an actual message to have the endpoint being created
