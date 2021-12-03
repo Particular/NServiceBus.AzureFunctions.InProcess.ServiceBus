@@ -28,7 +28,7 @@
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
-            await InProcessFunctionEndpoint.Process(
+            await InProcessFunctionEndpoint.ProcessInternal(
                 message,
                 transactionStrategy,
                 pipelineInvoker,
@@ -58,7 +58,7 @@
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
-            await InProcessFunctionEndpoint.Process(
+            await InProcessFunctionEndpoint.ProcessInternal(
                 message,
                 transactionStrategy,
                 pipelineInvoker,
@@ -83,7 +83,7 @@
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
             var exception = Assert.ThrowsAsync<Exception>(async () =>
-                await InProcessFunctionEndpoint.Process(
+                await InProcessFunctionEndpoint.ProcessInternal(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     transactionStrategy,
                     pipelineInvoker,
@@ -102,7 +102,7 @@
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
-            await InProcessFunctionEndpoint.Process(
+            await InProcessFunctionEndpoint.ProcessInternal(
                 MessageHelper.GenerateMessage(new TestMessage()),
                 transactionStrategy,
                 pipelineInvoker,
@@ -122,7 +122,7 @@
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
             var exception = Assert.ThrowsAsync<Exception>(async () =>
-                await InProcessFunctionEndpoint.Process(
+                await InProcessFunctionEndpoint.ProcessInternal(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     transactionStrategy,
                     pipelineInvoker,
