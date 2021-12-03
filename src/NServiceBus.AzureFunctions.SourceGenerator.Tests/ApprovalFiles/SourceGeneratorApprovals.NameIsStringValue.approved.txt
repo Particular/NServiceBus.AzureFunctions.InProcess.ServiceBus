@@ -26,6 +26,6 @@ class FunctionEndpointTrigger
         ExecutionContext executionContext,
         CancellationToken cancellationToken)
     {
-        await endpoint.Process(message, executionContext, messageReceiver, logger, false,cancellationToken);
+        await endpoint.Process(message, executionContext, messageReceiver, false, logger,cancellationToken);
     }
 }

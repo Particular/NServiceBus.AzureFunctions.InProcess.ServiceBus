@@ -5,7 +5,6 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.ServiceBus.Core;
-    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -16,9 +15,9 @@
     public interface IFunctionEndpoint
     {
         /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
+        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger, bool enableCrossEntityTransactions, CancellationToken cancellationToken = default);
+        Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, bool enableCrossEntityTransactions, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sends the provided message.

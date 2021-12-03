@@ -104,7 +104,7 @@
                 {
                     var transportMessage = MessageHelper.GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.ProcessNonTransactional(transportMessage, context, null, token);
+                    await endpoint.Process(transportMessage, context, null, false, null, token);
                 }
             }
 
@@ -122,7 +122,7 @@
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             IList<object> messages;
-            InProcessFunctionEndpoint endpoint;
+            IFunctionEndpoint endpoint;
         }
     }
 }

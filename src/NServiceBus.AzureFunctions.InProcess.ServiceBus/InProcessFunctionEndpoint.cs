@@ -26,8 +26,8 @@
             Message message,
             ExecutionContext executionContext,
             IMessageReceiver messageReceiver,
-            ILogger functionsLogger,
             bool enableCrossEntityTransactions,
+            ILogger functionsLogger,
             CancellationToken cancellationToken) =>
             enableCrossEntityTransactions
                 ? ProcessTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken)

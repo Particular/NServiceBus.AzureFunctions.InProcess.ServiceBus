@@ -134,7 +134,7 @@ class FunctionEndpointTrigger
         ExecutionContext executionContext,
         CancellationToken cancellationToken)
     {{
-        await endpoint.Process(message, executionContext, messageReceiver, logger, {syntaxReceiver.enableCrossEntityTransactions.ToString().ToLowerInvariant()},cancellationToken);
+        await endpoint.Process(message, executionContext, messageReceiver, {syntaxReceiver.enableCrossEntityTransactions.ToString().ToLowerInvariant()}, logger,cancellationToken);
     }}
 }}";
             context.AddSource("NServiceBus__FunctionEndpointTrigger", SourceText.From(source, Encoding.UTF8));
