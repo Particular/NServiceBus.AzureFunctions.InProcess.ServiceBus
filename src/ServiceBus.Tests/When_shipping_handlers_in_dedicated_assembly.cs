@@ -9,7 +9,6 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.Configuration.AdvancedExtensibility;
@@ -35,17 +34,16 @@
             endpointConfiguration.EnableInstallers();
             var settings = endpointConfiguration.GetSettings();
 
-            var endpointFactory = FunctionsHostBuilderExtensions.Configure(
-                configuration,
+            var startableEndpoint = FunctionsHostBuilderExtensions.Configure(
+                configuration.AdvancedConfiguration,
                 serviceCollection,
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            var endpoint = endpointFactory(serviceProvider);
-
+            var endpoint = new InProcessFunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
             // we need to process an actual message to have the endpoint being created
-            await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null, default, default);
+            await endpoint.Process(GenerateMessage(), new ExecutionContext(), null, false);
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
             Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));

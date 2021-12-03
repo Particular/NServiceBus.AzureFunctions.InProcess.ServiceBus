@@ -1,8 +1,6 @@
 ﻿namespace ServiceBus.Tests
 {
     using System;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NUnit.Framework;
 

@@ -8,7 +8,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
-    /// Provides extension methods to configure a <see cref="FunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
+    /// Provides extension methods to configure a <see cref="IFunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
     /// </summary>
     public static partial class FunctionsHostBuilderExtensions
     {
@@ -66,7 +66,7 @@
         }
 
         /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
@@ -81,38 +81,33 @@
         static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
             ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
         {
-            // Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
-            var endpointFactory = Configure(
-                serviceBusTriggeredEndpointConfiguration,
+            var startableEndpoint = Configure(
+                serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration,
                 functionsHostBuilder.Services,
                 Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
 
-            // for backward compatibility
-            functionsHostBuilder.Services.AddSingleton(endpointFactory);
-            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<FunctionEndpoint>());
+            functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
+            functionsHostBuilder.Services.AddSingleton(startableEndpoint);
+            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
         }
 
-        internal static Func<IServiceProvider, FunctionEndpoint> Configure(
-            ServiceBusTriggeredEndpointConfiguration configuration,
+        internal static IStartableEndpointWithExternallyManagedContainer Configure(
+            EndpointConfiguration endpointConfiguration,
             IServiceCollection serviceCollection,
             string appDirectory = null)
         {
-            var endpointConfiguration = configuration.AdvancedConfiguration;
-
             var scanner = endpointConfiguration.AssemblyScanner();
             if (appDirectory != null)
             {
                 scanner.AdditionalAssemblyScanningPath = appDirectory;
             }
 
-            scanner.ExcludeAssemblies(FunctionEndpoint.AssembliesToExcludeFromScanning);
+            scanner.ExcludeAssemblies(InProcessFunctionEndpoint.AssembliesToExcludeFromScanning);
 
-            var startableEndpoint = EndpointWithExternallyManagedContainer.Create(
+            return EndpointWithExternallyManagedContainer.Create(
                     endpointConfiguration,
                     serviceCollection);
-
-            return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
         }
     }
 }
