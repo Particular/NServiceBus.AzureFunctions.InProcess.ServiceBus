@@ -122,7 +122,7 @@
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             IList<object> messages;
-            IFunctionEndpoint endpoint;
+            IMessageProcessor endpoint;
         }
     }
 }

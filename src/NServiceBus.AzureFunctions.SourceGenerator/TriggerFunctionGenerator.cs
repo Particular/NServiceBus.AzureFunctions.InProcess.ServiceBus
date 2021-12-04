@@ -118,11 +118,11 @@ using NServiceBus;
 
 class FunctionEndpointTrigger
 {{
-    readonly IFunctionEndpoint endpoint;
+    readonly IMessageProcessor processor;
 
-    public FunctionEndpointTrigger(IFunctionEndpoint endpoint)
+    public FunctionEndpointTrigger(IMessageProcessor processor)
     {{
-        this.endpoint = endpoint;
+        this.processor = processor;
     }}
 
     [FunctionName(""{syntaxReceiver.triggerFunctionName}"")]
@@ -134,7 +134,7 @@ class FunctionEndpointTrigger
         ExecutionContext executionContext,
         CancellationToken cancellationToken)
     {{
-        await endpoint.Process(message, executionContext, messageReceiver, {syntaxReceiver.enableCrossEntityTransactions.ToString().ToLowerInvariant()}, logger,cancellationToken);
+        await processor.Process(message, executionContext, messageReceiver, {syntaxReceiver.enableCrossEntityTransactions.ToString().ToLowerInvariant()}, logger,cancellationToken);
     }}
 }}";
             context.AddSource("NServiceBus__FunctionEndpointTrigger", SourceText.From(source, Encoding.UTF8));

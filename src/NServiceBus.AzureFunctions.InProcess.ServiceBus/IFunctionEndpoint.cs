@@ -3,22 +3,14 @@
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.ServiceBus.Core;
     using Microsoft.Extensions.Logging;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     /// <summary>
-    /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
-    /// messages explicitly passed to it by the caller.
+    /// Allows NServiceBus messages to be emitted by functions.
     /// </summary>
     public interface IFunctionEndpoint
     {
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-        /// </summary>
-        Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, bool enableCrossEntityTransactions, ILogger functionsLogger = null, CancellationToken cancellationToken = default);
-
         /// <summary>
         /// Sends the provided message.
         /// </summary>

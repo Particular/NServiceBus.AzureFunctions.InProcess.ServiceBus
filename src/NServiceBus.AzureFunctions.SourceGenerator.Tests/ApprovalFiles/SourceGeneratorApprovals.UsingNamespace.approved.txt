@@ -10,11 +10,11 @@ using NServiceBus;
 
 class FunctionEndpointTrigger
 {
-    readonly IFunctionEndpoint endpoint;
+    readonly IMessageProcessor processor;
 
-    public FunctionEndpointTrigger(IFunctionEndpoint endpoint)
+    public FunctionEndpointTrigger(IMessageProcessor processor)
     {
-        this.endpoint = endpoint;
+        this.processor = processor;
     }
 
     [FunctionName("NServiceBusFunctionEndpointTrigger-endpoint")]
@@ -26,6 +26,6 @@ class FunctionEndpointTrigger
         ExecutionContext executionContext,
         CancellationToken cancellationToken)
     {
-        await endpoint.Process(message, executionContext, messageReceiver, false, logger,cancellationToken);
+        await processor.Process(message, executionContext, messageReceiver, false, logger,cancellationToken);
     }
 }

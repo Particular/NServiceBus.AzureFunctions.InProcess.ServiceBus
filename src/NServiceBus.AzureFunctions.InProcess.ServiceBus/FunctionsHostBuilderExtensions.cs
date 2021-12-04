@@ -90,6 +90,7 @@
             functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
             functionsHostBuilder.Services.AddSingleton(startableEndpoint);
             functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
+            functionsHostBuilder.Services.AddSingleton<IMessageProcessor, InProcessFunctionEndpoint>();
         }
 
         internal static IStartableEndpointWithExternallyManagedContainer Configure(

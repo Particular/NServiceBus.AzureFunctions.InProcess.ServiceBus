@@ -13,7 +13,7 @@ namespace NServiceBus
 
 namespace NServiceBus
 {
-    [ObsoleteEx(ReplacementTypeOrMember = nameof(IFunctionEndpoint),
+    [ObsoleteEx(ReplacementTypeOrMember = nameof(IMessageProcessor),
                   TreatAsErrorFromVersion = "3",
                   RemoveInVersion = "4")]
     public class FunctionEndpoint
