@@ -6,7 +6,7 @@
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.*" />
+		<PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.*" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
