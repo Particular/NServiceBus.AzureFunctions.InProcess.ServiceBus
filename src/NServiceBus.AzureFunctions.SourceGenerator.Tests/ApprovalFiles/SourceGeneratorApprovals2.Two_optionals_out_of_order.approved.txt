@@ -10,9 +10,9 @@ class FunctionEndpointTrigger
 {
     readonly FunctionEndpoint endpoint;
 
-    public FunctionEndpointTrigger(FunctionEndpoint endpoint)
+    public FunctionEndpointTrigger(IFunctionEndpoint endpoint)
     {
-        this.endpoint = endpoint;
+        this.endpoint = (FunctionEndpoint) endpoint;
     }
 
     [FunctionName("trigger")]

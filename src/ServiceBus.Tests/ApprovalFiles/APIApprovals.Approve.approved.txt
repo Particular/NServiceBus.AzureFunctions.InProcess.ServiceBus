@@ -3,6 +3,7 @@ namespace NServiceBus
 {
     public class FunctionEndpoint : NServiceBus.IFunctionEndpoint
     {
+        public FunctionEndpoint(NServiceBus.IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint, NServiceBus.ServiceBusTriggeredEndpointConfiguration configuration, System.IServiceProvider serviceProvider) { }
         [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. The " +
             "member currently throws a NotImplementedException. Will be removed in version 3." +
             "0.0.", true)]
