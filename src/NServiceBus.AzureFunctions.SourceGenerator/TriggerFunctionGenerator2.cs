@@ -116,9 +116,9 @@ using NServiceBus;
 
 class FunctionEndpointTrigger
 {{
-    readonly FunctionEndpoint endpoint;
+    readonly IFunctionEndpoint endpoint;
 
-    public FunctionEndpointTrigger(FunctionEndpoint endpoint)
+    public FunctionEndpointTrigger(IFunctionEndpoint endpoint)
     {{
         this.endpoint = endpoint;
     }}
@@ -132,7 +132,7 @@ class FunctionEndpointTrigger
         ExecutionContext executionContext)
     {{
         {(syntaxReceiver.enableCrossEntityTransactions
-            ? "await endpoint.ProcessTransactional(message, executionContext, messageReceiver, logger);"
+            ? "await endpoint.Process(message, executionContext, messageReceiver, logger);"
             : "await endpoint.ProcessNonTransactional(message, executionContext, messageReceiver, logger);")}
     }}
 }}";
