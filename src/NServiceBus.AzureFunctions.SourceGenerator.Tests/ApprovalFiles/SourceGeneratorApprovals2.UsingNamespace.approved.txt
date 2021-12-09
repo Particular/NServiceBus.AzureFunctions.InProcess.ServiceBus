@@ -8,11 +8,11 @@ using NServiceBus;
 
 class FunctionEndpointTrigger
 {
-    readonly FunctionEndpoint endpoint;
+    readonly IFunctionEndpoint endpoint;
 
     public FunctionEndpointTrigger(IFunctionEndpoint endpoint)
     {
-        this.endpoint = (FunctionEndpoint) endpoint;
+        this.endpoint = endpoint;
     }
 
     [FunctionName("NServiceBusFunctionEndpointTrigger-endpoint")]
@@ -23,6 +23,6 @@ class FunctionEndpointTrigger
         ILogger logger,
         ExecutionContext executionContext)
     {
-        await endpoint.ProcessNonTransactional(message, executionContext, messageReceiver, logger);
+        await endpoint.Process(message, executionContext, messageReceiver, false, logger);
     }
 }

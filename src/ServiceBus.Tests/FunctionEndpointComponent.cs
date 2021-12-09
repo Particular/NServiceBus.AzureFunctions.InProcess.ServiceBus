@@ -89,7 +89,9 @@
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
+#pragma warning disable 612, 618
                 endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
+#pragma warning restore 612, 618
 
                 return Task.CompletedTask;
             }
@@ -118,7 +120,9 @@
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             IList<object> messages;
+#pragma warning disable 612, 618
             FunctionEndpoint endpoint;
+#pragma warning restore 612, 618
         }
     }
 }
