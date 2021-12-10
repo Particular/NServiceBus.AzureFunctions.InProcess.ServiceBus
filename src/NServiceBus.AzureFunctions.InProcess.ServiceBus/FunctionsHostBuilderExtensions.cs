@@ -48,29 +48,28 @@
         static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
             ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
         {
-            // Provides a function to locate the file system directory containing the binaries to be loaded and scanned.
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
-            var endpointFactory = Configure(serviceBusTriggeredEndpointConfiguration, functionsHostBuilder.Services,
+            var startableEndpoint = Configure(
+                serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration,
+                functionsHostBuilder.Services,
                 Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
 
-            // for backward compatibility
-            functionsHostBuilder.Services.AddSingleton(endpointFactory);
-            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<FunctionEndpoint>());
+            functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
+            functionsHostBuilder.Services.AddSingleton(startableEndpoint);
+            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, FunctionEndpoint>();
         }
 
-        internal static Func<IServiceProvider, FunctionEndpoint> Configure(
-            ServiceBusTriggeredEndpointConfiguration configuration,
+        internal static IStartableEndpointWithExternallyManagedContainer Configure(
+            EndpointConfiguration endpointConfiguration,
             IServiceCollection serviceCollection,
-            string appDirectory)
+            string appDirectory = null)
         {
             // Load user assemblies from the nested "bin" folder
             FunctionEndpoint.LoadAssemblies(appDirectory);
 
-            var startableEndpoint = EndpointWithExternallyManagedServiceProvider.Create(
-                    configuration.EndpointConfiguration,
+            return EndpointWithExternallyManagedServiceProvider.Create(
+                    endpointConfiguration,
                     serviceCollection);
-
-            return serviceProvider => new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
         }
     }
 }
