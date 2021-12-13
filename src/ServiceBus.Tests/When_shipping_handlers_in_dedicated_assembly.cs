@@ -40,9 +40,7 @@
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-#pragma warning disable 612, 618
-            var endpoint = new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
-#pragma warning restore 612, 618
+            var endpoint = new InProcessFunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
             // we need to process an actual message to have the endpoint being created
             await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null);

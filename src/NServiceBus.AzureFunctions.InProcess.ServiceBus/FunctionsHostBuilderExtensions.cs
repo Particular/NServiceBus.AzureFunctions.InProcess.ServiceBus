@@ -56,7 +56,7 @@
 
             functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
             functionsHostBuilder.Services.AddSingleton(startableEndpoint);
-            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, FunctionEndpoint>();
+            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
         }
 
         internal static IStartableEndpointWithExternallyManagedContainer Configure(
@@ -65,7 +65,7 @@
             string appDirectory = null)
         {
             // Load user assemblies from the nested "bin" folder
-            FunctionEndpoint.LoadAssemblies(appDirectory);
+            InProcessFunctionEndpoint.LoadAssemblies(appDirectory);
 
             return EndpointWithExternallyManagedServiceProvider.Create(
                     endpointConfiguration,

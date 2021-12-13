@@ -16,16 +16,7 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
-        Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null);
-
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-        /// </summary>
-        [ObsoleteEx(
-            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null);
+        Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, bool enableCrossEntityTransactions, ILogger functionsLogger = null);
 
         /// <summary>
         /// Sends the provided message.

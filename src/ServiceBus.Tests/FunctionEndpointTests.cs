@@ -26,9 +26,7 @@
                 });
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
-#pragma warning disable 612, 618
-            await FunctionEndpoint.Process(
-#pragma warning restore 612, 618
+            await InProcessFunctionEndpoint.Process(
                 message,
                 transactionStrategy,
                 pipelineInvoker);
@@ -56,9 +54,7 @@
                 });
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
-#pragma warning disable 612, 618
-            await FunctionEndpoint.Process(
-#pragma warning restore 612, 618
+            await InProcessFunctionEndpoint.Process(
                 message,
                 transactionStrategy,
                 pipelineInvoker);
@@ -82,9 +78,7 @@
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
             var exception = Assert.ThrowsAsync<Exception>(async () =>
-#pragma warning disable 612, 618
-                await FunctionEndpoint.Process(
-#pragma warning restore 612, 618
+                await InProcessFunctionEndpoint.Process(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     transactionStrategy,
                     pipelineInvoker));
@@ -101,9 +95,7 @@
                 _ => Task.FromResult(ErrorHandleResult.Handled));
 
             var transactionStrategy = new TestableFunctionTransactionStrategy();
-#pragma warning disable 612, 618
-            await FunctionEndpoint.Process(
-#pragma warning restore 612, 618
+            await InProcessFunctionEndpoint.Process(
                 MessageHelper.GenerateMessage(new TestMessage()),
                 transactionStrategy,
                 pipelineInvoker);
@@ -122,9 +114,7 @@
             var transactionStrategy = new TestableFunctionTransactionStrategy();
 
             var exception = Assert.ThrowsAsync<Exception>(async () =>
-#pragma warning disable 612, 618
-                await FunctionEndpoint.Process(
-#pragma warning restore 612, 618
+                await InProcessFunctionEndpoint.Process(
                     MessageHelper.GenerateMessage(new TestMessage()),
                     transactionStrategy,
                     pipelineInvoker));

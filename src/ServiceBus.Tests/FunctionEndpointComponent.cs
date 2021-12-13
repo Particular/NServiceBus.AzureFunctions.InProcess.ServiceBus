@@ -89,9 +89,7 @@
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-#pragma warning disable 612, 618
-                endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
-#pragma warning restore 612, 618
+                endpoint = new InProcessFunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
 
                 return Task.CompletedTask;
             }
@@ -102,7 +100,7 @@
                 {
                     var transportMessage = MessageHelper.GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.ProcessNonTransactional(transportMessage, context, null);
+                    await endpoint.Process(transportMessage, context, null, false);
                 }
             }
 
@@ -120,9 +118,7 @@
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             IList<object> messages;
-#pragma warning disable 612, 618
-            FunctionEndpoint endpoint;
-#pragma warning restore 612, 618
+            IFunctionEndpoint endpoint;
         }
     }
 }

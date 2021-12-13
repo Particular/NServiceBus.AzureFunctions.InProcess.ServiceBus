@@ -16,14 +16,7 @@
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
-    /// <summary>
-    /// An NServiceBus endpoint hosted in Azure Function which does not receive messages automatically but only handles
-    /// messages explicitly passed to it by the caller.
-    /// </summary>
-    [ObsoleteEx(ReplacementTypeOrMember = nameof(IFunctionEndpoint),
-              TreatAsErrorFromVersion = "3",
-              RemoveInVersion = "4")]
-    public class FunctionEndpoint : IFunctionEndpoint
+    class InProcessFunctionEndpoint : IFunctionEndpoint
     {
         /// <summary>
         /// This ctor is used for the FunctionsHostBuilder scenario where the endpoint is created already during configuration time using the function host's container.
@@ -31,7 +24,7 @@
         /// <param name="externallyManagedContainerEndpoint"></param>
         /// <param name="configuration"></param>
         /// <param name="serviceProvider"></param>
-        public FunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
+        public InProcessFunctionEndpoint(IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
             ServiceBusTriggeredEndpointConfiguration configuration, IServiceProvider serviceProvider)
         {
             this.configuration = configuration;
@@ -41,10 +34,10 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
-        Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger) =>
-            ReflectionHelper.GetAutoCompleteValue()
-                ? ProcessNonTransactional(message, executionContext, messageReceiver, functionsLogger)
-                : ProcessTransactional(message, executionContext, messageReceiver, functionsLogger);
+        Task IFunctionEndpoint.Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, bool enableCrossEntityTransactions, ILogger functionsLogger) =>
+            enableCrossEntityTransactions
+                ? ProcessTransactional(message, executionContext, messageReceiver, functionsLogger)
+                : ProcessNonTransactional(message, executionContext, functionsLogger);
 
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. All messages are committed transactionally with the successful processing of the incoming message.
@@ -73,7 +66,7 @@
         /// <summary>
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
         /// </summary>
-        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null)
+        public async Task ProcessNonTransactional(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -82,18 +75,6 @@
 
             await Process(message, NoTransactionStrategy.Instance, pipeline)
                 .ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline.
-        /// </summary>
-        [ObsoleteEx(
-            ReplacementTypeOrMember = "Process(Message, ExecutionContext, IMessageReceiver, ILogger)",
-            TreatAsErrorFromVersion = "2",
-            RemoveInVersion = "3")]
-        public Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null)
-        {
-            throw new NotImplementedException();
         }
 
         internal static async Task Process(Message message, ITransactionStrategy transactionStrategy, PipelineInvoker pipeline)
