@@ -271,7 +271,7 @@
         static bool IsRuntimeAssembly(byte[] publicKeyToken)
         {
             var tokenString = BitConverter.ToString(publicKeyToken).Replace("-", string.Empty).ToLowerInvariant();
-
+#pragma warning disable IDE0066 // Convert switch statement to expression
             switch (tokenString)
             {
                 case "b77a5c561934e089": // Microsoft
@@ -290,6 +290,7 @@
                     return false;
             }
         }
+#pragma warning restore IDE0066
 
         readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
 
