@@ -104,7 +104,7 @@
                 {
                     var transportMessage = MessageHelper.GenerateMessage(message);
                     var context = new ExecutionContext();
-                    await endpoint.Process(transportMessage, context, null, false, null, token);
+                    await endpoint.Process(transportMessage, context, null, null, false, null, token);
                 }
             }
 

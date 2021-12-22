@@ -2,7 +2,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using NServiceBus;
 
 [assembly: FunctionsStartup(typeof(Startup))]
-[assembly: NServiceBusTriggerFunction("InProcess-HostV3")]
+[assembly: NServiceBusTriggerFunction("InProcess-HostV3", SendsAtomicWithReceive = true)]
 
 public class Startup : FunctionsStartup
 {

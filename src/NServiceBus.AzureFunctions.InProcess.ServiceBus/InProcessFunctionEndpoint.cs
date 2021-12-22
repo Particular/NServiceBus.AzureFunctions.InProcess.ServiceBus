@@ -3,13 +3,13 @@
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Messaging.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus;
     using Extensibility;
-    using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
-    using IMessageReceiver = Microsoft.Azure.ServiceBus.Core.IMessageReceiver;
 
     class InProcessFunctionEndpoint : IFunctionEndpoint
     {
@@ -23,14 +23,15 @@
         }
 
         public Task Process(
-            Message message,
+            ServiceBusReceivedMessage message,
             ExecutionContext executionContext,
-            IMessageReceiver messageReceiver,
+            ServiceBusClient serviceBusClient,
+            ServiceBusMessageActions messageActions,
             bool enableCrossEntityTransactions,
             ILogger functionsLogger = null,
             CancellationToken cancellationToken = default) =>
             enableCrossEntityTransactions
-                ? ProcessTransactional(message, executionContext, messageReceiver, functionsLogger, cancellationToken)
+                ? ProcessTransactional(message, executionContext, serviceBusClient, messageActions, functionsLogger, cancellationToken)
                 : ProcessNonTransactional(message, executionContext, functionsLogger, cancellationToken);
 
         public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
@@ -112,9 +113,10 @@
         }
 
         async Task ProcessTransactional(
-            Message message,
+            ServiceBusReceivedMessage message,
             ExecutionContext executionContext,
-            IMessageReceiver messageReceiver,
+            ServiceBusClient serviceBusClient,
+            ServiceBusMessageActions messageActions,
             ILogger functionsLogger = null,
             CancellationToken cancellationToken = default)
         {
@@ -125,19 +127,19 @@
                 await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
                     .ConfigureAwait(false);
 
-                await ProcessInternal(message, new MessageReceiverTransactionStrategy(message, messageReceiver), pipeline, cancellationToken)
+                await ProcessInternal(message, new AtomicSendsWithReceiveTransactionStrategy(message, serviceBusClient, messageActions), pipeline, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception)
             {
                 // abandon message outside of a transaction scope to ensure the abandon operation can't be rolled back
-                await messageReceiver.AbandonAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
+                await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }
 
         async Task ProcessNonTransactional(
-            Message message,
+            ServiceBusReceivedMessage message,
             ExecutionContext executionContext,
             ILogger functionsLogger = null,
             CancellationToken cancellationToken = default)
@@ -157,10 +159,14 @@
             "Grpc.Core.Api.dll",
             "Grpc.Net.Common.dll",
             "Grpc.Net.Client.dll",
-        "Grpc.Net.ClientFactory.dll"};
+            "Grpc.Net.ClientFactory.dll",
+            "Azure.Identity.dll",
+            "Microsoft.Extensions.Azure.dll",
+            "NServiceBus.Extensions.DependencyInjection.dll"
+        };
 
         internal static async Task ProcessInternal(
-            Message message,
+            ServiceBusReceivedMessage message,
             ITransactionStrategy transactionStrategy,
             PipelineInvoker pipeline,
             CancellationToken cancellationToken)
@@ -175,14 +181,14 @@
                     var messageContext = new MessageContext(
                         messageId,
                         message.GetHeaders(),
-                        message.Body,
+                        message.Body.ToArray(),
                         transportTransaction,
                         pipeline.ReceiveAddress,
                         new ContextBag());
 
                     await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
-                    await transactionStrategy.Complete(transaction).ConfigureAwait(false);
+                    await transactionStrategy.Complete(transaction, cancellationToken).ConfigureAwait(false);
 
                     transaction?.Commit();
                 }
@@ -198,7 +204,7 @@
                         messageId,
                         message.Body,
                         transportTransaction,
-                        message.SystemProperties.DeliveryCount,
+                        message.DeliveryCount,
                         pipeline.ReceiveAddress,
                         new ContextBag());
 
@@ -206,7 +212,7 @@
 
                     if (errorHandleResult == ErrorHandleResult.Handled)
                     {
-                        await transactionStrategy.Complete(transaction).ConfigureAwait(false);
+                        await transactionStrategy.Complete(transaction, cancellationToken).ConfigureAwait(false);
 
                         transaction?.Commit();
                         return;

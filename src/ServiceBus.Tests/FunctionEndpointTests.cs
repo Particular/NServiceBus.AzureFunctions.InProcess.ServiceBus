@@ -36,7 +36,7 @@
 
             Assert.IsTrue(transactionStrategy.OnCompleteCalled);
             Assert.AreSame(message.GetMessageId(), messageContext.NativeMessageId);
-            Assert.AreEqual(message.Body, messageContext.Body.ToArray());
+            Assert.AreEqual(message.Body.ToArray(), messageContext.Body.ToArray());
             CollectionAssert.IsSubsetOf(message.GetHeaders(), messageContext.Headers); // the IncomingMessage has an additional MessageId header
             Assert.AreEqual(1, transactionStrategy.CreatedTransportTransactions.Count);
             Assert.AreSame(transactionStrategy.CreatedTransportTransactions[0], messageContext.TransportTransaction);
@@ -66,7 +66,7 @@
 
             Assert.AreSame(pipelineException, errorContext.Exception);
             Assert.AreSame(message.GetMessageId(), errorContext.Message.NativeMessageId);
-            CollectionAssert.AreEqual(message.Body, errorContext.Message.Body.ToArray());
+            CollectionAssert.AreEqual(message.Body.ToArray(), errorContext.Message.Body.ToArray());
             CollectionAssert.IsSubsetOf(message.GetHeaders(), errorContext.Message.Headers); // the IncomingMessage has an additional MessageId header
             Assert.AreSame(transactionStrategy.CreatedTransportTransactions.Last(), errorContext.TransportTransaction); // verify usage of the correct transport transaction instance
             Assert.AreEqual(2, transactionStrategy.CreatedTransportTransactions.Count); // verify that a new transport transaction has been created for the error handling
@@ -166,7 +166,7 @@
             public CommittableTransaction CreatedTransaction { get; private set; }
             public List<TransportTransaction> CreatedTransportTransactions { get; } = new List<TransportTransaction>();
 
-            public Task Complete(CommittableTransaction transaction)
+            public Task Complete(CommittableTransaction transaction, CancellationToken cancellationToken)
             {
                 OnCompleteCalled = true;
                 CompletedTransaction = transaction;

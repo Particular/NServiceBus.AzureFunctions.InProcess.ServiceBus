@@ -2,15 +2,15 @@
 {
     using System;
     using System.Collections.Generic;
-    using Microsoft.Azure.ServiceBus;
+    using Azure.Messaging.ServiceBus;
 
     static class MessageExtensions
     {
-        public static Dictionary<string, string> GetHeaders(this Message message)
+        public static Dictionary<string, string> GetHeaders(this ServiceBusReceivedMessage message)
         {
-            var headers = new Dictionary<string, string>(message.UserProperties.Count);
+            var headers = new Dictionary<string, string>(message.ApplicationProperties.Count);
 
-            foreach (var kvp in message.UserProperties)
+            foreach (var kvp in message.ApplicationProperties)
             {
                 headers[kvp.Key] = kvp.Value?.ToString();
             }
@@ -30,7 +30,7 @@
             return headers;
         }
 
-        public static string GetMessageId(this Message message)
+        public static string GetMessageId(this ServiceBusReceivedMessage message)
         {
             if (string.IsNullOrEmpty(message.MessageId))
             {

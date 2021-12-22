@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.2.0" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="3.0.0-alpha.156" />
     <!-- This minim version of the NSB alpha is required for System.Security.Cryptography.XML compatibility. Can be removed when switching to RTM packages -->
     <PackageReference Include="NServiceBus" Version="8.0.0-alpha.1900" />

@@ -1,13 +1,13 @@
 ﻿namespace ServiceBus.Tests
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Loader;
-    using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.Azure.ServiceBus;
+    using Azure.Messaging.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
@@ -43,7 +43,7 @@
             var endpoint = new InProcessFunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
             // we need to process an actual message to have the endpoint being created
-            await endpoint.Process(GenerateMessage(), new ExecutionContext(), null, false);
+            await endpoint.Process(GenerateMessage(), new ExecutionContext(), null, null, false);
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
             Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
@@ -59,11 +59,11 @@
             Assert.AreEqual(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()), AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly));
         }
 
-        Message GenerateMessage()
+        ServiceBusReceivedMessage GenerateMessage()
         {
-            var bytes = Encoding.UTF8.GetBytes("<DummyMessage/>");
-            var message = new Message(bytes);
-            message.UserProperties["NServiceBus.EnclosedMessageTypes"] = "Testing.Handlers.DummyMessage";
+            var message = ServiceBusModelFactory.ServiceBusReceivedMessage(
+                body: BinaryData.FromString("<DummyMessage/>"),
+                properties: new Dictionary<string, object> { { "NServiceBus.EnclosedMessageTypes", "Testing.Handlers.DummyMessage" } });
 
             return message;
         }
