@@ -39,14 +39,9 @@
             return transportTransaction;
         }
 
-        public async Task Complete(CommittableTransaction transaction, CancellationToken cancellationToken)
+        public Task Complete(CommittableTransaction transaction, CancellationToken cancellationToken)
         {
-            // open short-lived TransactionScope connected to the committable transaction to ensure the message operation has a scope to enlist.
-            using (var scope = new TransactionScope(transaction, TransactionScopeAsyncFlowOption.Enabled))
-            {
-                await messageActions.CompleteMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
-                scope.Complete();
-            }
+            return messageActions.CompleteMessageAsync(message, cancellationToken: cancellationToken);
         }
     }
 }

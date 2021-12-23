@@ -5,6 +5,8 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Messaging.ServiceBus;
+    using Azure.Messaging.ServiceBus.Administration;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -56,6 +58,8 @@
 
             public override string Name { get; }
 
+            protected bool UseAtomicSendsWithReceive = true;
+
             public override Task Start(CancellationToken token)
             {
                 var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name, default);
@@ -98,13 +102,46 @@
                 return Task.CompletedTask;
             }
 
-            public override async Task ComponentsStarted(CancellationToken token)
+            public override async Task ComponentsStarted(CancellationToken cancellationToken)
             {
+                var connectionString = Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration
+                        .DefaultServiceBusConnectionName);
+
+                var client = new ServiceBusClient(connectionString);
+                var serviceBusAdministrationClient = new ServiceBusAdministrationClient(connectionString);
+                var functionInputQueueName = Name;
+
+                if (await serviceBusAdministrationClient.QueueExistsAsync(functionInputQueueName, cancellationToken))
+                {
+                    await serviceBusAdministrationClient.DeleteQueueAsync(functionInputQueueName, cancellationToken);
+                }
+
+                await serviceBusAdministrationClient.CreateQueueAsync(functionInputQueueName, cancellationToken);
+
+                var sender = client.CreateSender(functionInputQueueName);
+
                 foreach (var message in messages)
                 {
-                    var transportMessage = MessageHelper.GenerateMessage(message);
-                    var context = new ExecutionContext();
-                    await endpoint.Process(transportMessage, context, null, null, false, null, token);
+                    var serviceBusMessage = new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
+                    {
+                        MessageId = Guid.NewGuid().ToString("N"),
+                    };
+
+                    serviceBusMessage.ApplicationProperties["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName;
+
+
+                    await sender.SendMessageAsync(serviceBusMessage, cancellationToken);
+
+                    var receiver = client.CreateReceiver(functionInputQueueName);
+
+                    var serviceBusReceivedMessage = await receiver.ReceiveMessageAsync(cancellationToken: cancellationToken);
+                    var messageActions = new TestableServiceBusMessageActions(receiver);
+                    await endpoint.Process(serviceBusReceivedMessage, new ExecutionContext(), client, messageActions, UseAtomicSendsWithReceive, null, cancellationToken);
+
+                    if (!UseAtomicSendsWithReceive)
+                    {
+                        await receiver.CompleteMessageAsync(serviceBusReceivedMessage, cancellationToken);
+                    }
                 }
             }
 

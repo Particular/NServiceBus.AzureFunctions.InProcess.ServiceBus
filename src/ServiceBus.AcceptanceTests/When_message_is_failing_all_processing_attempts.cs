@@ -16,7 +16,7 @@
             var exception = Assert.ThrowsAsync<MessageFailedException>(() =>
             {
                 return Scenario.Define<Context>(c => testContext = c)
-                    .WithComponent(new FailingFunction(new TriggerMessage()))
+                    .WithComponent(new MoveToErrorQueueFunction(new TriggerMessage()))
                     .Done(c => c.EndpointsStarted)
                     .Run();
             });
@@ -31,9 +31,9 @@
             public int HandlerInvocations { get; set; }
         }
 
-        class FailingFunction : FunctionEndpointComponent
+        class MoveToErrorQueueFunction : FunctionEndpointComponent
         {
-            public FailingFunction(object triggerMessage) : base(triggerMessage)
+            public MoveToErrorQueueFunction(object triggerMessage) : base(triggerMessage)
             {
             }
 
@@ -54,7 +54,7 @@
             }
         }
 
-        class TriggerMessage : IMessage
+        public class TriggerMessage : IMessage
         {
         }
     }

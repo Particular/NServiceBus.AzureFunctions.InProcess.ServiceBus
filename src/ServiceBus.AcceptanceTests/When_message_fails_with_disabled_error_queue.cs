@@ -14,7 +14,7 @@
             var exception = Assert.ThrowsAsync<Exception>(() =>
             {
                 return Scenario.Define<ScenarioContext>()
-                    .WithComponent(new FailingFunction())
+                    .WithComponent(new DisabledErrorQueueFunction())
                     .Done(c => c.EndpointsStarted)
                     .Run();
             });
@@ -23,9 +23,9 @@
             Assert.IsInstanceOf<SimulatedException>(exception.InnerException);
         }
 
-        class FailingFunction : FunctionEndpointComponent
+        class DisabledErrorQueueFunction : FunctionEndpointComponent
         {
-            public FailingFunction()
+            public DisabledErrorQueueFunction()
             {
                 CustomizeConfiguration = c => c.DoNotSendMessagesToErrorQueue();
 
