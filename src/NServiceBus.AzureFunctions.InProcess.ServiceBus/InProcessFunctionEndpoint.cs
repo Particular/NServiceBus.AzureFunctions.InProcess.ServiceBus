@@ -181,7 +181,7 @@
                     var messageContext = new MessageContext(
                         messageId,
                         message.GetHeaders(),
-                        message.Body.ToArray(),
+                        message.Body,
                         transportTransaction,
                         pipeline.ReceiveAddress,
                         new ContextBag());
