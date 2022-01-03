@@ -3,6 +3,7 @@
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Transactions;
     using Azure.Messaging.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus;
     using Extensibility;
@@ -127,8 +128,42 @@
                 await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
                     .ConfigureAwait(false);
 
-                await ProcessInternal(message, new AtomicSendsWithReceiveTransactionStrategy(message, serviceBusClient, messageActions), pipeline, cancellationToken)
-                    .ConfigureAwait(false);
+                try
+                {
+                    using (var transaction = CreateTransaction())
+                    {
+                        var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
+
+                        var messageContext = CreateMessageContext(message, transportTransaction);
+
+                        await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
+
+                        await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+
+                        transaction.Commit();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    using (var transaction = CreateTransaction())
+                    {
+                        var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
+
+                        ErrorContext errorContext = CreateErrorContext(message, transportTransaction, exception);
+
+                        var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
+
+                        if (errorHandleResult == ErrorHandleResult.Handled)
+                        {
+                            await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+
+                            transaction.Commit();
+                            return;
+                        }
+
+                        throw;
+                    }
+                }
             }
             catch (Exception)
             {
@@ -137,6 +172,48 @@
                 throw;
             }
         }
+
+        ErrorContext CreateErrorContext(ServiceBusReceivedMessage message, TransportTransaction transportTransaction, Exception exception)
+        {
+            var errorContext = new ErrorContext(
+                exception,
+                message.GetHeaders(),
+                message.MessageId,
+                message.Body,
+                transportTransaction,
+                message.DeliveryCount,
+                pipeline.ReceiveAddress,
+                new ContextBag());
+            return errorContext;
+        }
+
+        MessageContext CreateMessageContext(ServiceBusReceivedMessage message, TransportTransaction transportTransaction)
+        {
+            var messageContext = new MessageContext(
+                message.MessageId,
+                message.GetHeaders(),
+                message.Body,
+                transportTransaction,
+                pipeline.ReceiveAddress,
+                new ContextBag());
+            return messageContext;
+        }
+
+        static TransportTransaction CreateTransportTransaction(string messagePartitionKey, CommittableTransaction transaction, ServiceBusClient serviceBusClient)
+        {
+            var transportTransaction = new TransportTransaction();
+            transportTransaction.Set(serviceBusClient);
+            transportTransaction.Set("IncomingQueue.PartitionKey", messagePartitionKey);
+            transportTransaction.Set(transaction);
+            return transportTransaction;
+        }
+
+        static CommittableTransaction CreateTransaction() =>
+            new CommittableTransaction(new TransactionOptions
+            {
+                IsolationLevel = IsolationLevel.Serializable,
+                Timeout = TransactionManager.MaximumTimeout
+            });
 
         async Task ProcessNonTransactional(
             ServiceBusReceivedMessage message,
@@ -149,8 +226,25 @@
             await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
                 .ConfigureAwait(false);
 
-            await ProcessInternal(message, NoTransactionStrategy.Instance, pipeline, cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                var messageContext = CreateMessageContext(message, new TransportTransaction());
+
+                await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
+
+            }
+            catch (Exception exception)
+            {
+                var errorContext = CreateErrorContext(message, new TransportTransaction(), exception);
+
+                var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
+
+                if (errorHandleResult == ErrorHandleResult.Handled)
+                {
+                    return;
+                }
+                throw;
+            }
         }
 
         internal static readonly string[] AssembliesToExcludeFromScanning = {
@@ -164,64 +258,6 @@
             "Microsoft.Extensions.Azure.dll",
             "NServiceBus.Extensions.DependencyInjection.dll"
         };
-
-        internal static async Task ProcessInternal(
-            ServiceBusReceivedMessage message,
-            ITransactionStrategy transactionStrategy,
-            PipelineInvoker pipeline,
-            CancellationToken cancellationToken)
-        {
-            var messageId = message.GetMessageId();
-
-            try
-            {
-                using (var transaction = transactionStrategy.CreateTransaction())
-                {
-                    var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
-                    var messageContext = new MessageContext(
-                        messageId,
-                        message.GetHeaders(),
-                        message.Body,
-                        transportTransaction,
-                        pipeline.ReceiveAddress,
-                        new ContextBag());
-
-                    await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
-
-                    await transactionStrategy.Complete(transaction, cancellationToken).ConfigureAwait(false);
-
-                    transaction?.Commit();
-                }
-            }
-            catch (Exception exception)
-            {
-                using (var transaction = transactionStrategy.CreateTransaction())
-                {
-                    var transportTransaction = transactionStrategy.CreateTransportTransaction(transaction);
-                    var errorContext = new ErrorContext(
-                        exception,
-                        message.GetHeaders(),
-                        messageId,
-                        message.Body,
-                        transportTransaction,
-                        message.DeliveryCount,
-                        pipeline.ReceiveAddress,
-                        new ContextBag());
-
-                    var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
-
-                    if (errorHandleResult == ErrorHandleResult.Handled)
-                    {
-                        await transactionStrategy.Complete(transaction, cancellationToken).ConfigureAwait(false);
-
-                        transaction?.Commit();
-                        return;
-                    }
-
-                    throw;
-                }
-            }
-        }
 
         async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
         {
