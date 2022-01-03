@@ -12,6 +12,7 @@
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
+    using NServiceBus.MessageMutator;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -92,6 +93,9 @@
                 // enable installers to auto-create the input queue for tests
                 // in real Azure functions the input queue is assumed to exist
                 endpointConfiguration.EnableInstallers();
+
+                endpointConfiguration.RegisterComponents(c => c.AddSingleton<IMutateOutgoingTransportMessages>(b => new TestIndependenceMutator(scenarioContext)));
+
 
                 var serviceCollection = new ServiceCollection();
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);

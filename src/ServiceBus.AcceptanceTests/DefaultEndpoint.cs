@@ -46,6 +46,9 @@
 
             var transport = configuration.UseTransport(azureServiceBusTransport);
 
+
+            configuration.Pipeline.Register("TestIndependenceBehavior", b => new TestIndependenceSkipBehavior(runDescriptor.ScenarioContext), "Skips messages not created during the current test.");
+
             configuration.UseSerialization<NewtonsoftSerializer>();
 
             configurationBuilderCustomization(configuration);
