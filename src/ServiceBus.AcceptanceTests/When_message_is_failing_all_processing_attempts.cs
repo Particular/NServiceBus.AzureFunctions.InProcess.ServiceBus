@@ -9,14 +9,15 @@
 
     public class When_message_is_failing_all_processing_attempts
     {
-        [Test]
-        public void Should_be_moved_to_the_error_queue()
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public void Should_be_moved_to_the_error_queue(TransportTransactionMode transactionMode)
         {
             Context testContext = null;
             var exception = Assert.ThrowsAsync<MessageFailedException>(() =>
             {
                 return Scenario.Define<Context>(c => testContext = c)
-                    .WithComponent(new MoveToErrorQueueFunction(new TriggerMessage()))
+                    .WithComponent(new MoveToErrorQueueFunction(transactionMode))
                     .Done(c => c.EndpointsStarted)
                     .Run();
             });
@@ -33,8 +34,9 @@
 
         class MoveToErrorQueueFunction : FunctionEndpointComponent
         {
-            public MoveToErrorQueueFunction(object triggerMessage) : base(triggerMessage)
+            public MoveToErrorQueueFunction(TransportTransactionMode transactionMode) : base(transactionMode)
             {
+                Messages.Add(new TriggerMessage());
             }
 
             public class FailingHandler : IHandleMessages<TriggerMessage>

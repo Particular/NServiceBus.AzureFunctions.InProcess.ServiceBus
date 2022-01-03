@@ -9,17 +9,30 @@
 
     public class When_failing_to_process_message
     {
-        [Test]
-        public async Task Should_not_publish_to_subscribers()
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public async Task Should_not_publish_to_subscribers(TransportTransactionMode transactionMode)
         {
             var context = await Scenario.Define<Context>()
                 .WithEndpoint<InsideEndpoint>()
-                .WithComponent(new PublishingFunction())
+                .WithComponent(new PublishingFunction(transactionMode))
                 .Done(c => c.TerminatingEventReceived)
                 .Run();
 
             Assert.IsTrue(context.TerminatingEventReceived);
             Assert.IsFalse(context.AbortedEventReceived);
+        }
+
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
+        public async Task Should_publish_to_subscribers(TransportTransactionMode transactionMode)
+        {
+            var context = await Scenario.Define<Context>()
+                .WithEndpoint<InsideEndpoint>()
+                .WithComponent(new PublishingFunction(transactionMode))
+                .Done(c => c.TerminatingEventReceived)
+                .Run();
+
+            Assert.IsTrue(context.TerminatingEventReceived);
+            Assert.IsTrue(context.AbortedEventReceived);
         }
 
         class Context : ScenarioContext
@@ -70,7 +83,7 @@
 
         class PublishingFunction : FunctionEndpointComponent
         {
-            public PublishingFunction()
+            public PublishingFunction(TransportTransactionMode transportTransactionMode) : base(transportTransactionMode)
             {
                 Messages.Add(new TriggerMessage());
                 Messages.Add(new TerminatingMessage());

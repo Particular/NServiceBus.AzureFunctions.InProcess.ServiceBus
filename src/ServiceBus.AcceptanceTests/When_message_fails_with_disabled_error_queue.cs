@@ -8,13 +8,14 @@
 
     public class When_message_fails_with_disabled_error_queue
     {
-        [Test]
-        public void Should_throw_exception()
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public void Should_throw_exception(TransportTransactionMode transactionMode)
         {
             var exception = Assert.ThrowsAsync<Exception>(() =>
             {
                 return Scenario.Define<ScenarioContext>()
-                    .WithComponent(new DisabledErrorQueueFunction())
+                    .WithComponent(new DisabledErrorQueueFunction(transactionMode))
                     .Done(c => c.EndpointsStarted)
                     .Run();
             });
@@ -25,7 +26,7 @@
 
         class DisabledErrorQueueFunction : FunctionEndpointComponent
         {
-            public DisabledErrorQueueFunction()
+            public DisabledErrorQueueFunction(TransportTransactionMode transactionMode) : base(transactionMode)
             {
                 CustomizeConfiguration = c => c.DoNotSendMessagesToErrorQueue();
 

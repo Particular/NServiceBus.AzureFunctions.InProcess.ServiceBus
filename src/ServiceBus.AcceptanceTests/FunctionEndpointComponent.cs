@@ -18,13 +18,21 @@
 
     abstract class FunctionEndpointComponent : IComponentBehavior
     {
-        public FunctionEndpointComponent()
-        {
-        }
 
-        public FunctionEndpointComponent(object triggerMessage)
+        public FunctionEndpointComponent(TransportTransactionMode transactionMode)
         {
-            Messages.Add(triggerMessage);
+            if (transactionMode == TransportTransactionMode.SendsAtomicWithReceive)
+            {
+                sendsAtomicWithReceive = true;
+            }
+            else if (transactionMode == TransportTransactionMode.ReceiveOnly)
+            {
+                sendsAtomicWithReceive = false;
+            }
+            else
+            {
+                throw new Exception("Unsupported transaction mode " + transactionMode);
+            }
         }
 
         public Task<ComponentRunner> CreateRunner(RunDescriptor runDescriptor)
@@ -35,7 +43,8 @@
                     CustomizeConfiguration,
                     runDescriptor.ScenarioContext,
                     GetType(),
-                    DoNotFailOnErrorMessages));
+                    DoNotFailOnErrorMessages,
+                    sendsAtomicWithReceive));
         }
 
         public IList<object> Messages { get; } = new List<object>();
@@ -44,6 +53,7 @@
 
         public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
 
+        readonly bool sendsAtomicWithReceive;
 
         class FunctionRunner : ComponentRunner
         {
@@ -51,19 +61,19 @@
                 Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization,
                 ScenarioContext scenarioContext,
                 Type functionComponentType,
-                bool doNotFailOnErrorMessages)
+                bool doNotFailOnErrorMessages,
+                bool atomicWithReceive)
             {
                 this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
                 this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
+                this.atomicWithReceive = atomicWithReceive;
                 Name = Conventions.EndpointNamingConvention(functionComponentType);
             }
 
             public override string Name { get; }
-
-            protected bool UseAtomicSendsWithReceive = true;
 
             public override Task Start(CancellationToken token)
             {
@@ -153,19 +163,21 @@
 
                         try
                         {
-                            await endpoint.Process(receivedMessage, new ExecutionContext(), client, messageActions, UseAtomicSendsWithReceive, null, cancellationToken);
+                            await endpoint.Process(receivedMessage, new ExecutionContext(), client, messageActions, atomicWithReceive, null, cancellationToken);
 
-                            if (!UseAtomicSendsWithReceive)
+                            if (!atomicWithReceive)
                             {
                                 await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
                             }
                         }
                         catch (Exception)
                         {
-                            if (!UseAtomicSendsWithReceive)
+                            if (!atomicWithReceive)
                             {
                                 await receiver.AbandonMessageAsync(receivedMessage, cancellationToken: cancellationToken);
                             }
+
+                            throw;
                         }
 
                     }
@@ -189,8 +201,10 @@
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             readonly bool doNotFailOnErrorMessages;
+            readonly bool atomicWithReceive;
             IList<object> messages;
             IFunctionEndpoint endpoint;
         }
+
     }
 }
