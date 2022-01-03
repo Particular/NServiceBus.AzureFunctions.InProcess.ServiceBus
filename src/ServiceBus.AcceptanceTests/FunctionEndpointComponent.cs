@@ -111,36 +111,55 @@
                 var serviceBusAdministrationClient = new ServiceBusAdministrationClient(connectionString);
                 var functionInputQueueName = Name;
 
-                if (await serviceBusAdministrationClient.QueueExistsAsync(functionInputQueueName, cancellationToken))
+                if (!await serviceBusAdministrationClient.QueueExistsAsync(functionInputQueueName, cancellationToken))
                 {
-                    await serviceBusAdministrationClient.DeleteQueueAsync(functionInputQueueName, cancellationToken);
+                    await serviceBusAdministrationClient.CreateQueueAsync(functionInputQueueName, cancellationToken);
                 }
-
-                await serviceBusAdministrationClient.CreateQueueAsync(functionInputQueueName, cancellationToken);
 
                 var sender = client.CreateSender(functionInputQueueName);
 
                 foreach (var message in messages)
                 {
+                    var messageId = Guid.NewGuid().ToString("N");
+
                     var serviceBusMessage = new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
                     {
-                        MessageId = Guid.NewGuid().ToString("N"),
+                        MessageId = messageId
                     };
 
                     serviceBusMessage.ApplicationProperties["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName;
 
-
                     await sender.SendMessageAsync(serviceBusMessage, cancellationToken);
 
                     var receiver = client.CreateReceiver(functionInputQueueName);
+                    var receivedMessages = await receiver.ReceiveMessagesAsync(100, cancellationToken: cancellationToken);
 
-                    var serviceBusReceivedMessage = await receiver.ReceiveMessageAsync(cancellationToken: cancellationToken);
-                    var messageActions = new TestableServiceBusMessageActions(receiver);
-                    await endpoint.Process(serviceBusReceivedMessage, new ExecutionContext(), client, messageActions, UseAtomicSendsWithReceive, null, cancellationToken);
-
-                    if (!UseAtomicSendsWithReceive)
+                    foreach (var receivedMessage in receivedMessages)
                     {
-                        await receiver.CompleteMessageAsync(serviceBusReceivedMessage, cancellationToken);
+                        if (receivedMessage.MessageId != messageId)
+                        {
+                            continue;
+                        }
+
+                        var messageActions = new TestableServiceBusMessageActions(receiver);
+
+                        try
+                        {
+                            await endpoint.Process(receivedMessage, new ExecutionContext(), client, messageActions, UseAtomicSendsWithReceive, null, cancellationToken);
+
+                            if (!UseAtomicSendsWithReceive)
+                            {
+                                await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            if (!UseAtomicSendsWithReceive)
+                            {
+                                await receiver.AbandonMessageAsync(receivedMessage, cancellationToken: cancellationToken);
+                            }
+                        }
+
                     }
                 }
             }
