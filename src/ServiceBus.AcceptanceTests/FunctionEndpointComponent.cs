@@ -34,26 +34,30 @@
                     Messages,
                     CustomizeConfiguration,
                     runDescriptor.ScenarioContext,
-                    GetType()));
+                    GetType(),
+                    DoNotFailOnErrorMessages));
         }
 
         public IList<object> Messages { get; } = new List<object>();
+
+        public bool DoNotFailOnErrorMessages { get; set; }
 
         public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
 
 
         class FunctionRunner : ComponentRunner
         {
-            public FunctionRunner(
-                IList<object> messages,
+            public FunctionRunner(IList<object> messages,
                 Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization,
                 ScenarioContext scenarioContext,
-                Type functionComponentType)
+                Type functionComponentType,
+                bool doNotFailOnErrorMessages)
             {
                 this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
+                this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
                 Name = Conventions.EndpointNamingConvention(functionComponentType);
             }
 
@@ -170,9 +174,12 @@
 
             public override Task Stop()
             {
-                if (scenarioContext.FailedMessages.TryGetValue(Name, out var failedMessages))
+                if (!doNotFailOnErrorMessages)
                 {
-                    throw new MessageFailedException(failedMessages.First(), scenarioContext);
+                    if (scenarioContext.FailedMessages.TryGetValue(Name, out var failedMessages))
+                    {
+                        throw new MessageFailedException(failedMessages.First(), scenarioContext);
+                    }
                 }
 
                 return base.Stop();
@@ -181,6 +188,7 @@
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
+            readonly bool doNotFailOnErrorMessages;
             IList<object> messages;
             IFunctionEndpoint endpoint;
         }
