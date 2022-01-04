@@ -87,7 +87,7 @@
                 endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
 
                 endpointConfiguration.Recoverability()
-                    .Immediate(i => i.NumberOfRetries(0))
+                    .Immediate(i => i.NumberOfRetries(1))
                     .Delayed(d => d.NumberOfRetries(0))
                     .Failed(c => c
                         // track messages sent to the error queue to fail the test

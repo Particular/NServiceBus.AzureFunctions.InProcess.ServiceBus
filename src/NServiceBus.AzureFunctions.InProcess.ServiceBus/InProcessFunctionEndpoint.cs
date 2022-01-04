@@ -143,53 +143,51 @@
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
+                .ConfigureAwait(false);
+
             try
             {
-                await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
-                    .ConfigureAwait(false);
-
-                try
+                using (var transaction = CreateTransaction())
                 {
-                    using (var transaction = CreateTransaction())
+                    var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
+
+                    var messageContext = CreateMessageContext(message, transportTransaction);
+
+                    await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
+
+                    try
                     {
-                        var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
-
-                        var messageContext = CreateMessageContext(message, transportTransaction);
-
-                        await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
-
-                        await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
-
+                        await messageActions.SafeCompleteMessageAsync(message, transaction, cancellationToken).ConfigureAwait(false);
                         transaction.Commit();
                     }
-                }
-                catch (Exception exception)
-                {
-                    using (var transaction = CreateTransaction())
+                    catch (Exception)
                     {
-                        var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
-
-                        ErrorContext errorContext = CreateErrorContext(message, transportTransaction, exception);
-
-                        var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
-
-                        if (errorHandleResult == ErrorHandleResult.Handled)
-                        {
-                            await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
-
-                            transaction.Commit();
-                            return;
-                        }
-
-                        throw;
+                        //We can't commit the transaction, we need to abandon the message and retry
+                        await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                // abandon message outside of a transaction scope to ensure the abandon operation can't be rolled back
-                await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
-                throw;
+                using (var transaction = CreateTransaction())
+                {
+                    var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
+
+                    ErrorContext errorContext = CreateErrorContext(message, transportTransaction, exception);
+
+                    var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
+
+                    if (errorHandleResult != ErrorHandleResult.Handled)
+                    {
+                        await messageActions.SafeAbandonMessageAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await messageActions.SafeCompleteMessageAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+                    }
+                    transaction.Commit();
+                }
             }
         }
 
