@@ -18,7 +18,6 @@
 
     abstract class FunctionEndpointComponent : IComponentBehavior
     {
-
         public FunctionEndpointComponent(TransportTransactionMode transactionMode)
         {
             if (transactionMode == TransportTransactionMode.SendsAtomicWithReceive)
@@ -62,14 +61,15 @@
                 ScenarioContext scenarioContext,
                 Type functionComponentType,
                 bool doNotFailOnErrorMessages,
-                bool atomicWithReceive)
+                bool sendsAtomicWithReceive)
             {
                 this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
                 this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
-                this.atomicWithReceive = atomicWithReceive;
+                this.sendsAtomicWithReceive = sendsAtomicWithReceive;
+
                 Name = Conventions.EndpointNamingConvention(functionComponentType);
             }
 
@@ -104,12 +104,7 @@
 
                 endpointConfiguration.RegisterComponents(c => c.AddSingleton(scenarioContext.GetType(), scenarioContext));
 
-                // enable installers to auto-create the input queue for tests
-                // in real Azure functions the input queue is assumed to exist
-                endpointConfiguration.EnableInstallers();
-
                 endpointConfiguration.RegisterComponents(c => c.AddSingleton<IMutateOutgoingTransportMessages>(b => new TestIndependenceMutator(scenarioContext)));
-
 
                 var serviceCollection = new ServiceCollection();
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
@@ -163,23 +158,22 @@
 
                         try
                         {
-                            await endpoint.Process(receivedMessage, new ExecutionContext(), client, messageActions, atomicWithReceive, null, cancellationToken);
+                            await endpoint.Process(receivedMessage, new ExecutionContext(), client, messageActions, sendsAtomicWithReceive, null, cancellationToken);
 
-                            if (!atomicWithReceive)
+                            if (!sendsAtomicWithReceive)
                             {
                                 await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
                             }
                         }
                         catch (Exception)
                         {
-                            if (!atomicWithReceive)
+                            if (!sendsAtomicWithReceive)
                             {
                                 await receiver.AbandonMessageAsync(receivedMessage, cancellationToken: cancellationToken);
                             }
 
                             throw;
                         }
-
                     }
                 }
             }
@@ -197,14 +191,14 @@
                 return base.Stop();
             }
 
+            IList<object> messages;
+            IFunctionEndpoint endpoint;
+
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             readonly bool doNotFailOnErrorMessages;
-            readonly bool atomicWithReceive;
-            IList<object> messages;
-            IFunctionEndpoint endpoint;
+            readonly bool sendsAtomicWithReceive;
         }
-
     }
 }
