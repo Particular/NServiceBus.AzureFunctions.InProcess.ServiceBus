@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using Azure.Messaging.ServiceBus;
     using Azure.Messaging.ServiceBus.Administration;
+    using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -49,6 +50,8 @@
         public IList<object> Messages { get; } = new List<object>();
 
         public bool DoNotFailOnErrorMessages { get; set; }
+
+        public Func<ServiceBusReceiver, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; set; } = x => new TestableServiceBusMessageActions(x);
 
         public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
 

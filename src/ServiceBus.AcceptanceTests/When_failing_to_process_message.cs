@@ -1,10 +1,13 @@
 ﻿namespace ServiceBus.Tests
 {
     using System;
+    using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Messaging.ServiceBus;
+    using Microsoft.Azure.WebJobs.ServiceBus;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
-    using NServiceBus.Pipeline;
     using NUnit.Framework;
 
     public class When_failing_to_process_message
@@ -87,11 +90,8 @@
             {
                 Messages.Add(new TriggerMessage());
                 Messages.Add(new TerminatingMessage());
-                CustomizeConfiguration = configuration =>
-                {
-                    configuration.AdvancedConfiguration.Pipeline.Register(b => new ThrowBeforeCompletingProcessingOfTriggerMessage(), "Simulates failure after dispatch.");
-                };
                 DoNotFailOnErrorMessages = true;
+                ServiceBusMessageActionsFactory = x => new FirstCompleteFailingServiceBusMessageActions(x);
             }
 
             public class PublishingHandler : IHandleMessages<TriggerMessage>
@@ -102,24 +102,40 @@
                 }
             }
 
-            public class ThrowBeforeCompletingProcessingOfTriggerMessage : Behavior<ITransportReceiveContext>
-            {
-                public override async Task Invoke(ITransportReceiveContext context, Func<Task> next)
-                {
-                    await next().ConfigureAwait(false);
-                    if (context.Message.Headers[Headers.EnclosedMessageTypes] == typeof(TriggerMessage).FullName)
-                    {
-                        throw new Exception("Simulated failure after dispatch.");
-                    }
-                }
-            }
-
             public class TerminatingMessageHandler : IHandleMessages<TerminatingMessage>
             {
                 public Task Handle(TerminatingMessage message, IMessageHandlerContext context)
                 {
                     return context.Publish(new TerminatingEvent());
                 }
+            }
+        }
+
+        class FirstCompleteFailingServiceBusMessageActions : ServiceBusMessageActions
+        {
+            readonly ServiceBusReceiver serviceBusReceiver;
+            bool first = true;
+
+            public FirstCompleteFailingServiceBusMessageActions(ServiceBusReceiver serviceBusReceiver)
+            {
+                this.serviceBusReceiver = serviceBusReceiver;
+            }
+
+            public override async Task CompleteMessageAsync(ServiceBusReceivedMessage message, CancellationToken cancellationToken = default)
+            {
+                if (first)
+                {
+                    first = false;
+                    await serviceBusReceiver.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+                    throw new Exception("Simulated complete failure");
+                }
+
+                await serviceBusReceiver.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+
+            public override Task AbandonMessageAsync(ServiceBusReceivedMessage message, IDictionary<string, object> propertiesToModify = null, CancellationToken cancellationToken = default)
+            {
+                return serviceBusReceiver.AbandonMessageAsync(message, propertiesToModify, cancellationToken);
             }
         }
 
