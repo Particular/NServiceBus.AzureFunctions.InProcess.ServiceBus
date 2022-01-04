@@ -259,7 +259,7 @@
             "NServiceBus.Extensions.DependencyInjection.dll"
         };
 
-        async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
+        internal async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
         {
             if (pipeline == null)
             {
