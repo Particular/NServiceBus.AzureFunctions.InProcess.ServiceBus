@@ -154,25 +154,22 @@
                             continue;
                         }
 
-                        var messageActions = new TestableServiceBusMessageActions(receiver);
-
-                        try
+                        if (sendsAtomicWithReceive)
                         {
-                            await endpoint.Process(receivedMessage, new ExecutionContext(), client, messageActions, sendsAtomicWithReceive, null, cancellationToken);
-
-                            if (!sendsAtomicWithReceive)
+                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, new TestableServiceBusMessageActions(receiver), null, cancellationToken);
+                        }
+                        else
+                        {
+                            try
                             {
+                                await endpoint.ProcessNonAtomic(receivedMessage, new ExecutionContext(), null, cancellationToken);
                                 await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
                             }
-                        }
-                        catch (Exception)
-                        {
-                            if (!sendsAtomicWithReceive)
+                            catch (Exception)
                             {
                                 await receiver.AbandonMessageAsync(receivedMessage, cancellationToken: cancellationToken);
+                                throw;
                             }
-
-                            throw;
                         }
                     }
                 }

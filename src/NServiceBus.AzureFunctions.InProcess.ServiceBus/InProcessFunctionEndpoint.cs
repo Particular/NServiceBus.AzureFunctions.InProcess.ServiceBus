@@ -23,18 +23,6 @@
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
-        public Task Process(
-            ServiceBusReceivedMessage message,
-            ExecutionContext executionContext,
-            ServiceBusClient serviceBusClient,
-            ServiceBusMessageActions messageActions,
-            bool enableCrossEntityTransactions,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default) =>
-            enableCrossEntityTransactions
-                ? ProcessTransactional(message, executionContext, serviceBusClient, messageActions, functionsLogger, cancellationToken)
-                : ProcessNonTransactional(message, executionContext, functionsLogger, cancellationToken);
-
         public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
@@ -113,7 +101,39 @@
             return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        async Task ProcessTransactional(
+        public async Task ProcessNonAtomic(
+            ServiceBusReceivedMessage message,
+            ExecutionContext executionContext,
+            ILogger functionsLogger = null,
+            CancellationToken cancellationToken = default)
+        {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
+                .ConfigureAwait(false);
+
+            try
+            {
+                var messageContext = CreateMessageContext(message, new TransportTransaction());
+
+                await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
+
+            }
+            catch (Exception exception)
+            {
+                var errorContext = CreateErrorContext(message, new TransportTransaction(), exception);
+
+                var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
+
+                if (errorHandleResult == ErrorHandleResult.Handled)
+                {
+                    return;
+                }
+                throw;
+            }
+        }
+
+        public async Task ProcessAtomic(
             ServiceBusReceivedMessage message,
             ExecutionContext executionContext,
             ServiceBusClient serviceBusClient,
@@ -214,38 +234,6 @@
                 IsolationLevel = IsolationLevel.Serializable,
                 Timeout = TransactionManager.MaximumTimeout
             });
-
-        async Task ProcessNonTransactional(
-            ServiceBusReceivedMessage message,
-            ExecutionContext executionContext,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default)
-        {
-            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
-
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
-                .ConfigureAwait(false);
-
-            try
-            {
-                var messageContext = CreateMessageContext(message, new TransportTransaction());
-
-                await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
-
-            }
-            catch (Exception exception)
-            {
-                var errorContext = CreateErrorContext(message, new TransportTransaction(), exception);
-
-                var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
-
-                if (errorHandleResult == ErrorHandleResult.Handled)
-                {
-                    return;
-                }
-                throw;
-            }
-        }
 
         internal static readonly string[] AssembliesToExcludeFromScanning = {
             "NCrontab.Signed.dll",
