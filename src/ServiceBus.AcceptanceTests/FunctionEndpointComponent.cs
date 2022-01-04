@@ -44,7 +44,8 @@
                     runDescriptor.ScenarioContext,
                     GetType(),
                     DoNotFailOnErrorMessages,
-                    sendsAtomicWithReceive));
+                    sendsAtomicWithReceive,
+                    ServiceBusMessageActionsFactory));
         }
 
         public IList<object> Messages { get; } = new List<object>();
@@ -64,7 +65,8 @@
                 ScenarioContext scenarioContext,
                 Type functionComponentType,
                 bool doNotFailOnErrorMessages,
-                bool sendsAtomicWithReceive)
+                bool sendsAtomicWithReceive,
+                Func<ServiceBusReceiver, ServiceBusMessageActions> serviceBusMessageActionsFactory)
             {
                 this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
@@ -72,6 +74,7 @@
                 this.functionComponentType = functionComponentType;
                 this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
                 this.sendsAtomicWithReceive = sendsAtomicWithReceive;
+                this.serviceBusMessageActionsFactory = serviceBusMessageActionsFactory;
 
                 Name = Conventions.EndpointNamingConvention(functionComponentType);
             }
@@ -123,7 +126,10 @@
                 var connectionString = Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration
                         .DefaultServiceBusConnectionName);
 
-                var client = new ServiceBusClient(connectionString);
+                var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
+                {
+                    EnableCrossEntityTransactions = sendsAtomicWithReceive
+                });
                 var serviceBusAdministrationClient = new ServiceBusAdministrationClient(connectionString);
                 var functionInputQueueName = Name;
 
@@ -159,7 +165,7 @@
 
                         if (sendsAtomicWithReceive)
                         {
-                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, new TestableServiceBusMessageActions(receiver), null, cancellationToken);
+                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, serviceBusMessageActionsFactory(receiver), null, cancellationToken);
                         }
                         else
                         {
@@ -199,6 +205,7 @@
             readonly Type functionComponentType;
             readonly bool doNotFailOnErrorMessages;
             readonly bool sendsAtomicWithReceive;
+            readonly Func<ServiceBusReceiver, ServiceBusMessageActions> serviceBusMessageActionsFactory;
         }
     }
 }

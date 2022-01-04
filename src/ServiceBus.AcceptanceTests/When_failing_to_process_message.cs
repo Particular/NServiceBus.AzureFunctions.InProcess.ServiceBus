@@ -114,7 +114,7 @@
         class FirstCompleteFailingServiceBusMessageActions : ServiceBusMessageActions
         {
             readonly ServiceBusReceiver serviceBusReceiver;
-            bool first = true;
+            static bool first = true;
 
             public FirstCompleteFailingServiceBusMessageActions(ServiceBusReceiver serviceBusReceiver)
             {
