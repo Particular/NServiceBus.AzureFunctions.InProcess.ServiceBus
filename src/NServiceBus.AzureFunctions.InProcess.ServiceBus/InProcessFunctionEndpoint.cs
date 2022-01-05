@@ -143,8 +143,15 @@
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
+                throw;
+            }
 
             try
             {
