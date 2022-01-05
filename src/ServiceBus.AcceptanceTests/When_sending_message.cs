@@ -8,12 +8,13 @@
 
     public class When_sending_message
     {
-        [Test]
-        public async Task Should_send_message_to_target_queue()
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public async Task Should_send_message_to_target_queue(TransportTransactionMode transactionMode)
         {
             await Scenario.Define<Context>()
                 .WithEndpoint<ReceivingEndpoint>()
-                .WithComponent(new SendingFunction(new TriggerMessage()))
+                .WithComponent(new SendingFunction(transactionMode))
                 .Done(c => c.HandlerReceivedMessage)
                 .Run();
         }
@@ -49,8 +50,9 @@
 
         class SendingFunction : FunctionEndpointComponent
         {
-            public SendingFunction(object triggerMessage) : base(triggerMessage)
+            public SendingFunction(TransportTransactionMode transactionMode) : base(transactionMode)
             {
+                Messages.Add(new TriggerMessage());
             }
 
             public class TriggerMessageHandler : IHandleMessages<TriggerMessage>

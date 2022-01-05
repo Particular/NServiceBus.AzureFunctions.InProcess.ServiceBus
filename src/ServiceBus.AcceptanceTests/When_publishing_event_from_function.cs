@@ -7,12 +7,13 @@
 
     public class When_publishing_event_from_function
     {
-        [Test]
-        public async Task Should_publish_to_subscribers()
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public async Task Should_publish_to_subscribers(TransportTransactionMode transactionMode)
         {
             var context = await Scenario.Define<Context>()
                 .WithEndpoint<InsideEndpoint>()
-                .WithComponent(new PublishingFunction())
+                .WithComponent(new PublishingFunction(transactionMode))
                 .Done(c => c.EventReceived)
                 .Run();
 
@@ -50,7 +51,7 @@
 
         class PublishingFunction : FunctionEndpointComponent
         {
-            public PublishingFunction()
+            public PublishingFunction(TransportTransactionMode transactionMode) : base(transactionMode)
             {
                 Messages.Add(new TriggerMessage());
             }

@@ -2,7 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
-    using Microsoft.Azure.ServiceBus.Management;
+    using Azure.Messaging.ServiceBus.Administration;
     using NServiceBus;
     using NUnit.Framework;
 
@@ -15,7 +15,7 @@
             var connectionString = Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName);
             Assert.IsNotNull(connectionString, $"Environment variable '{ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName}' should be defined to run tests.");
 
-            var client = new ManagementClient(connectionString);
+            var client = new ServiceBusAdministrationClient(connectionString);
 
             const string errorQueueName = "error";
 
@@ -23,8 +23,6 @@
             {
                 await client.CreateQueueAsync(errorQueueName);
             }
-
-            await client.CloseAsync();
         }
     }
 }

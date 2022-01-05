@@ -8,11 +8,12 @@
 
     public class When_using_sagas
     {
-        [Test]
-        public async Task Should_invoke_saga_message_handlers()
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public async Task Should_invoke_saga_message_handlers(TransportTransactionMode transactionMode)
         {
             var context = await Scenario.Define<Context>()
-                .WithComponent(new SendingFunction())
+                .WithComponent(new SagaFunction(transactionMode))
                 .Done(c => c.EndpointsStarted)
                 .Run();
 
@@ -24,9 +25,9 @@
             public int CounterValue { get; set; }
         }
 
-        class SendingFunction : FunctionEndpointComponent
+        class SagaFunction : FunctionEndpointComponent
         {
-            public SendingFunction()
+            public SagaFunction(TransportTransactionMode transportTransactionMode) : base(transportTransactionMode)
             {
                 CustomizeConfiguration = configuration =>
                     configuration.AdvancedConfiguration.UsePersistence<LearningPersistence>();
