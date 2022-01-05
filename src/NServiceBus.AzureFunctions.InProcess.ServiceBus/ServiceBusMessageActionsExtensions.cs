@@ -16,14 +16,5 @@
                 scope.Complete();
             }
         }
-
-        public static async Task SafeAbandonMessageAsync(this ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, Transaction committableTransaction, CancellationToken cancellationToken = default)
-        {
-            using (var scope = new TransactionScope(committableTransaction, TransactionScopeAsyncFlowOption.Enabled))
-            {
-                await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
-                scope.Complete();
-            }
-        }
     }
 }
