@@ -52,7 +52,7 @@
 
         public bool DoNotFailOnErrorMessages { get; set; }
 
-        public Func<ServiceBusReceiver, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; set; } = x => new TestableServiceBusMessageActions(x);
+        public Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; set; } = (r, _) => new TestableServiceBusMessageActions(r);
 
         public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
 
@@ -66,7 +66,7 @@
                 Type functionComponentType,
                 bool doNotFailOnErrorMessages,
                 bool sendsAtomicWithReceive,
-                Func<ServiceBusReceiver, ServiceBusMessageActions> serviceBusMessageActionsFactory)
+                Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory)
             {
                 this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
@@ -165,7 +165,7 @@
 
                         if (sendsAtomicWithReceive)
                         {
-                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, serviceBusMessageActionsFactory(receiver), null, cancellationToken);
+                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, serviceBusMessageActionsFactory(receiver, scenarioContext), null, cancellationToken);
                         }
                         else
                         {
@@ -205,7 +205,7 @@
             readonly Type functionComponentType;
             readonly bool doNotFailOnErrorMessages;
             readonly bool sendsAtomicWithReceive;
-            readonly Func<ServiceBusReceiver, ServiceBusMessageActions> serviceBusMessageActionsFactory;
+            readonly Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory;
         }
     }
 }

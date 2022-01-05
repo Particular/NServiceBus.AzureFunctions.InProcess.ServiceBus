@@ -42,6 +42,7 @@
         {
             public bool AbortedEventReceived { get; set; }
             public bool TerminatingEventReceived { get; set; }
+            public bool FirstCompleteCalled { get; internal set; }
         }
 
         class InsideEndpoint : EndpointConfigurationBuilder
@@ -91,7 +92,7 @@
                 Messages.Add(new TriggerMessage());
                 Messages.Add(new TerminatingMessage());
                 DoNotFailOnErrorMessages = true;
-                ServiceBusMessageActionsFactory = x => new FirstCompleteFailingServiceBusMessageActions(x);
+                ServiceBusMessageActionsFactory = (r, c) => new FirstCompleteFailingServiceBusMessageActions(r, c);
             }
 
             public class PublishingHandler : IHandleMessages<TriggerMessage>
@@ -114,18 +115,19 @@
         class FirstCompleteFailingServiceBusMessageActions : ServiceBusMessageActions
         {
             readonly ServiceBusReceiver serviceBusReceiver;
-            static bool first = true;
+            readonly Context scenarioContext;
 
-            public FirstCompleteFailingServiceBusMessageActions(ServiceBusReceiver serviceBusReceiver)
+            public FirstCompleteFailingServiceBusMessageActions(ServiceBusReceiver serviceBusReceiver, ScenarioContext scenarioContext)
             {
                 this.serviceBusReceiver = serviceBusReceiver;
+                this.scenarioContext = (Context)scenarioContext;
             }
 
             public override async Task CompleteMessageAsync(ServiceBusReceivedMessage message, CancellationToken cancellationToken = default)
             {
-                if (first)
+                if (!scenarioContext.FirstCompleteCalled)
                 {
-                    first = false;
+                    scenarioContext.FirstCompleteCalled = true;
                     await serviceBusReceiver.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
                     throw new Exception("Simulated complete failure");
                 }
