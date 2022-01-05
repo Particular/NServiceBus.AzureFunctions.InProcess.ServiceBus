@@ -40,7 +40,6 @@
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var endpoint = new InProcessFunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
-            // we need to process an actual message to have the endpoint being created
             await endpoint.InitializeEndpointIfNecessary(new Microsoft.Azure.WebJobs.ExecutionContext(), null, CancellationToken.None);
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
