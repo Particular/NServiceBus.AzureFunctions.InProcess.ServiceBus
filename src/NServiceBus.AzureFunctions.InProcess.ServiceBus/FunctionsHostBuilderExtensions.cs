@@ -7,12 +7,12 @@
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
-    /// Provides extension methods to configure a <see cref="FunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
+    /// Provides extension methods to configure a <see cref="InProcessFunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
     /// </summary>
     public static class FunctionsHostBuilderExtensions
     {
         /// <summary>
-        /// Use the IConfiguration to configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// Use the IConfiguration to configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="InProcessFunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder)
@@ -21,7 +21,7 @@
         }
 
         /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="InProcessFunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
@@ -33,7 +33,7 @@
         }
 
         /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="FunctionEndpoint"/> via dependency injection.
+        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="InProcessFunctionEndpoint"/> via dependency injection.
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
@@ -56,7 +56,7 @@
 
             functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
             functionsHostBuilder.Services.AddSingleton(startableEndpoint);
-            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, FunctionEndpoint>();
+            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
         }
 
         internal static IStartableEndpointWithExternallyManagedContainer Configure(
@@ -65,7 +65,7 @@
             string appDirectory = null)
         {
             // Load user assemblies from the nested "bin" folder
-            FunctionEndpoint.LoadAssemblies(appDirectory);
+            InProcessFunctionEndpoint.LoadAssemblies(appDirectory);
 
             return EndpointWithExternallyManagedServiceProvider.Create(
                     endpointConfiguration,

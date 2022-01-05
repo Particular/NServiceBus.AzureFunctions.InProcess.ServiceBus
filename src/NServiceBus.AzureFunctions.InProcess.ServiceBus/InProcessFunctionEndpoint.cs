@@ -1,6 +1,9 @@
 ﻿namespace NServiceBus
 {
     using System;
+    using System.IO;
+    using System.Reflection;
+    using System.Runtime.Loader;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Transactions;
@@ -9,6 +12,7 @@
     using Extensibility;
     using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
+    using NServiceBus.Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -23,107 +27,106 @@
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
-        public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
-            await endpoint.Send(message, options, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger).ConfigureAwait(false);
+            await endpoint.Send(message, options).ConfigureAwait(false);
         }
 
-        public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            return Send(message, new SendOptions(), executionContext, functionsLogger, cancellationToken);
+            return Send(message, new SendOptions(), executionContext, functionsLogger);
         }
 
-        public async Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
-
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
-            await endpoint.Send(messageConstructor, options, cancellationToken).ConfigureAwait(false);
-        }
-
-        public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Send(messageConstructor, new SendOptions(), executionContext, functionsLogger, cancellationToken);
-        }
-
-        public async Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public async Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
-            await endpoint.Publish(message, options, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger).ConfigureAwait(false);
+            await endpoint.Send(messageConstructor, options).ConfigureAwait(false);
         }
 
-        public Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            return Publish(message, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
+            return Send(messageConstructor, new SendOptions(), executionContext, functionsLogger);
         }
 
-        public async Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
-
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
-            await endpoint.Publish(messageConstructor, options, cancellationToken).ConfigureAwait(false);
-        }
-
-        public Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
-        {
-            return Publish(messageConstructor, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
-        }
-
-        public async Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public async Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
-            await endpoint.Subscribe(eventType, options, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger).ConfigureAwait(false);
+            await endpoint.Publish(message, options).ConfigureAwait(false);
         }
 
-        public Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            return Subscribe(eventType, new SubscribeOptions(), executionContext, functionsLogger, cancellationToken);
+            return Publish(message, new PublishOptions(), executionContext, functionsLogger);
         }
 
-        public async Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public async Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
-            await endpoint.Unsubscribe(eventType, options, cancellationToken).ConfigureAwait(false);
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger).ConfigureAwait(false);
+            await endpoint.Publish(messageConstructor, options).ConfigureAwait(false);
         }
 
-        public Task Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        public Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null)
         {
-            return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
+            return Publish(messageConstructor, new PublishOptions(), executionContext, functionsLogger);
+        }
+
+        public async Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
+        {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger).ConfigureAwait(false);
+            await endpoint.Subscribe(eventType, options).ConfigureAwait(false);
+        }
+
+        public Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null)
+        {
+            return Subscribe(eventType, new SubscribeOptions(), executionContext, functionsLogger);
+        }
+
+        public async Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null)
+        {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger).ConfigureAwait(false);
+            await endpoint.Unsubscribe(eventType, options).ConfigureAwait(false);
+        }
+
+        public Task Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null)
+        {
+            return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger);
         }
 
         public async Task ProcessNonAtomic(
             ServiceBusReceivedMessage message,
             ExecutionContext executionContext,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default)
+            ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
-            await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken)
+            await InitializeEndpointIfNecessary(executionContext, functionsLogger)
                 .ConfigureAwait(false);
 
             try
             {
                 var messageContext = CreateMessageContext(message, new TransportTransaction());
 
-                await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
+                await pipeline.PushMessage(messageContext).ConfigureAwait(false);
 
             }
             catch (Exception exception)
             {
                 var errorContext = CreateErrorContext(message, new TransportTransaction(), exception);
 
-                var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
+                var errorHandleResult = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
 
                 if (errorHandleResult == ErrorHandleResult.Handled)
                 {
@@ -138,18 +141,17 @@
             ExecutionContext executionContext,
             ServiceBusClient serviceBusClient,
             ServiceBusMessageActions messageActions,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default)
+            ILogger functionsLogger = null)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
             try
             {
-                await InitializeEndpointIfNecessary(executionContext, functionsLogger, cancellationToken).ConfigureAwait(false);
+                await InitializeEndpointIfNecessary(executionContext, functionsLogger).ConfigureAwait(false);
             }
             catch (Exception)
             {
-                await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await messageActions.AbandonMessageAsync(message).ConfigureAwait(false);
                 throw;
             }
 
@@ -161,9 +163,9 @@
 
                     var messageContext = CreateMessageContext(message, transportTransaction);
 
-                    await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
+                    await pipeline.PushMessage(messageContext).ConfigureAwait(false);
 
-                    await messageActions.SafeCompleteMessageAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+                    await messageActions.SafeCompleteMessageAsync(message, transaction).ConfigureAwait(false);
                     transaction.Commit();
                 }
             }
@@ -176,11 +178,11 @@
 
                     ErrorContext errorContext = CreateErrorContext(message, transportTransaction, exception);
 
-                    result = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
+                    result = await pipeline.PushFailedMessage(errorContext).ConfigureAwait(false);
 
                     if (result == ErrorHandleResult.Handled)
                     {
-                        await messageActions.SafeCompleteMessageAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+                        await messageActions.SafeCompleteMessageAsync(message, transaction).ConfigureAwait(false);
                     }
 
                     transaction.Commit();
@@ -188,7 +190,7 @@
 
                 if (result != ErrorHandleResult.Handled)
                 {
-                    await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await messageActions.AbandonMessageAsync(message).ConfigureAwait(false);
                 }
             }
         }
@@ -199,10 +201,9 @@
                 exception,
                 message.GetHeaders(),
                 message.MessageId,
-                message.Body,
+                message.Body.ToArray(),
                 transportTransaction,
                 message.DeliveryCount,
-                pipeline.ReceiveAddress,
                 new ContextBag());
             return errorContext;
         }
@@ -212,9 +213,9 @@
             var messageContext = new MessageContext(
                 message.MessageId,
                 message.GetHeaders(),
-                message.Body,
+                message.Body.ToArray(),
                 transportTransaction,
-                pipeline.ReceiveAddress,
+                new CancellationTokenSource(),
                 new ContextBag());
             return messageContext;
         }
@@ -235,19 +236,7 @@
                 Timeout = TransactionManager.MaximumTimeout
             });
 
-        internal static readonly string[] AssembliesToExcludeFromScanning = {
-            "NCrontab.Signed.dll",
-            "Azure.Core.dll",
-            "Grpc.Core.Api.dll",
-            "Grpc.Net.Common.dll",
-            "Grpc.Net.Client.dll",
-            "Grpc.Net.ClientFactory.dll",
-            "Azure.Identity.dll",
-            "Microsoft.Extensions.Azure.dll",
-            "NServiceBus.Extensions.DependencyInjection.dll"
-        };
-
-        internal async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
+        internal async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken = default)
         {
             if (pipeline == null)
             {
@@ -266,6 +255,61 @@
                 {
                     semaphoreLock.Release();
                 }
+            }
+        }
+
+        internal static void LoadAssemblies(string assemblyDirectory)
+        {
+            var binFiles = Directory.EnumerateFiles(
+                assemblyDirectory,
+                "*.dll",
+                SearchOption.TopDirectoryOnly);
+
+            var assemblyLoadContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
+            foreach (var binFile in binFiles)
+            {
+                try
+                {
+                    var assemblyName = AssemblyName.GetAssemblyName(binFile);
+                    if (IsRuntimeAssembly(assemblyName.GetPublicKeyToken()))
+                    {
+                        continue;
+                    }
+
+                    // LoadFromAssemblyName works when actually running inside a function as FunctionAssemblyLoadContext probes the "bin" folder for the assembly name
+                    // this doesn't work when running with a different AssemblyLoadContext (e.g. tests) and the assembly needs to be loaded by the full path instead.
+                    assemblyLoadContext.LoadFromAssemblyPath(binFile);
+                    //assemblyLoadContext.LoadFromAssemblyName(assemblyName);
+                }
+                catch (Exception e)
+                {
+                    LogManager.GetLogger<InProcessFunctionEndpoint>().DebugFormat(
+                        "Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.{1}{2}",
+                        binFile, Environment.NewLine, e);
+                }
+            }
+        }
+
+        static bool IsRuntimeAssembly(byte[] publicKeyToken)
+        {
+            var tokenString = BitConverter.ToString(publicKeyToken).Replace("-", string.Empty).ToLowerInvariant();
+
+            switch (tokenString)
+            {
+                case "b77a5c561934e089": // Microsoft
+                case "7cec85d7bea7798e":
+                case "b03f5f7f11d50a3a":
+                case "31bf3856ad364e35":
+                case "cc7b13ffcd2ddd51":
+                case "adb9793829ddae60":
+                case "7e34167dcc6d6d8c": // Microsoft.Azure.ServiceBus
+                case "23ec7fc2d6eaa4a5": // Microsoft.Data.SqlClient
+                case "50cebf1cceb9d05e": // Mono.Cecil
+                case "30ad4fe6b2a6aeed": // Newtonsoft.Json
+                case "9fc386479f8a226c": // NServiceBus
+                    return true;
+                default:
+                    return false;
             }
         }
 

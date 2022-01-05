@@ -12,13 +12,8 @@
         public async Task Should_publish_to_subscribers(TransportTransactionMode transactionMode)
         {
             var context = await Scenario.Define<Context>()
-<<<<<<< HEAD:src/ServiceBus.Tests/When_publishing_event_from_function.cs
                 .WithEndpoint<InsideSubscriberEndpoint>()
-                .WithComponent(new PublishingFunction())
-=======
-                .WithEndpoint<InsideEndpoint>()
                 .WithComponent(new PublishingFunction(transactionMode))
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/When_publishing_event_from_function.cs
                 .Done(c => c.EventReceived)
                 .Run();
 

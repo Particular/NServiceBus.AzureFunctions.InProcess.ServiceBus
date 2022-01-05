@@ -2,11 +2,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using NServiceBus;
 
 [assembly: FunctionsStartup(typeof(Startup))]
-<<<<<<< HEAD
-[assembly: NServiceBusTriggerFunction(Startup.EndpointName)]
-=======
-[assembly: NServiceBusTriggerFunction("InProcess-HostV4", SendsAtomicWithReceive = true)]
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393))
+[assembly: NServiceBusTriggerFunction(Startup.EndpointName, SendsAtomicWithReceive = true)]
 
 public class Startup : FunctionsStartup
 {

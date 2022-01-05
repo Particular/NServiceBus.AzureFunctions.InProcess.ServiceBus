@@ -13,7 +13,7 @@
     using Particular.Approvals;
 
     [TestFixture]
-    public class SourceGeneratorApprovals2
+    public class SourceGeneratorApprovals
     {
         [Test]
         public void UsingNamespace()
@@ -108,7 +108,7 @@ using NServiceBus;
 ";
             var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
-            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator2.InvalidEndpointNameError.Id));
+            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidEndpointNameError.Id));
         }
 
         [TestCase(null)]
@@ -123,7 +123,7 @@ using NServiceBus;
 ";
             var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
-            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator2.InvalidTriggerFunctionNameError.Id));
+            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidTriggerFunctionNameError.Id));
         }
 
         [Test]
@@ -202,7 +202,7 @@ public class Startup
                 syntaxTree
             }, references);
 
-            var generator = new TriggerFunctionGenerator2();
+            var generator = new TriggerFunctionGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
             driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generateDiagnostics);

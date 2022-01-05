@@ -38,16 +38,10 @@
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-#pragma warning disable 612, 618
-            var endpoint = new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
-#pragma warning restore 612, 618
+            var endpoint = new InProcessFunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
             // we need to process an actual message to have the endpoint being created
-<<<<<<< HEAD
-            await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null);
-=======
             await endpoint.InitializeEndpointIfNecessary(new Microsoft.Azure.WebJobs.ExecutionContext(), null, CancellationToken.None);
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393))
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
             Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));

@@ -13,11 +13,8 @@
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
-<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
-=======
     using NServiceBus.MessageMutator;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     abstract class FunctionEndpointComponent : IComponentBehavior
@@ -75,15 +72,11 @@
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
-<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
-                Name = functionComponentType.FullName;
-=======
                 this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
                 this.sendsAtomicWithReceive = sendsAtomicWithReceive;
                 this.serviceBusMessageActionsFactory = serviceBusMessageActionsFactory;
 
                 Name = Conventions.EndpointNamingConvention(functionComponentType);
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
             }
 
             public override string Name { get; }
@@ -91,6 +84,7 @@
             public override Task Start(CancellationToken token)
             {
                 var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name);
+                configurationCustomization(functionEndpointConfiguration);
                 var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
 
                 endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
@@ -116,19 +110,13 @@
 
                 endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
 
-<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
-                configurationCustomization(functionEndpointConfiguration);
-=======
-                endpointConfiguration.RegisterComponents(c => c.AddSingleton<IMutateOutgoingTransportMessages>(b => new TestIndependenceMutator(scenarioContext)));
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
+                endpointConfiguration.RegisterComponents(c => c.ConfigureComponent<IMutateOutgoingTransportMessages>(b => new TestIndependenceMutator(scenarioContext), DependencyLifecycle.SingleInstance));
 
                 var serviceCollection = new ServiceCollection();
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-#pragma warning disable 612, 618
-                endpoint = new FunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
-#pragma warning restore 612, 618
+                endpoint = new InProcessFunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
 
                 return Task.CompletedTask;
             }
@@ -154,11 +142,6 @@
 
                 foreach (var message in messages)
                 {
-<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
-                    var transportMessage = MessageHelper.GenerateMessage(message);
-                    var context = new ExecutionContext();
-                    await endpoint.ProcessNonTransactional(transportMessage, context, null);
-=======
                     var messageId = Guid.NewGuid().ToString("N");
 
                     var serviceBusMessage = new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
@@ -182,13 +165,13 @@
 
                         if (sendsAtomicWithReceive)
                         {
-                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, serviceBusMessageActionsFactory(receiver, scenarioContext), null, cancellationToken);
+                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, serviceBusMessageActionsFactory(receiver, scenarioContext), null);
                         }
                         else
                         {
                             try
                             {
-                                await endpoint.ProcessNonAtomic(receivedMessage, new ExecutionContext(), null, cancellationToken);
+                                await endpoint.ProcessNonAtomic(receivedMessage, new ExecutionContext(), null);
                                 await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
                             }
                             catch (Exception)
@@ -198,7 +181,6 @@
                             }
                         }
                     }
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
                 }
             }
 
@@ -221,16 +203,9 @@
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
-<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
-            IList<object> messages;
-#pragma warning disable 612, 618
-            FunctionEndpoint endpoint;
-#pragma warning restore 612, 618
-=======
             readonly bool doNotFailOnErrorMessages;
             readonly bool sendsAtomicWithReceive;
             readonly Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory;
->>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
         }
     }
 }
