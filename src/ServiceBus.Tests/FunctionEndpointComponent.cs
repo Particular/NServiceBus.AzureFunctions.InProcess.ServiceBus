@@ -5,22 +5,37 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Messaging.ServiceBus;
+    using Azure.Messaging.ServiceBus.Administration;
+    using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
+<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
+=======
+    using NServiceBus.MessageMutator;
+    using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     abstract class FunctionEndpointComponent : IComponentBehavior
     {
-        public FunctionEndpointComponent()
+        public FunctionEndpointComponent(TransportTransactionMode transactionMode)
         {
-        }
-
-        public FunctionEndpointComponent(object triggerMessage)
-        {
-            Messages.Add(triggerMessage);
+            if (transactionMode == TransportTransactionMode.SendsAtomicWithReceive)
+            {
+                sendsAtomicWithReceive = true;
+            }
+            else if (transactionMode == TransportTransactionMode.ReceiveOnly)
+            {
+                sendsAtomicWithReceive = false;
+            }
+            else
+            {
+                throw new Exception("Unsupported transaction mode " + transactionMode);
+            }
         }
 
         public Task<ComponentRunner> CreateRunner(RunDescriptor runDescriptor)
@@ -30,27 +45,45 @@
                     Messages,
                     CustomizeConfiguration,
                     runDescriptor.ScenarioContext,
-                    GetType()));
+                    GetType(),
+                    DoNotFailOnErrorMessages,
+                    sendsAtomicWithReceive,
+                    ServiceBusMessageActionsFactory));
         }
 
         public IList<object> Messages { get; } = new List<object>();
 
+        public bool DoNotFailOnErrorMessages { get; set; }
+
+        public Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; set; } = (r, _) => new TestableServiceBusMessageActions(r);
+
         public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
 
+        readonly bool sendsAtomicWithReceive;
 
         class FunctionRunner : ComponentRunner
         {
-            public FunctionRunner(
-                IList<object> messages,
+            public FunctionRunner(IList<object> messages,
                 Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization,
                 ScenarioContext scenarioContext,
-                Type functionComponentType)
+                Type functionComponentType,
+                bool doNotFailOnErrorMessages,
+                bool sendsAtomicWithReceive,
+                Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory)
             {
                 this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
+<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
                 Name = functionComponentType.FullName;
+=======
+                this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
+                this.sendsAtomicWithReceive = sendsAtomicWithReceive;
+                this.serviceBusMessageActionsFactory = serviceBusMessageActionsFactory;
+
+                Name = Conventions.EndpointNamingConvention(functionComponentType);
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
             }
 
             public override string Name { get; }
@@ -83,7 +116,11 @@
 
                 endpointConfiguration.RegisterComponents(c => c.RegisterSingleton(scenarioContext.GetType(), scenarioContext));
 
+<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
                 configurationCustomization(functionEndpointConfiguration);
+=======
+                endpointConfiguration.RegisterComponents(c => c.AddSingleton<IMutateOutgoingTransportMessages>(b => new TestIndependenceMutator(scenarioContext)));
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
 
                 var serviceCollection = new ServiceCollection();
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
@@ -96,33 +133,104 @@
                 return Task.CompletedTask;
             }
 
-            public override async Task ComponentsStarted(CancellationToken token)
+            public override async Task ComponentsStarted(CancellationToken cancellationToken)
             {
+                var connectionString = Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration
+                        .DefaultServiceBusConnectionName);
+
+                var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
+                {
+                    EnableCrossEntityTransactions = sendsAtomicWithReceive
+                });
+                var serviceBusAdministrationClient = new ServiceBusAdministrationClient(connectionString);
+                var functionInputQueueName = Name;
+
+                if (!await serviceBusAdministrationClient.QueueExistsAsync(functionInputQueueName, cancellationToken))
+                {
+                    await serviceBusAdministrationClient.CreateQueueAsync(functionInputQueueName, cancellationToken);
+                }
+
+                var sender = client.CreateSender(functionInputQueueName);
+
                 foreach (var message in messages)
                 {
+<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
                     var transportMessage = MessageHelper.GenerateMessage(message);
                     var context = new ExecutionContext();
                     await endpoint.ProcessNonTransactional(transportMessage, context, null);
+=======
+                    var messageId = Guid.NewGuid().ToString("N");
+
+                    var serviceBusMessage = new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
+                    {
+                        MessageId = messageId
+                    };
+
+                    serviceBusMessage.ApplicationProperties["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName;
+
+                    await sender.SendMessageAsync(serviceBusMessage, cancellationToken);
+
+                    var receiver = client.CreateReceiver(functionInputQueueName);
+                    var receivedMessages = await receiver.ReceiveMessagesAsync(100, cancellationToken: cancellationToken);
+
+                    foreach (var receivedMessage in receivedMessages)
+                    {
+                        if (receivedMessage.MessageId != messageId)
+                        {
+                            continue;
+                        }
+
+                        if (sendsAtomicWithReceive)
+                        {
+                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, serviceBusMessageActionsFactory(receiver, scenarioContext), null, cancellationToken);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                await endpoint.ProcessNonAtomic(receivedMessage, new ExecutionContext(), null, cancellationToken);
+                                await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
+                            }
+                            catch (Exception)
+                            {
+                                await receiver.AbandonMessageAsync(receivedMessage, cancellationToken: cancellationToken);
+                                throw;
+                            }
+                        }
+                    }
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
                 }
             }
 
             public override Task Stop()
             {
-                if (scenarioContext.FailedMessages.TryGetValue(Name, out var failedMessages))
+                if (!doNotFailOnErrorMessages)
                 {
-                    throw new MessageFailedException(failedMessages.First(), scenarioContext);
+                    if (scenarioContext.FailedMessages.TryGetValue(Name, out var failedMessages))
+                    {
+                        throw new MessageFailedException(failedMessages.First(), scenarioContext);
+                    }
                 }
 
                 return base.Stop();
             }
 
+            IList<object> messages;
+            IFunctionEndpoint endpoint;
+
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
+<<<<<<< HEAD:src/ServiceBus.Tests/FunctionEndpointComponent.cs
             IList<object> messages;
 #pragma warning disable 612, 618
             FunctionEndpoint endpoint;
 #pragma warning restore 612, 618
+=======
+            readonly bool doNotFailOnErrorMessages;
+            readonly bool sendsAtomicWithReceive;
+            readonly Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory;
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393)):src/ServiceBus.AcceptanceTests/FunctionEndpointComponent.cs
         }
     }
 }

@@ -8,11 +8,12 @@
 
     public class When_function_receives_a_message
     {
-        [Test]
-        public async Task Should_invoke_the_handler_to_process_it()
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public async Task Should_invoke_the_handler_to_process_it(TransportTransactionMode transactionMode)
         {
             var context = await Scenario.Define<Context>()
-                .WithComponent(new FunctionHandler(new HappyDayMessage()))
+                .WithComponent(new FunctionHandler(transactionMode))
                 .Done(c => c.HandlerInvocationCount > 0)
                 .Run();
 
@@ -30,8 +31,9 @@
 
         class FunctionHandler : FunctionEndpointComponent
         {
-            public FunctionHandler(object triggerMessage) : base(triggerMessage)
+            public FunctionHandler(TransportTransactionMode transactionMode) : base(transactionMode)
             {
+                Messages.Add(new HappyDayMessage());
             }
 
             public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>

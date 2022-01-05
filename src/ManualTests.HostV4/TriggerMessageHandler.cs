@@ -10,6 +10,6 @@ public class TriggerMessageHandler : IHandleMessages<TriggerMessage>
     {
         Log.Warn($"Handling {nameof(TriggerMessage)} in {nameof(TriggerMessageHandler)}");
 
-        return Task.CompletedTask;
+        return context.SendLocal(new SomeOtherMessage());
     }
 }

@@ -2,9 +2,14 @@
 {
     using System;
     using System.Threading.Tasks;
+<<<<<<< HEAD
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.ServiceBus.Core;
     using Microsoft.Azure.WebJobs;
+=======
+    using Azure.Messaging.ServiceBus;
+    using Microsoft.Azure.WebJobs.ServiceBus;
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393))
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -14,6 +19,7 @@
     public interface IFunctionEndpoint
     {
         /// <summary>
+<<<<<<< HEAD
         /// Processes a message received from an AzureServiceBus trigger using the NServiceBus message pipeline. This method will lookup the <see cref="ServiceBusTriggerAttribute.AutoComplete"/> setting to determine whether to use transactional or non-transactional processing.
         /// </summary>
         Task Process(Message message, ExecutionContext executionContext, IMessageReceiver messageReceiver, ILogger functionsLogger = null);
@@ -26,6 +32,26 @@
             TreatAsErrorFromVersion = "2",
             RemoveInVersion = "3")]
         Task Process(Message message, ExecutionContext executionContext, ILogger functionsLogger = null);
+=======
+        /// Processes the received message in atomic sends with receive mode.
+        /// </summary>
+        Task ProcessAtomic(
+           ServiceBusReceivedMessage message,
+           ExecutionContext executionContext,
+           ServiceBusClient serviceBusClient,
+           ServiceBusMessageActions messageActions,
+           ILogger functionsLogger = null,
+           CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Processes the received message in receive only transaction mode.
+        /// </summary>
+        Task ProcessNonAtomic(
+            ServiceBusReceivedMessage message,
+            ExecutionContext executionContext,
+            ILogger functionsLogger = null,
+            CancellationToken cancellationToken = default);
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393))
 
         /// <summary>
         /// Sends the provided message.

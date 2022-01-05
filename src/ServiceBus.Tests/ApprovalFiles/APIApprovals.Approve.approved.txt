@@ -39,6 +39,7 @@ namespace NServiceBus
     }
     public interface IFunctionEndpoint
     {
+<<<<<<< HEAD
         [System.Obsolete("Use `Process(Message, ExecutionContext, IMessageReceiver, ILogger)` instead. Will" +
             " be removed in version 3.0.0.", true)]
         System.Threading.Tasks.Task Process(Microsoft.Azure.ServiceBus.Message message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null);
@@ -65,6 +66,22 @@ namespace NServiceBus
     public sealed class NServiceBusEndpointNameAttribute : System.Attribute
     {
         public NServiceBusEndpointNameAttribute() { }
+=======
+        System.Threading.Tasks.Task ProcessAtomic(Azure.Messaging.ServiceBus.ServiceBusReceivedMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient, Microsoft.Azure.WebJobs.ServiceBus.ServiceBusMessageActions messageActions, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task ProcessNonAtomic(Azure.Messaging.ServiceBus.ServiceBusReceivedMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish(object message, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Publish<T>(System.Action<T> messageConstructor, NServiceBus.PublishOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send(object message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send(object message, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Send<T>(System.Action<T> messageConstructor, NServiceBus.SendOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Subscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Subscribe(System.Type eventType, NServiceBus.SubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Unsubscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
+>>>>>>> 6fca7ee (Update to Microsoft.Azure.WebJobs.Extensions.ServiceBus 5.2.0 (#393))
     }
     [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
     public sealed class NServiceBusTriggerFunctionAttribute : System.Attribute

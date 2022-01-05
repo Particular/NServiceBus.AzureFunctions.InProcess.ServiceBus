@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
-    using Microsoft.Azure.ServiceBus;
+    using Azure.Messaging.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -210,7 +210,7 @@ public class Startup
             // add necessary references for the generated trigger
             references.Add(MetadataReference.CreateFromFile(typeof(ServiceBusTriggerAttribute).Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(typeof(ExecutionContext).Assembly.Location));
-            references.Add(MetadataReference.CreateFromFile(typeof(Message).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ServiceBusReceivedMessage).Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(typeof(ILogger).Assembly.Location));
             Compile(outputCompilation.SyntaxTrees, references);
 
