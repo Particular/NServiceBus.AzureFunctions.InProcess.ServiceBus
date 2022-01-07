@@ -113,7 +113,7 @@
                 endpointConfiguration.RegisterComponents(c => c.ConfigureComponent<IMutateOutgoingTransportMessages>(b => new TestIndependenceMutator(scenarioContext), DependencyLifecycle.SingleInstance));
 
                 var serviceCollection = new ServiceCollection();
-                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.EndpointConfiguration, serviceCollection);
+                var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedServiceProvider.Create(functionEndpointConfiguration.AdvancedConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
                 endpoint = new InProcessFunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
@@ -123,8 +123,7 @@
 
             public override async Task ComponentsStarted(CancellationToken cancellationToken)
             {
-                var connectionString = Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration
-                        .DefaultServiceBusConnectionName);
+                var connectionString = Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName);
 
                 var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
                 {
