@@ -12,7 +12,7 @@
     using Extensibility;
     using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
-    using NServiceBus.Logging;
+    using Logging;
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -165,7 +165,7 @@
 
                     await pipeline.PushMessage(messageContext).ConfigureAwait(false);
 
-                    await messageActions.SafeCompleteMessageAsync(message, transaction).ConfigureAwait(false);
+                    await SafeCompleteMessageAsync(messageActions, message, transaction).ConfigureAwait(false);
                     transaction.Commit();
                 }
             }
@@ -182,7 +182,7 @@
 
                     if (result == ErrorHandleResult.Handled)
                     {
-                        await messageActions.SafeCompleteMessageAsync(message, transaction).ConfigureAwait(false);
+                        await SafeCompleteMessageAsync(messageActions, message, transaction).ConfigureAwait(false);
                     }
 
                     transaction.Commit();
@@ -287,6 +287,15 @@
                         "Failed to load assembly {0}. This error can be ignored if the assembly isn't required to execute the function.{1}{2}",
                         binFile, Environment.NewLine, e);
                 }
+            }
+        }
+
+        static async Task SafeCompleteMessageAsync(ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, Transaction committableTransaction, CancellationToken cancellationToken = default)
+        {
+            using (var scope = new TransactionScope(committableTransaction, TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+                scope.Complete();
             }
         }
 
