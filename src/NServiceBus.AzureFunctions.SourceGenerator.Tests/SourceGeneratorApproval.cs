@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
-    using Microsoft.Azure.ServiceBus;
+    using Azure.Messaging.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -13,7 +13,7 @@
     using Particular.Approvals;
 
     [TestFixture]
-    public class SourceGeneratorApprovals2
+    public class SourceGeneratorApprovals
     {
         [Test]
         public void UsingNamespace()
@@ -108,7 +108,7 @@ using NServiceBus;
 ";
             var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
-            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator2.InvalidEndpointNameError.Id));
+            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidEndpointNameError.Id));
         }
 
         [TestCase(null)]
@@ -123,7 +123,7 @@ using NServiceBus;
 ";
             var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
-            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator2.InvalidTriggerFunctionNameError.Id));
+            Assert.True(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidTriggerFunctionNameError.Id));
         }
 
         [Test]
@@ -202,7 +202,7 @@ public class Startup
                 syntaxTree
             }, references);
 
-            var generator = new TriggerFunctionGenerator2();
+            var generator = new TriggerFunctionGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
             driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generateDiagnostics);
@@ -210,7 +210,7 @@ public class Startup
             // add necessary references for the generated trigger
             references.Add(MetadataReference.CreateFromFile(typeof(ServiceBusTriggerAttribute).Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(typeof(ExecutionContext).Assembly.Location));
-            references.Add(MetadataReference.CreateFromFile(typeof(Message).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ServiceBusReceivedMessage).Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(typeof(ILogger).Assembly.Location));
             Compile(outputCompilation.SyntaxTrees, references);
 

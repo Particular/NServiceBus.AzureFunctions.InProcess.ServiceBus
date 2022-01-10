@@ -5,10 +5,8 @@
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Loader;
-    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.Configuration.AdvancedExtensibility;
@@ -40,12 +38,9 @@
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExternalHandlers"));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-#pragma warning disable 612, 618
-            var endpoint = new FunctionEndpoint(startableEndpoint, configuration, serviceProvider);
-#pragma warning restore 612, 618
+            var endpoint = new InProcessFunctionEndpoint(startableEndpoint, configuration, serviceProvider);
 
-            // we need to process an actual message to have the endpoint being created
-            await endpoint.ProcessNonTransactional(GenerateMessage(), new ExecutionContext(), null);
+            await endpoint.InitializeEndpointIfNecessary(new Microsoft.Azure.WebJobs.ExecutionContext(), null, CancellationToken.None);
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
             Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
@@ -59,15 +54,6 @@
 
             // ensure the assembly is loaded into the right context
             Assert.AreEqual(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()), AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly));
-        }
-
-        Message GenerateMessage()
-        {
-            var bytes = Encoding.UTF8.GetBytes("<DummyMessage/>");
-            var message = new Message(bytes);
-            message.UserProperties["NServiceBus.EnclosedMessageTypes"] = "Testing.Handlers.DummyMessage";
-
-            return message;
         }
     }
 }
