@@ -163,7 +163,7 @@
 
                     await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
-                    await messageActions.SafeCompleteMessageAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+                    await SafeCompleteMessageAsync(messageActions, message, transaction, cancellationToken).ConfigureAwait(false);
                     transaction.Commit();
                 }
             }
@@ -174,13 +174,13 @@
                 {
                     var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
 
-                    ErrorContext errorContext = CreateErrorContext(message, transportTransaction, exception);
+                    var errorContext = CreateErrorContext(message, transportTransaction, exception);
 
                     result = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
 
                     if (result == ErrorHandleResult.Handled)
                     {
-                        await messageActions.SafeCompleteMessageAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+                        await SafeCompleteMessageAsync(messageActions, message, transaction, cancellationToken).ConfigureAwait(false);
                     }
 
                     transaction.Commit();
@@ -226,6 +226,15 @@
             transportTransaction.Set("IncomingQueue.PartitionKey", messagePartitionKey);
             transportTransaction.Set(transaction);
             return transportTransaction;
+        }
+
+        static async Task SafeCompleteMessageAsync(ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, Transaction committableTransaction, CancellationToken cancellationToken = default)
+        {
+            using (var scope = new TransactionScope(committableTransaction, TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+                scope.Complete();
+            }
         }
 
         static CommittableTransaction CreateTransaction() =>
