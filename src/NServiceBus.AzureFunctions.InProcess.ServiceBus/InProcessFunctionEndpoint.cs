@@ -12,9 +12,12 @@
     using Transport;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
-    class InProcessFunctionEndpoint : IFunctionEndpoint
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public class InProcessFunctionEndpoint : IFunctionEndpoint
     {
-        public InProcessFunctionEndpoint(
+        internal InProcessFunctionEndpoint(
             IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
             ServiceBusTriggeredEndpointConfiguration configuration,
             IServiceProvider serviceProvider)
@@ -23,7 +26,7 @@
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
-        public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        async Task IFunctionEndpoint.Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -31,12 +34,12 @@
             await endpoint.Send(message, options, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task Send(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        Task IFunctionEndpoint.Send(object message, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
-            return Send(message, new SendOptions(), executionContext, functionsLogger, cancellationToken);
+            return ((IFunctionEndpoint)this).Send(message, new SendOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        public async Task Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        async Task IFunctionEndpoint.Send<T>(Action<T> messageConstructor, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -44,12 +47,12 @@
             await endpoint.Send(messageConstructor, options, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        Task IFunctionEndpoint.Send<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
-            return Send(messageConstructor, new SendOptions(), executionContext, functionsLogger, cancellationToken);
+            return ((IFunctionEndpoint)this).Send(messageConstructor, new SendOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        public async Task Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        async Task IFunctionEndpoint.Publish(object message, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -57,12 +60,12 @@
             await endpoint.Publish(message, options, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task Publish(object message, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        Task IFunctionEndpoint.Publish(object message, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
-            return Publish(message, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
+            return ((IFunctionEndpoint)this).Publish(message, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        public async Task Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        async Task IFunctionEndpoint.Publish<T>(Action<T> messageConstructor, PublishOptions options, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -70,12 +73,12 @@
             await endpoint.Publish(messageConstructor, options, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        Task IFunctionEndpoint.Publish<T>(Action<T> messageConstructor, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
-            return Publish(messageConstructor, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
+            return ((IFunctionEndpoint)this).Publish(messageConstructor, new PublishOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        public async Task Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        async Task IFunctionEndpoint.Subscribe(Type eventType, SubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -83,12 +86,12 @@
             await endpoint.Subscribe(eventType, options, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        Task IFunctionEndpoint.Subscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
-            return Subscribe(eventType, new SubscribeOptions(), executionContext, functionsLogger, cancellationToken);
+            return ((IFunctionEndpoint)this).Subscribe(eventType, new SubscribeOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        public async Task Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        async Task IFunctionEndpoint.Unsubscribe(Type eventType, UnsubscribeOptions options, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -96,16 +99,34 @@
             await endpoint.Unsubscribe(eventType, options, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
+        Task IFunctionEndpoint.Unsubscribe(Type eventType, ExecutionContext executionContext, ILogger functionsLogger, CancellationToken cancellationToken)
         {
-            return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
+            return ((IFunctionEndpoint)this).Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        public async Task ProcessNonAtomic(
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="executionContext"></param>
+        /// <param name="functionsLogger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task ProcessNonAtomic(
+            object message,
+            object executionContext,
+            object functionsLogger = null,
+            CancellationToken cancellationToken = default)
+        {
+            return ProcessNonAtomic((ServiceBusReceivedMessage)message, (ExecutionContext)executionContext, (ILogger)functionsLogger, cancellationToken);
+        }
+
+        async Task ProcessNonAtomic(
             ServiceBusReceivedMessage message,
             ExecutionContext executionContext,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default)
+            ILogger functionsLogger,
+            CancellationToken cancellationToken)
         {
             FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
 
@@ -133,7 +154,28 @@
             }
         }
 
-        public async Task ProcessAtomic(
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="executionContext"></param>
+        /// <param name="serviceBusClient"></param>
+        /// <param name="messageActions"></param>
+        /// <param name="functionsLogger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task ProcessAtomic(
+            object message,
+            object executionContext,
+            object serviceBusClient,
+            object messageActions,
+            object functionsLogger = null,
+            CancellationToken cancellationToken = default)
+        {
+            return ProcessAtomic((ServiceBusReceivedMessage)message, (ExecutionContext)executionContext, (ServiceBusClient)serviceBusClient, (ServiceBusMessageActions)messageActions, (ILogger)functionsLogger, cancellationToken);
+        }
+
+        async Task ProcessAtomic(
             ServiceBusReceivedMessage message,
             ExecutionContext executionContext,
             ServiceBusClient serviceBusClient,

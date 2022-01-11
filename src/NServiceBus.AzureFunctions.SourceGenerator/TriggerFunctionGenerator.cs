@@ -145,7 +145,7 @@ class FunctionEndpointTrigger
         ExecutionContext executionContext,
         CancellationToken cancellationToken)
     {{
-        return endpoint.ProcessAtomic(message, executionContext, client, messageActions, logger, cancellationToken);
+        return ((InProcessFunctionEndpoint)endpoint).ProcessAtomic(message, executionContext, client, messageActions, logger, cancellationToken);
     }}
 }}";
         }
@@ -179,7 +179,7 @@ class FunctionEndpointTrigger
         ExecutionContext executionContext,
         CancellationToken cancellationToken)
     {{
-        return endpoint.ProcessNonAtomic(message, executionContext, logger, cancellationToken);
+        return ((InProcessFunctionEndpoint)endpoint).ProcessNonAtomic(message, executionContext, logger, cancellationToken);
     }}
 }}";
         }

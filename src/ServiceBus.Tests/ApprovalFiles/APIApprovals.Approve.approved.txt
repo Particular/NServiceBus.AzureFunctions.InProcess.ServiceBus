@@ -32,6 +32,11 @@ namespace NServiceBus
         System.Threading.Tasks.Task Unsubscribe(System.Type eventType, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
         System.Threading.Tasks.Task Unsubscribe(System.Type eventType, NServiceBus.UnsubscribeOptions options, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default);
     }
+    public class InProcessFunctionEndpoint : NServiceBus.IFunctionEndpoint
+    {
+        public System.Threading.Tasks.Task ProcessAtomic(Azure.Messaging.ServiceBus.ServiceBusReceivedMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient, Microsoft.Azure.WebJobs.ServiceBus.ServiceBusMessageActions messageActions, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task ProcessNonAtomic(Azure.Messaging.ServiceBus.ServiceBusReceivedMessage message, Microsoft.Azure.WebJobs.ExecutionContext executionContext, Microsoft.Extensions.Logging.ILogger functionsLogger = null, System.Threading.CancellationToken cancellationToken = default) { }
+    }
     [System.AttributeUsage(System.AttributeTargets.Assembly | System.AttributeTargets.All)]
     public sealed class NServiceBusTriggerFunctionAttribute : System.Attribute
     {

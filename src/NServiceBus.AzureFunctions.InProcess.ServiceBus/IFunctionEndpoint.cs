@@ -3,8 +3,6 @@
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using Azure.Messaging.ServiceBus;
-    using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -14,26 +12,6 @@
     /// </summary>
     public interface IFunctionEndpoint
     {
-        /// <summary>
-        /// Processes the received message in atomic sends with receive mode.
-        /// </summary>
-        Task ProcessAtomic(
-           ServiceBusReceivedMessage message,
-           ExecutionContext executionContext,
-           ServiceBusClient serviceBusClient,
-           ServiceBusMessageActions messageActions,
-           ILogger functionsLogger = null,
-           CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Processes the received message in receive only transaction mode.
-        /// </summary>
-        Task ProcessNonAtomic(
-            ServiceBusReceivedMessage message,
-            ExecutionContext executionContext,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default);
-
         /// <summary>
         /// Sends the provided message.
         /// </summary>

@@ -198,7 +198,7 @@
             }
 
             IList<object> messages;
-            IFunctionEndpoint endpoint;
+            InProcessFunctionEndpoint endpoint;
 
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
             readonly ScenarioContext scenarioContext;
