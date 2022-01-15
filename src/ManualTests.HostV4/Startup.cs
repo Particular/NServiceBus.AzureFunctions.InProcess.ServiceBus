@@ -3,7 +3,6 @@ using NServiceBus;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: NServiceBusTriggerFunction("InProcess-HostV4", SendsAtomicWithReceive = true)]
-
 public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)

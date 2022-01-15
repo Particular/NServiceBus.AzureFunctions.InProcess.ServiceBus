@@ -6,10 +6,11 @@ public class TriggerMessageHandler : IHandleMessages<TriggerMessage>
 {
     static readonly ILog Log = LogManager.GetLogger<TriggerMessageHandler>();
 
-    public Task Handle(TriggerMessage message, IMessageHandlerContext context)
+    public async Task Handle(TriggerMessage message, IMessageHandlerContext context)
     {
         Log.Warn($"Handling {nameof(TriggerMessage)} in {nameof(TriggerMessageHandler)}");
 
-        return context.SendLocal(new SomeOtherMessage());
+        await context.SendLocal(new SomeOtherMessage()).ConfigureAwait(false);
+        await context.Publish(new SomeEvent()).ConfigureAwait(false);
     }
 }
