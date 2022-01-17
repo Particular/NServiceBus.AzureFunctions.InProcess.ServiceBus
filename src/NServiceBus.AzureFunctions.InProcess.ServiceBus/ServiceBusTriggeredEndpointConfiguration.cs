@@ -6,6 +6,7 @@
     using AzureFunctions.InProcess.ServiceBus;
     using Configuration.AdvancedExtensibility;
     using Logging;
+    using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Configuration;
     using Serialization;
 
@@ -40,7 +41,7 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint.
         /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, string connectionString = default)
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, TransportTransactionMode transportTransactionMode, string connectionString = default)
         {
             var endpointConfiguration = new EndpointConfiguration(endpointName);
 
@@ -74,9 +75,23 @@
                 }
             }
 
+            if (transportTransactionMode == TransportTransactionMode.SendsAtomicWithReceive)
+            {
+                var serviceBusOptions = configuration.GetSection("AzureFunctionsJobHost:extensions:ServiceBus")
+                    .Get<ServiceBusOptions>();
+
+                if (!serviceBusOptions.EnableCrossEntityTransactions)
+                {
+                    throw new Exception("SendsAtomicWithReceive mode requires EnableCrossEntityTransactions needs to be enabled on the ServiceBusOptions.");
+                }
+            }
+
             Transport = new AzureServiceBusTransport(connectionString);
 
-            serverlessTransport = new ServerlessTransport(Transport);
+            serverlessTransport = new ServerlessTransport(Transport)
+            {
+                TransportTransactionMode = transportTransactionMode
+            };
             var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
             Routing = new RoutingSettings<AzureServiceBusTransport>(serverlessRouting.GetSettings());
 

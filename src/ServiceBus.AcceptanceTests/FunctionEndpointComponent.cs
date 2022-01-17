@@ -83,7 +83,7 @@
 
             public override Task Start(CancellationToken token)
             {
-                var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name, default, null);
+                var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name, default, TransportTransactionMode.ReceiveOnly);
                 configurationCustomization(functionEndpointConfiguration);
                 var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
 

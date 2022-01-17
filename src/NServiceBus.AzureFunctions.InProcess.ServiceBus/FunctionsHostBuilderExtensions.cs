@@ -45,7 +45,8 @@
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
             var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, null);
+
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, GetTransportTransactionMode());
             configurationFactory?.Invoke(serviceBusConfiguration);
             RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }
@@ -60,7 +61,7 @@
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
             var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, connectionString);
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, GetTransportTransactionMode(), connectionString);
             configurationFactory?.Invoke(serviceBusConfiguration);
             RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }
@@ -108,6 +109,20 @@
             return EndpointWithExternallyManagedContainer.Create(
                     endpointConfiguration,
                     serviceCollection);
+        }
+
+        static TransportTransactionMode GetTransportTransactionMode()
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var attribute = assembly.GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
+
+                if (attribute != null)
+                {
+                    return attribute.SendsAtomicWithReceive ? TransportTransactionMode.SendsAtomicWithReceive : TransportTransactionMode.ReceiveOnly;
+                }
+            }
+            return TransportTransactionMode.SendsAtomicWithReceive;
         }
     }
 }
