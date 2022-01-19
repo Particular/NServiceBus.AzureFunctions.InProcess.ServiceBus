@@ -45,7 +45,7 @@
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
             var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config);
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, null);
             configurationFactory?.Invoke(serviceBusConfiguration);
             RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }

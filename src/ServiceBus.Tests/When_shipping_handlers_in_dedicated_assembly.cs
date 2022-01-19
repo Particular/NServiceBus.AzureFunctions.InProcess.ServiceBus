@@ -24,7 +24,7 @@
 
             var serviceCollection = new ServiceCollection();
 
-            var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest", default);
+            var configuration = new ServiceBusTriggeredEndpointConfiguration("assemblyTest", default, null);
             configuration.UseSerialization<XmlSerializer>();
 
             var endpointConfiguration = configuration.AdvancedConfiguration;
