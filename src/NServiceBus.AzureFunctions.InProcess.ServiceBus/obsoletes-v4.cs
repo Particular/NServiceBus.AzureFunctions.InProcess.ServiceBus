@@ -14,45 +14,30 @@ namespace NServiceBus
                     RemoveInVersion = "5")]
         public string ServiceBusConnectionString { get; set; }
 
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
         [ObsoleteEx(
             TreatAsErrorFromVersion = "4",
             RemoveInVersion = "5")]
         public ServiceBusTriggeredEndpointConfiguration(IConfiguration configuration)
             => throw new NotImplementedException();
 
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
         [ObsoleteEx(
             TreatAsErrorFromVersion = "4",
             RemoveInVersion = "5")]
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration = null)
             => throw new NotImplementedException();
 
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
         [ObsoleteEx(
             TreatAsErrorFromVersion = "4",
             RemoveInVersion = "5")]
         public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null)
             => throw new NotImplementedException();
 
-        /// <summary>
-        /// Creates a serverless NServiceBus endpoint.
-        /// </summary>
         [ObsoleteEx(
             TreatAsErrorFromVersion = "4",
             RemoveInVersion = "5")]
         public ServiceBusTriggeredEndpointConfiguration(string endpointName)
             => throw new NotImplementedException();
 
-        /// <summary>
-        /// Define a transport to be used when sending and publishing messages.
-        /// </summary>
         [ObsoleteEx(
             TreatAsErrorFromVersion = "4",
             RemoveInVersion = "5")]
@@ -63,9 +48,6 @@ namespace NServiceBus
 
     public static partial class FunctionsHostBuilderExtensions
     {
-        /// <summary>
-        /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
-        /// </summary>
         [ObsoleteEx(
             TreatAsErrorFromVersion = "4",
             RemoveInVersion = "5")]
@@ -74,3 +56,5 @@ namespace NServiceBus
             Func<ServiceBusTriggeredEndpointConfiguration> configurationFactory) => new NotImplementedException();
     }
 }
+
+#pragma warning restore 1591
