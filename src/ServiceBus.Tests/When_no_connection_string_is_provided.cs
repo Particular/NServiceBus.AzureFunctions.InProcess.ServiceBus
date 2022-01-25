@@ -18,7 +18,7 @@
                 Environment.SetEnvironmentVariable(defaultConnectionStringKey, null, EnvironmentVariableTarget.Process);
 
                 var exception = Assert.Throws<Exception>(
-                    () => new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", default),
+                    () => new ServiceBusTriggeredEndpointConfiguration("SampleEndpoint", default, null),
                     "Exception should be thrown at endpoint creation so that the error will be found during functions startup"
                 );
 
