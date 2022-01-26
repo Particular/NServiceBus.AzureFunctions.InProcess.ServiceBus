@@ -80,7 +80,7 @@
                 var serviceBusOptions = configuration.GetSection("AzureFunctionsJobHost:extensions:ServiceBus")
                     .Get<ServiceBusOptions>();
 
-                if (!serviceBusOptions.EnableCrossEntityTransactions)
+                if (serviceBusOptions == null || serviceBusOptions.EnableCrossEntityTransactions)
                 {
                     throw new Exception("SendsAtomicWithReceive mode requires EnableCrossEntityTransactions needs to be enabled on the ServiceBusOptions.");
                 }
