@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="8.0.0-alpha.1900" />
+    <PackageReference Include="NServiceBus" Version="8.0.0-alpha.3021" />
   </ItemGroup>
 
 </Project>
