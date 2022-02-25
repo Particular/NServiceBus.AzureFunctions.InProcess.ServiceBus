@@ -43,7 +43,7 @@ jobs:
           ref: 'refs/pull/${{ github.event.number }}/merge'
           fetch-depth: 0
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v1.9.1
+        uses: actions/setup-dotnet@v2
         with:
           dotnet-version: |
             6.0.x
