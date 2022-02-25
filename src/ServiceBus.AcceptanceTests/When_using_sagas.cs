@@ -52,7 +52,7 @@
 
                 protected override void ConfigureHowToFindSaga(SagaPropertyMapper<DemoSagaData> mapper)
                 {
-                     mapper.MapSaga(saga => saga.CorrelationProperty)
+                    mapper.MapSaga(saga => saga.CorrelationProperty)
                             .ToMessage<StartSagaMessage>(m => m.CorrelationProperty)
                             .ToMessage<UpdateSagaMessage>(m => m.CorrelationProperty)
                             .ToMessage<ReadSagaDataValueMessage>(m => m.CorrelationProperty);
