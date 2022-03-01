@@ -29,7 +29,7 @@
         public Task StartReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
         public Task StopReceive(CancellationToken cancellationToken) => Task.CompletedTask;
-        public Task ChangeConcurrency(PushRuntimeSettings limitations, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public Task ChangeConcurrency(PushRuntimeSettings limitations, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public ISubscriptionManager Subscriptions => baseTransportReceiver.Subscriptions;
         public string Id => baseTransportReceiver.Id;
