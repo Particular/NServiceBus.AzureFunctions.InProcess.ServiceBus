@@ -17,7 +17,7 @@
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="[1.9.0, 2.0.0)" />
     <PackageReference Include="NServiceBus.Extensions.DependencyInjection" Version="[1.0.1, 2.0.0)" />
     <PackageReference Include="Obsolete.Fody" Version="5.3.0" PrivateAssets="All" />
-    <PackageReference Include="Particular.Packaging" Version="1.4.0" PrivateAssets="All" />
+    <PackageReference Include="Particular.Packaging" Version="2.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <Target Name="AddSourceGeneratorToPackage" BeforeTargets="_GetPackageFiles">
