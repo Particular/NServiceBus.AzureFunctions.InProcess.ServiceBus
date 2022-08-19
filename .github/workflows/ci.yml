@@ -5,16 +5,11 @@ on:
       - master
       - release-*
   pull_request:
-  pull_request_target:
   workflow_dispatch:
 env:
   DOTNET_NOLOGO: true
 jobs:
   build:
-    if:
-      (github.event_name == 'pull_request_target' && github.event.pull_request.user.login == 'dependabot[bot]') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]') ||
-      github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -32,18 +27,11 @@ jobs:
         shell: pwsh
         run: exit $(If ($env:SECRETS_AVAILABLE -eq 'true') { 0 } Else { 1 })
       - name: Checkout
-        if: github.event_name != 'pull_request_target'
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3.0.2
         with:
-          fetch-depth: 0
-      - name: Checkout for Dependabot
-        if: github.event_name == 'pull_request_target'
-        uses: actions/checkout@v2.3.4
-        with:
-          ref: 'refs/pull/${{ github.event.number }}/merge'
-          fetch-depth: 0
+          fetch-depth: 0    
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v1.9.0
+        uses: actions/setup-dotnet@v2.1.0
         with:
           dotnet-version: |
             6.0.x
@@ -52,37 +40,19 @@ jobs:
         run: dotnet build src --configuration Release
       - name: Upload packages
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v2.2.2
+        uses: actions/upload-artifact@v3.1.0
         with:
           name: NuGet packages
           path: nugets/
           retention-days: 7
       - name: Azure login
-        uses: azure/login@v1.3.0
+        uses: azure/login@v1.4.5
         with:
           creds: ${{ secrets.AZURE_ACI_CREDENTIALS }}
-      - name: Setup test infrastructure
-        id: infra
-        shell: pwsh
-        run: |
-          $name = "psw-asb-$(Get-Random)"
-          echo "::set-output name=name::$name"
-          $dateTag = "Created=$(Get-Date -Format "yyyy-MM-dd")"
-
-          echo "Creating Azure Service Bus namespace $name (This can take awhile.)"
-          $details = az servicebus namespace create --resource-group GitHubActions-RG --name $name --tags Package=ASBFunctions RunnerOS=${{ runner.os }} $dateTag | ConvertFrom-Json
-
-          echo "Getting connection string"
-          $keys = az servicebus namespace authorization-rule keys list --resource-group GitHubActions-RG --namespace-name $name --name RootManageSharedAccessKey | ConvertFrom-Json
-          $connectString = $keys.primaryConnectionString
-          echo "::add-mask::$connectString"
-
-          echo "AzureWebJobsServiceBus=$connectString" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+      - name: Setup Azure Service Bus
+        uses: Particular/setup-azureservicebus-action@v1.0.0
+        with:
+          connection-string-name: AzureWebJobsServiceBus
+          tag: ASBFunctions
       - name: Run  tests
-        uses: Particular/run-tests-action@v1.0.0
-      - name: Teardown infrastructure
-        if: ${{ always() }}
-        continue-on-error: true
-        shell: pwsh
-        run: |
-          $ignore = az servicebus namespace delete --resource-group GitHubActions-RG --name ${{ steps.infra.outputs.name }}
+        uses: Particular/run-tests-action@v1.3.0
