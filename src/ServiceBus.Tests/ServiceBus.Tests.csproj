@@ -1,31 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\NServiceBusTests.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
     <ProjectReference Include="..\Testing.Handlers\Testing.Handlers.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="GitHubActionsTestLogger" Version="2.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="8.0.0-beta.5" />
+    <PackageReference Include="NServiceBus" Version="8.0.0-rc.1" />
     <PackageReference Include="Particular.Approvals" Version="0.3.0" />
     <PackageReference Include="PublicApiGenerator" Version="10.3.0" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="..\Testing.Handlers\bin\$(Configuration)\$(TargetFramework)\Testing.Handlers.dll" Link="ExternalHandlers\Testing.Handlers.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
 </Project>

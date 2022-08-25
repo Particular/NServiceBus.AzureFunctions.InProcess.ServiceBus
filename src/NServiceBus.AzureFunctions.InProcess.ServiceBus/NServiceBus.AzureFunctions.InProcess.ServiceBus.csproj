@@ -1,34 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\NServiceBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\NServiceBus.AzureFunctions.SourceGenerator\NServiceBus.AzureFunctions.SourceGenerator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.7.0" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="[3.0.0-beta.1, 4.0.0)" />
-    <PackageReference Include="NServiceBus" Version="[8.0.0-beta.2, 9.0.0)" />
+    <PackageReference Include="NServiceBus" Version="8.0.0-rc.1,9.0.0)" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="[3.0.0-beta.1, 4.0.0)" />
     <PackageReference Include="Obsolete.Fody" Version="5.3.0" PrivateAssets="All" />
     <PackageReference Include="Particular.Packaging" Version="2.2.0" PrivateAssets="All" />
   </ItemGroup>
-
   <Target Name="AddSourceGeneratorToPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\bin\$(Configuration)\**\NServiceBus.AzureFunctions.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.SourceGenerator.dll" />
     </ItemGroup>
   </Target>
-
   <ItemGroup>
     <InternalsVisibleTo Include="ServiceBus.Tests" Key="$(NServiceBusTestsKey)" />
     <InternalsVisibleTo Include="ServiceBus.AcceptanceTests" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
-
 </Project>
