@@ -80,7 +80,7 @@
             var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
             Routing = new RoutingSettings<AzureServiceBusTransport>(serverlessRouting.GetSettings());
 
-            endpointConfiguration.UseSerialization<NewtonsoftSerializer>();
+            endpointConfiguration.UseSerialization<NewtonsoftJsonSerializer>();
 
             AdvancedConfiguration = endpointConfiguration;
         }
