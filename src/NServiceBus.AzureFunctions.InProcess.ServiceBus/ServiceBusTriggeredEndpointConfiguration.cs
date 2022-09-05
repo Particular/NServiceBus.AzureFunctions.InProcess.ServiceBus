@@ -92,7 +92,10 @@
             recoverability.Immediate(settings => settings.NumberOfRetries(5));
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
 
+#pragma warning disable CS0618
+            // Changing this to NewtonsoftJsonSerializer would be a breaking change.
             EndpointConfiguration.UseSerialization<NewtonsoftSerializer>();
+#pragma warning restore CS0618
         }
 
         static string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)

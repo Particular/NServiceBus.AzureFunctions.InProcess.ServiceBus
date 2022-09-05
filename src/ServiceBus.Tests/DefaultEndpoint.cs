@@ -41,7 +41,7 @@
                 return type.Name;
             });
 
-            configuration.UseSerialization<NewtonsoftSerializer>();
+            configuration.UseSerialization<NewtonsoftJsonSerializer>();
 
             configurationBuilderCustomization(configuration);
 
