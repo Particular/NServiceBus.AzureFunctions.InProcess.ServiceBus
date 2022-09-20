@@ -25,6 +25,11 @@
       <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\bin\$(Configuration)\**\NServiceBus.AzureFunctions.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.SourceGenerator.dll" />
     </ItemGroup>
   </Target>
+  
+  <ItemGroup>
+    <None Remove="build*\*" />
+    <Content Include="build\*" PackagePath="build" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="ServiceBus.Tests" Key="$(NServiceBusTestsKey)" />
