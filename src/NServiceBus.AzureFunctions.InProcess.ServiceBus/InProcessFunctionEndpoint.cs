@@ -10,6 +10,7 @@
     using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
     using Transport;
+    using Transport.AzureServiceBus;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     class InProcessFunctionEndpoint : IFunctionEndpoint
@@ -155,35 +156,31 @@
 
             try
             {
-                using (var transaction = CreateTransaction())
+                using (var azureServiceBusTransaction = CreateTransaction(message.PartitionKey, serviceBusClient))
                 {
-                    var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
-
-                    var messageContext = CreateMessageContext(message, transportTransaction);
+                    var messageContext = CreateMessageContext(message, azureServiceBusTransaction.TransportTransaction);
 
                     await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
-                    await SafeCompleteMessageAsync(messageActions, message, transaction, cancellationToken).ConfigureAwait(false);
-                    transaction.Commit();
+                    await SafeCompleteMessageAsync(messageActions, message, azureServiceBusTransaction, cancellationToken).ConfigureAwait(false);
+                    azureServiceBusTransaction.Commit();
                 }
             }
             catch (Exception exception)
             {
                 ErrorHandleResult result;
-                using (var transaction = CreateTransaction())
+                using (var azureServiceBusTransaction = CreateTransaction(message.PartitionKey, serviceBusClient))
                 {
-                    var transportTransaction = CreateTransportTransaction(message.PartitionKey, transaction, serviceBusClient);
-
-                    var errorContext = CreateErrorContext(message, transportTransaction, exception);
+                    var errorContext = CreateErrorContext(message, azureServiceBusTransaction.TransportTransaction, exception);
 
                     result = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
 
                     if (result == ErrorHandleResult.Handled)
                     {
-                        await SafeCompleteMessageAsync(messageActions, message, transaction, cancellationToken).ConfigureAwait(false);
+                        await SafeCompleteMessageAsync(messageActions, message, azureServiceBusTransaction, cancellationToken).ConfigureAwait(false);
                     }
 
-                    transaction.Commit();
+                    azureServiceBusTransaction.Commit();
                 }
 
                 if (result != ErrorHandleResult.Handled)
@@ -219,26 +216,15 @@
             return messageContext;
         }
 
-        static TransportTransaction CreateTransportTransaction(string messagePartitionKey, CommittableTransaction transaction, ServiceBusClient serviceBusClient)
+        static async Task SafeCompleteMessageAsync(ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, AzureServiceBusTransportTransaction azureServiceBusTransaction, CancellationToken cancellationToken = default)
         {
-            var transportTransaction = new TransportTransaction();
-            transportTransaction.Set(serviceBusClient);
-            transportTransaction.Set("IncomingQueue.PartitionKey", messagePartitionKey);
-            transportTransaction.Set(transaction);
-            return transportTransaction;
+            using var scope = azureServiceBusTransaction.ToTransactionScope();
+            await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+            scope.Complete();
         }
 
-        static async Task SafeCompleteMessageAsync(ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, Transaction committableTransaction, CancellationToken cancellationToken = default)
-        {
-            using (var scope = new TransactionScope(committableTransaction, TransactionScopeAsyncFlowOption.Enabled))
-            {
-                await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
-                scope.Complete();
-            }
-        }
-
-        static CommittableTransaction CreateTransaction() =>
-            new CommittableTransaction(new TransactionOptions
+        static AzureServiceBusTransportTransaction CreateTransaction(string messagePartitionKey, ServiceBusClient serviceBusClient) =>
+            new(serviceBusClient, messagePartitionKey, new TransactionOptions
             {
                 IsolationLevel = IsolationLevel.Serializable,
                 Timeout = TransactionManager.MaximumTimeout
