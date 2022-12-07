@@ -40,7 +40,7 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint.
         /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, string connectionString = default)
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, bool atomicSendsWithReceive, string connectionString = default)
         {
             var endpointConfiguration = new EndpointConfiguration(endpointName);
 
@@ -74,9 +74,13 @@
                 }
             }
 
-            Transport = new AzureServiceBusTransport(connectionString);
+            Transport = new AzureServiceBusTransport(connectionString)
+            {
+                TransportTransactionMode = atomicSendsWithReceive ? TransportTransactionMode.SendsAtomicWithReceive : TransportTransactionMode.ReceiveOnly
+            };
 
             serverlessTransport = new ServerlessTransport(Transport);
+
             var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
             Routing = new RoutingSettings<AzureServiceBusTransport>(serverlessRouting.GetSettings());
 

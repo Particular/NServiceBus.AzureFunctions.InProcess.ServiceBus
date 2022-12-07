@@ -19,11 +19,11 @@
             this IFunctionsHostBuilder functionsHostBuilder,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
+            functionAttribute ??= Assembly.GetCallingAssembly().GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
+
             var hostConfiguration = functionsHostBuilder.GetContext().Configuration;
             var endpointName = hostConfiguration.GetValue<string>("ENDPOINT_NAME")
-                ?? Assembly.GetCallingAssembly()
-                    .GetCustomAttribute<NServiceBusTriggerFunctionAttribute>()
-                    ?.EndpointName;
+                ?? functionAttribute?.EndpointName;
 
             if (string.IsNullOrWhiteSpace(endpointName))
             {
@@ -44,8 +44,12 @@
             string endpointName,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
+            functionAttribute ??= Assembly.GetCallingAssembly().GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
+
             var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, null);
+            var atomicSendsWithReceive = functionAttribute != null && functionAttribute.SendsAtomicWithReceive;
+
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, atomicSendsWithReceive, null);
             configurationFactory?.Invoke(serviceBusConfiguration);
             RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }
@@ -59,8 +63,12 @@
             string connectionString,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
+            functionAttribute ??= Assembly.GetCallingAssembly().GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
+
             var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, connectionString);
+            var atomicSendsWithReceive = functionAttribute != null && functionAttribute.SendsAtomicWithReceive;
+
+            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, atomicSendsWithReceive, connectionString);
             configurationFactory?.Invoke(serviceBusConfiguration);
             RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
         }
@@ -72,6 +80,8 @@
             this IFunctionsHostBuilder functionsHostBuilder,
             Func<IConfiguration, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
+            functionAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
+
             var configuration = functionsHostBuilder.GetContext().Configuration;
             var serviceBusTriggeredEndpointConfiguration = configurationFactory(configuration);
 
@@ -109,5 +119,7 @@
                     endpointConfiguration,
                     serviceCollection);
         }
+
+        static NServiceBusTriggerFunctionAttribute functionAttribute;
     }
 }
