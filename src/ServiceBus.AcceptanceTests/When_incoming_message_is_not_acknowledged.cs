@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.Pipeline;
@@ -17,15 +18,17 @@
             var context = await Scenario.Define<Context>()
                 .WithComponent(new FunctionHandler(transactionMode))
                 .WithEndpoint<SpyEndpoint>()
-                .Done(c => c.MessageReceived)
+                .Done(c => c.MessageReceived && c.MessageRetried)
                 .Run();
 
+            Assert.True(context.MessageRetried);
             Assert.True(context.MessageReceived);
         }
 
         public class Context : ScenarioContext
         {
             public bool MessageReceived { get; set; }
+            public bool MessageRetried { get; set; }
         }
 
         class FunctionHandler : FunctionEndpointComponent
@@ -34,12 +37,14 @@
             {
                 CustomizeConfiguration = configuration =>
                 {
-                    configuration.AdvancedConfiguration.Pipeline.Register(new FailBeforeAckBehavior(),
+                    configuration.AdvancedConfiguration.Pipeline.Register(b => new FailBeforeAckBehavior(b.GetRequiredService<Context>()),
                         "Simulates a failure in ACKing the incoming message");
                     configuration.AdvancedConfiguration.EnableOutbox();
                     configuration.AdvancedConfiguration.UsePersistence<NonDurablePersistence>();
+                    configuration.AdvancedConfiguration.Recoverability().Immediate(x => x.NumberOfRetries(1));
                 };
                 Messages.Add(new HappyDayMessage());
+                DoNotFailOnErrorMessages = true;
             }
 
             public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
@@ -80,6 +85,12 @@
         class FailBeforeAckBehavior : Behavior<ITransportReceiveContext>
         {
             bool failed;
+            Context testContext;
+
+            public FailBeforeAckBehavior(Context testContext)
+            {
+                this.testContext = testContext;
+            }
 
             public override async Task Invoke(ITransportReceiveContext context, Func<Task> next)
             {
@@ -89,6 +100,10 @@
                 {
                     failed = true;
                     throw new SimulatedException("Simulating ACK failure");
+                }
+                else
+                {
+                    testContext.MessageRetried = true;
                 }
             }
         }
