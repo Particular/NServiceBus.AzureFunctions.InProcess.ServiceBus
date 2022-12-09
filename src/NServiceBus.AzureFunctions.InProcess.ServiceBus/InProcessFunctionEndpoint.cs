@@ -239,7 +239,11 @@
             "Grpc.Net.ClientFactory.dll",
             "Azure.Identity.dll",
             "Microsoft.Extensions.Azure.dll",
-            "NServiceBus.Extensions.DependencyInjection.dll"
+            "NServiceBus.Extensions.DependencyInjection.dll",
+            "Microsoft.Identity.Client.dll",
+            "Microsoft.Identity.Client.Extensions.Msal.dll",
+            "Azure.Storage.Common.dll",
+            "Azure.Storage.Blobs.dll"
         };
 
         internal async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
