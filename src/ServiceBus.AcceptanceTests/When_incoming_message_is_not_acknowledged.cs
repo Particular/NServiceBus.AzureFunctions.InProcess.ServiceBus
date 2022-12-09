@@ -13,7 +13,7 @@
     {
         //[TestCase(TransportTransactionMode.ReceiveOnly)]
         [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
-        public async Task Should_sent_outgoing_messages_from_the_outbox(TransportTransactionMode transactionMode)
+        public async Task Should_dispatch_outgoing_messages_from_the_outbox(TransportTransactionMode transactionMode)
         {
             var context = await Scenario.Define<Context>()
                 .WithComponent(new FunctionHandler(transactionMode))
