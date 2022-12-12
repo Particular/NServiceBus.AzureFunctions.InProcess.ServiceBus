@@ -74,7 +74,10 @@
                 }
             }
 
-            Transport = new AzureServiceBusTransport(connectionString);
+            Transport = new AzureServiceBusTransport(connectionString)
+            {
+                TransportTransactionMode = TransportTransactionMode.ReceiveOnly
+            };
 
             serverlessTransport = new ServerlessTransport(Transport);
             var serverlessRouting = endpointConfiguration.UseTransport(serverlessTransport);
