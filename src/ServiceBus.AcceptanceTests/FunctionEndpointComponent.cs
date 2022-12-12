@@ -84,7 +84,6 @@
             public override Task Start(CancellationToken token)
             {
                 var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name, default, null);
-                configurationCustomization(functionEndpointConfiguration);
                 var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
 
                 endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
@@ -107,6 +106,8 @@
                                 });
                             return Task.CompletedTask;
                         }));
+
+                configurationCustomization(functionEndpointConfiguration);
 
                 endpointConfiguration.RegisterComponents(c => c.AddSingleton(scenarioContext.GetType(), scenarioContext));
 
@@ -154,33 +155,43 @@
                     await sender.SendMessageAsync(serviceBusMessage, cancellationToken);
 
                     var receiver = client.CreateReceiver(functionInputQueueName);
-                    var receivedMessages = await receiver.ReceiveMessagesAsync(100, cancellationToken: cancellationToken);
 
-                    foreach (var receivedMessage in receivedMessages)
+                    IReadOnlyList<ServiceBusReceivedMessage> receivedMessages;
+                    do
                     {
-                        if (receivedMessage.MessageId != messageId)
-                        {
-                            continue;
-                        }
+                        receivedMessages = await receiver.ReceiveMessagesAsync(100, TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
 
-                        if (sendsAtomicWithReceive)
+                        foreach (var receivedMessage in receivedMessages)
                         {
-                            await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client, serviceBusMessageActionsFactory(receiver, scenarioContext), null, cancellationToken);
-                        }
-                        else
-                        {
-                            try
+                            if (receivedMessage.MessageId != messageId)
                             {
-                                await endpoint.ProcessNonAtomic(receivedMessage, new ExecutionContext(), null, cancellationToken);
                                 await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
+                                continue;
                             }
-                            catch (Exception)
+
+                            if (sendsAtomicWithReceive)
                             {
-                                await receiver.AbandonMessageAsync(receivedMessage, cancellationToken: cancellationToken);
-                                throw;
+                                await endpoint.ProcessAtomic(receivedMessage, new ExecutionContext(), client,
+                                    serviceBusMessageActionsFactory(receiver, scenarioContext), null,
+                                    cancellationToken);
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    await endpoint.ProcessNonAtomic(receivedMessage, new ExecutionContext(), null,
+                                        cancellationToken);
+                                    await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
+                                }
+                                catch (Exception)
+                                {
+                                    await receiver.AbandonMessageAsync(receivedMessage,
+                                        cancellationToken: cancellationToken);
+                                    throw;
+                                }
                             }
                         }
-                    }
+                    } while (receivedMessages.Count > 0);
                 }
             }
 
