@@ -4,10 +4,13 @@
     using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
+    using AzureFunctions.InProcess.ServiceBus.Serverless;
     using Configuration.AdvancedExtensibility;
     using Logging;
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
     using Serialization;
+    using Settings;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint.
@@ -49,6 +52,9 @@
             recoverability.Delayed(settings => settings.NumberOfRetries(3));
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             recoverability.CustomPolicy(recoverabilityPolicy.Invoke);
+
+            endpointConfiguration.Pipeline.Register(b => new OutboxProcessingValidationBehavior(b.GetRequiredService<IReadOnlySettings>()),
+                "Validates the API calls preventing calling ProcessAtomic if the Outbox is enabled.");
 
             endpointConfiguration.CustomDiagnosticsWriter(customDiagnosticsWriter);
 

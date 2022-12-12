@@ -11,8 +11,7 @@
 
     public class When_incoming_message_is_not_acknowledged
     {
-        //[TestCase(TransportTransactionMode.ReceiveOnly)]
-        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        [TestCase(TransportTransactionMode.ReceiveOnly)]
         public async Task Should_dispatch_outgoing_messages_from_the_outbox(TransportTransactionMode transactionMode)
         {
             var context = await Scenario.Define<Context>()

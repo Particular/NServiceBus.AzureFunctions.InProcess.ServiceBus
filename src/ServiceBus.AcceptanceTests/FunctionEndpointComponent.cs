@@ -187,7 +187,11 @@
                                 {
                                     await receiver.AbandonMessageAsync(receivedMessage,
                                         cancellationToken: cancellationToken);
-                                    throw;
+                                    if (!doNotFailOnErrorMessages)
+                                    {
+                                        throw;
+
+                                    }
                                 }
                             }
                         }
