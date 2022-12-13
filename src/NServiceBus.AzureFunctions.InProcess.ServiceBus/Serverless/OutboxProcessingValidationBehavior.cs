@@ -8,8 +8,6 @@ using Settings;
 
 class OutboxProcessingValidationBehavior : IBehavior<ITransportReceiveContext, ITransportReceiveContext>
 {
-    bool outboxEnabled;
-
     public OutboxProcessingValidationBehavior(IReadOnlySettings settings)
     {
         outboxEnabled = settings.IsFeatureActive(typeof(Outbox));
@@ -17,8 +15,7 @@ class OutboxProcessingValidationBehavior : IBehavior<ITransportReceiveContext, I
 
     public Task Invoke(ITransportReceiveContext context, Func<ITransportReceiveContext, Task> next)
     {
-        var state = context.Extensions.Get<State>();
-        if (outboxEnabled && state.IsAtomic)
+        if (outboxEnabled && context.Extensions.Get<FunctionInvocationMode>().Atomic)
         {
             throw new Exception("Calling ProcessAtomic is not possible when the Outbox is enabled as it would cause a message loss in certain scenarios. Use ProcessNonAtomic for endpoints with Outbox.");
         }
@@ -26,8 +23,5 @@ class OutboxProcessingValidationBehavior : IBehavior<ITransportReceiveContext, I
         return next(context);
     }
 
-    public class State
-    {
-        public bool IsAtomic { get; set; }
-    }
+    readonly bool outboxEnabled;
 }

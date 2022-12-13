@@ -82,6 +82,8 @@
 
             Transport = new AzureServiceBusTransport(connectionString)
             {
+                // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
+                // endpoint API (calling ProcessAtomic vs ProcessNonAtomic). Cheers Daniel!
                 TransportTransactionMode = TransportTransactionMode.ReceiveOnly
             };
 

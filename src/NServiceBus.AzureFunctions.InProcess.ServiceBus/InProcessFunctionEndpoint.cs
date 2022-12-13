@@ -208,7 +208,8 @@
         MessageContext CreateMessageContext(ServiceBusReceivedMessage message, TransportTransaction transportTransaction, bool atomic)
         {
             var contextBag = new ContextBag();
-            contextBag.GetOrCreate<OutboxProcessingValidationBehavior.State>().IsAtomic = atomic;
+            var invocationMode = new FunctionInvocationMode(atomic);
+            contextBag.Set(invocationMode);
             var messageContext = new MessageContext(
                 message.MessageId,
                 message.GetHeaders(),
