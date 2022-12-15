@@ -13,11 +13,12 @@
         [Test]
         public async Task Should_not_blow_up()
         {
-            var funcExeFolder = @"C:\Users\andre\AppData\Local\AzureFunctionsTools\Releases\4.30.0\cli_x64";
+            var funcExeFolder = Environment.GetEnvironmentVariable("PathToFuncExe");
+            Assert.IsNotNull(funcExeFolder, $"Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\MyUser\\AppData\\Local\\AzureFunctionsTools\\Releases\\4.30.0\\cli_x64'");
+
             var pathToFuncExe = Path.Combine(funcExeFolder, "func.exe");
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-            //.Parent.Parent.Parent;
-            var port = 7076;
+            var port = 7076; //Use non-standard port to avoid clashing when debugging locally
             var funcProcess = new Process();
             funcProcess.StartInfo.WorkingDirectory = functionRootDir.FullName;
             funcProcess.StartInfo.Arguments = $"start --port {port} --no-build --verbose";
