@@ -3,6 +3,8 @@
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Net.Http;
+    using System.Threading;
     using System.Threading.Tasks;
     using NUnit.Framework;
 
@@ -13,12 +15,12 @@
         {
             var funcExeFolder = @"C:\Users\andre\AppData\Local\AzureFunctionsTools\Releases\4.30.0\cli_x64";
             var pathToFuncExe = Path.Combine(funcExeFolder, "func.exe");
-            var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory)
-                .Parent.Parent.Parent;
-
+            var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+            //.Parent.Parent.Parent;
+            var port = 7076;
             var funcProcess = new Process();
             funcProcess.StartInfo.WorkingDirectory = functionRootDir.FullName;
-            funcProcess.StartInfo.Arguments = "start --port 7075 --no-build";
+            funcProcess.StartInfo.Arguments = $"start --port {port} --no-build --verbose";
             funcProcess.StartInfo.FileName = pathToFuncExe;
 
             funcProcess.StartInfo.UseShellExecute = false;
@@ -32,11 +34,48 @@
             funcProcess.BeginOutputReadLine();
             funcProcess.BeginErrorReadLine();
 
-            //await funcProcess.WaitForExitAsync().ConfigureAwait(false);
 
-            await Task.Delay(3000).ConfigureAwait(false);
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var httpClient = new HttpClient();
+            var hasResult = false;
 
-            Assert.AreEqual(0, funcProcess.ExitCode);
+            try
+            {
+                while (!cancellationTokenSource.IsCancellationRequested && !hasResult)
+                {
+                    try
+                    {
+                        var result = await httpClient.GetAsync($"http://localhost:{port}/api/InProcessHttpSenderV4", cancellationTokenSource.Token);
+
+                        result.EnsureSuccessStatusCode();
+
+                        hasResult = true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        TestContext.Out.WriteLine(ex.Message);
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                    }
+                }
+
+                funcProcess.Kill();
+            }
+            finally
+            {
+                try
+                {
+                    await funcProcess.WaitForExitAsync(cancellationTokenSource.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    funcProcess.Kill();
+                }
+            }
+
+            Assert.True(hasResult);
         }
         static void DataReceived(object sender, DataReceivedEventArgs e)
         {
@@ -45,7 +84,7 @@
                 return;
             }
 
-            Console.WriteLine(e.Data);
+            TestContext.Out.WriteLine(e.Data);
         }
     }
 }
