@@ -18,7 +18,7 @@
 
             var funcProcess = new Process();
             funcProcess.StartInfo.WorkingDirectory = functionRootDir.FullName;
-            funcProcess.StartInfo.Arguments = "start --port 7072 --no-build";
+            funcProcess.StartInfo.Arguments = "start --port 7075 --no-build";
             funcProcess.StartInfo.FileName = pathToFuncExe;
 
             funcProcess.StartInfo.UseShellExecute = false;
@@ -32,15 +32,20 @@
             funcProcess.BeginOutputReadLine();
             funcProcess.BeginErrorReadLine();
 
-            await funcProcess.WaitForExitAsync().ConfigureAwait(false);
+            //await funcProcess.WaitForExitAsync().ConfigureAwait(false);
+
+            await Task.Delay(3000).ConfigureAwait(false);
 
             Assert.AreEqual(0, funcProcess.ExitCode);
         }
         static void DataReceived(object sender, DataReceivedEventArgs e)
         {
+            if (string.IsNullOrEmpty(e.Data))
+            {
+                return;
+            }
 
-            string strMessage = e.Data;
-            Console.WriteLine(strMessage);
+            Console.WriteLine(e.Data);
         }
     }
 }
