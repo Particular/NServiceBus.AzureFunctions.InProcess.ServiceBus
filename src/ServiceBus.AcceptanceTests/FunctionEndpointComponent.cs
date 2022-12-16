@@ -159,7 +159,7 @@
                     IReadOnlyList<ServiceBusReceivedMessage> receivedMessages;
                     do
                     {
-                        receivedMessages = await receiver.ReceiveMessagesAsync(100, TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
+                        receivedMessages = await receiver.ReceiveMessagesAsync(100, TimeSpan.FromSeconds(5), cancellationToken: cancellationToken);
 
                         foreach (var receivedMessage in receivedMessages)
                         {
@@ -196,6 +196,13 @@
                             }
                         }
                     } while (receivedMessages.Count > 0);
+                }
+                if (!doNotFailOnErrorMessages)
+                {
+                    if (scenarioContext.FailedMessages.TryGetValue(Name, out var failedMessages))
+                    {
+                        throw new MessageFailedException(failedMessages.First(), scenarioContext);
+                    }
                 }
             }
 
