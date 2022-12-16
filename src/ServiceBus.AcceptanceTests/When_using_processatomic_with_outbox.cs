@@ -43,7 +43,6 @@
                         "Simulates a failure in ACKing the incoming message");
                     configuration.AdvancedConfiguration.EnableOutbox();
                     configuration.AdvancedConfiguration.UsePersistence<NonDurablePersistence>();
-                    //configuration.AdvancedConfiguration.Recoverability().Immediate(x => x.NumberOfRetries(1));
                 };
                 Messages.Add(new HappyDayMessage());
             }
