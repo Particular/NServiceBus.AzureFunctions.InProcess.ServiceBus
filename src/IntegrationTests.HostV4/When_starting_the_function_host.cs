@@ -11,6 +11,7 @@
     public class When_starting_the_function_host
     {
         [Test]
+
         public async Task Should_not_blow_up()
         {
             var funcExeFolder = Environment.GetEnvironmentVariable("PathToFuncExe");
@@ -20,6 +21,12 @@
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
             var port = 7076; //Use non-standard port to avoid clashing when debugging locally
             var funcProcess = new Process();
+            var httpClient = new HttpClient();
+            var hasResult = false;
+            var hostFailed = false;
+            var handlerCalled = false;
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
             funcProcess.StartInfo.WorkingDirectory = functionRootDir.FullName;
             funcProcess.StartInfo.Arguments = $"start --port {port} --no-build --verbose";
             funcProcess.StartInfo.FileName = pathToFuncExe;
@@ -28,16 +35,36 @@
             funcProcess.StartInfo.RedirectStandardOutput = true;
             funcProcess.StartInfo.RedirectStandardError = true;
             funcProcess.StartInfo.CreateNoWindow = true;
-            funcProcess.ErrorDataReceived += DataReceived;
-            funcProcess.OutputDataReceived += DataReceived;
+            funcProcess.ErrorDataReceived += (object sender, DataReceivedEventArgs e) =>
+            {
+                if (e.Data == null)
+                {
+                    return;
+                }
+
+                hostFailed = true;
+                TestContext.Out.WriteLine(e.Data);
+
+                cancellationTokenSource.Cancel();
+            };
+            funcProcess.OutputDataReceived += (object sender, DataReceivedEventArgs e) =>
+            {
+                if (e.Data == null)
+                {
+                    return;
+                }
+
+                TestContext.Out.WriteLine(e.Data);
+
+                if (e.Data.Contains($"Handling {nameof(SomeOtherMessage)}"))
+                {
+                    handlerCalled = true;
+                }
+            };
             funcProcess.EnableRaisingEvents = true;
             funcProcess.Start();
             funcProcess.BeginOutputReadLine();
             funcProcess.BeginErrorReadLine();
-
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var httpClient = new HttpClient();
-            var hasResult = false;
 
             try
             {
@@ -75,16 +102,9 @@
                 }
             }
 
-            Assert.True(hasResult);
-        }
-        static void DataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(e.Data))
-            {
-                return;
-            }
-
-            TestContext.Out.WriteLine(e.Data);
+            Assert.False(hostFailed, "Host should startup without errors");
+            Assert.True(hasResult, "Http trigger should respond successfully");
+            Assert.True(handlerCalled, "Message handlers should be called");
         }
     }
 }
