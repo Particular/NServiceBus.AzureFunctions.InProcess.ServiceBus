@@ -35,7 +35,6 @@
             funcProcess.BeginOutputReadLine();
             funcProcess.BeginErrorReadLine();
 
-
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             var httpClient = new HttpClient();
             var hasResult = false;

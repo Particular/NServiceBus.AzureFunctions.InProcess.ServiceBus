@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>", Scope = "member", Target = "~M:ServiceBus.Tests.When_starting_the_function_host.Should_not_blow_up~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Test project", Scope = "member", Target = "~M:ServiceBus.Tests.When_starting_the_function_host.Should_not_blow_up~System.Threading.Tasks.Task")]
