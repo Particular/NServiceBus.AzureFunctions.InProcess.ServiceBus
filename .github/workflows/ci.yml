@@ -40,14 +40,12 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           choco install azure-functions-core-tools
-        env:
-          PathToFuncExe: C:\ProgramData\chocolatey\lib\azure-functions-core-tools\tools
+          echo "PathToFuncExe=C:\ProgramData\chocolatey\lib\azure-functions-core-tools\tools" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Setup Azure Core tools - Linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get install azure-functions-core-tools -y
-        env:
-          PathToFuncExe: TBD
+          echo "PathToFuncExe=TODO" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
