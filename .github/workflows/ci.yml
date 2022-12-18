@@ -45,7 +45,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get install azure-functions-core-tools -y
-          echo "PathToFuncExe=TODO" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+          echo "PathToFuncExe={value}" >> $GITHUB_ENV
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
