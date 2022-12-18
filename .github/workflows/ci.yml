@@ -36,9 +36,14 @@ jobs:
           dotnet-version: |
             7.0.x
             6.0.x
-      - name: Setup Azure Core tools
+      - name: Setup Azure Core tools - Windows
+        if: runner.os == 'Windows'
         run: |
-          choco install azure-functions-core-tools  
+          choco install azure-functions-core-tools
+      - name: Setup Azure Core tools - Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install azure-functions-core-tools -y
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
