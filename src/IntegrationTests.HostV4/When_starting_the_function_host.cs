@@ -25,7 +25,11 @@
             var hasResult = false;
             var hostFailed = false;
             var handlerCalled = false;
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            var handlerCalledCompletionSource = new TaskCompletionSource<bool>();
+
+            cancellationTokenSource.Token.Register(state => ((TaskCompletionSource<bool>)state)
+              .TrySetResult(false), handlerCalledCompletionSource);
 
             funcProcess.StartInfo.WorkingDirectory = functionRootDir.FullName;
             funcProcess.StartInfo.Arguments = $"start --port {port} --no-build --verbose";
@@ -58,7 +62,7 @@
 
                 if (e.Data.Contains($"Handling {nameof(SomeOtherMessage)}"))
                 {
-                    handlerCalled = true;
+                    handlerCalledCompletionSource.SetResult(true);
                 }
             };
             funcProcess.EnableRaisingEvents = true;
@@ -87,6 +91,8 @@
                         await Task.Delay(TimeSpan.FromSeconds(1));
                     }
                 }
+
+                handlerCalled = await handlerCalledCompletionSource.Task;
 
                 funcProcess.Kill();
             }

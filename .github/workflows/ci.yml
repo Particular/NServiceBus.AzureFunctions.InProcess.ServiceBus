@@ -38,7 +38,7 @@ jobs:
             6.0.x
       - name: Setup Azure Core tools
         run: |
-          choco install azure-functions-core-tools
+          choco install azure-functions-core-tools  
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
