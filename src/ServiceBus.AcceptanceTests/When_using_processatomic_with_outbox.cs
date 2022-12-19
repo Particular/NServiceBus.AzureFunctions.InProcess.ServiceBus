@@ -5,23 +5,26 @@
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
+    using NServiceBus.AcceptanceTesting.Support;
     using NServiceBus.Pipeline;
     using NUnit.Framework;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
-    public class When_incoming_message_is_not_acknowledged
+    public class When_using_processatomic_with_outbox
     {
-        [TestCase(TransportTransactionMode.ReceiveOnly)]
-        public async Task Should_dispatch_outgoing_messages_from_the_outbox(TransportTransactionMode transactionMode)
+        [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
+        public void Should_dispatch_outgoing_messages_from_the_outbox(TransportTransactionMode transactionMode)
         {
-            var context = await Scenario.Define<Context>()
-                .WithComponent(new FunctionHandler(transactionMode))
-                .WithEndpoint<SpyEndpoint>()
-                .Done(c => c.MessageReceived && c.MessageRetried)
-                .Run();
+            var exception = Assert.ThrowsAsync<MessageFailedException>(() =>
+            {
+                return Scenario.Define<Context>()
+                    .WithComponent(new FunctionHandler(transactionMode))
+                    .WithEndpoint<SpyEndpoint>()
+                    .Done(c => c.MessageReceived && c.MessageRetried)
+                    .Run();
+            });
 
-            Assert.True(context.MessageRetried);
-            Assert.True(context.MessageReceived);
+            StringAssert.Contains("Atomic sends with receive is not supported when the Outbox is enabled as it would risk message loss. Set `SendsAtomicWithReceive` to `false` on the `NServiceBusTriggerFunction` attribute or make sure to call `ProcessNonAtomic` instead of `ProcessAtomic` if using a custom trigger.", exception.InnerException.Message);
         }
 
         public class Context : ScenarioContext
@@ -40,10 +43,8 @@
                         "Simulates a failure in ACKing the incoming message");
                     configuration.AdvancedConfiguration.EnableOutbox();
                     configuration.AdvancedConfiguration.UsePersistence<NonDurablePersistence>();
-                    configuration.AdvancedConfiguration.Recoverability().Immediate(x => x.NumberOfRetries(1));
                 };
                 Messages.Add(new HappyDayMessage());
-                DoNotFailOnErrorMessages = true;
             }
 
             public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>

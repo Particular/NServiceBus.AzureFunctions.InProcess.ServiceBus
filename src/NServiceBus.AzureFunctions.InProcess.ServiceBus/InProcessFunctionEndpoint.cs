@@ -6,6 +6,7 @@
     using System.Transactions;
     using Azure.Messaging.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus;
+    using AzureFunctions.InProcess.ServiceBus.Serverless;
     using Extensibility;
     using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
@@ -115,7 +116,7 @@
 
             try
             {
-                var messageContext = CreateMessageContext(message, new TransportTransaction());
+                var messageContext = CreateMessageContext(message, new TransportTransaction(), false);
 
                 await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
@@ -158,7 +159,7 @@
             {
                 using (var azureServiceBusTransaction = CreateTransaction(message.PartitionKey, serviceBusClient))
                 {
-                    var messageContext = CreateMessageContext(message, azureServiceBusTransaction.TransportTransaction);
+                    var messageContext = CreateMessageContext(message, azureServiceBusTransaction.TransportTransaction, true);
 
                     await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
@@ -204,15 +205,18 @@
             return errorContext;
         }
 
-        MessageContext CreateMessageContext(ServiceBusReceivedMessage message, TransportTransaction transportTransaction)
+        MessageContext CreateMessageContext(ServiceBusReceivedMessage message, TransportTransaction transportTransaction, bool atomic)
         {
+            var contextBag = new ContextBag();
+            var invocationMode = new FunctionInvocationMode(atomic);
+            contextBag.Set(invocationMode);
             var messageContext = new MessageContext(
                 message.MessageId,
                 message.GetHeaders(),
                 message.Body,
                 transportTransaction,
                 pipeline.ReceiveAddress,
-                new ContextBag());
+                contextBag);
             return messageContext;
         }
 

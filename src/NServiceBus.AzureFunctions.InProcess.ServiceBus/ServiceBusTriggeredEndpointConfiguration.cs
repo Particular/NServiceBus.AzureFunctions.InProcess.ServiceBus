@@ -4,10 +4,13 @@
     using System.Threading;
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
+    using AzureFunctions.InProcess.ServiceBus.Serverless;
     using Configuration.AdvancedExtensibility;
     using Logging;
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
     using Serialization;
+    using Settings;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint.
@@ -50,6 +53,9 @@
             recoverabilityPolicy.SendFailedMessagesToErrorQueue = true;
             recoverability.CustomPolicy(recoverabilityPolicy.Invoke);
 
+            endpointConfiguration.Pipeline.Register(b => new OutboxProcessingValidationBehavior(b.GetRequiredService<IReadOnlySettings>()),
+                "Validates the API calls preventing calling ProcessAtomic if the Outbox is enabled.");
+
             endpointConfiguration.CustomDiagnosticsWriter(customDiagnosticsWriter);
 
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
@@ -76,6 +82,8 @@
 
             Transport = new AzureServiceBusTransport(connectionString)
             {
+                // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
+                // endpoint API (calling ProcessAtomic vs ProcessNonAtomic). Cheers Daniel!
                 TransportTransactionMode = TransportTransactionMode.ReceiveOnly
             };
 
