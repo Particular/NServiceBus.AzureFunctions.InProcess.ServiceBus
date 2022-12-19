@@ -9,12 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.Tests", "Service
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{93BBDA95-B60E-4BF2-BCFE-4D756E7EC78C}"
 	ProjectSection(SolutionItems) = preProject
-		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
 		Custom.Build.props = Custom.Build.props
 		..\README.md = ..\README.md
-		..\.github\workflows\release.yml = ..\.github\workflows\release.yml
-		..\.github\workflows\stale.yml = ..\.github\workflows\stale.yml
-		..\.github\workflows\virus-scan.yml = ..\.github\workflows\virus-scan.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing.Handlers", "Testing.Handlers\Testing.Handlers.csproj", "{F922CF8D-9012-4D04-84FF-3C923F79A075}"
