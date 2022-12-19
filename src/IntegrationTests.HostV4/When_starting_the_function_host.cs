@@ -1,13 +1,20 @@
 ﻿namespace ServiceBus.Tests
 {
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using NUnit.Framework;
+
     public class When_starting_the_function_host
     {
         [Test]
-
         public async Task Should_not_blow_up()
         {
             var pathToFuncExe = Environment.GetEnvironmentVariable("PathToFuncExe");
-            Assert.IsNotNull(funcExeFolder, $"Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\MyUser\\AppData\\Local\\AzureFunctionsTools\\Releases\\4.30.0\\cli_x64'");
+            Assert.IsNotNull(pathToFuncExe, $"Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\MyUser\\AppData\\Local\\AzureFunctionsTools\\Releases\\4.30.0\\cli_x64\\func.exe'");
 
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
             var port = 7076; //Use non-standard port to avoid clashing when debugging locally
