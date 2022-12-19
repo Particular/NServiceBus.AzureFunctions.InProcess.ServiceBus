@@ -20,13 +20,20 @@
             var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsServiceBus");
             Assert.IsNotNull(connectionString, $"Environment variable 'AzureWebJobsServiceBus' should be defined to run tests.");
 
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             var client = new ServiceBusAdministrationClient(connectionString);
 
             const string queueName = "InProcess-HostV4";
+            const string topicName = "bundle-1";
 
-            if (!await client.QueueExistsAsync(queueName))
+            if (!await client.QueueExistsAsync(queueName, cancellationTokenSource.Token))
             {
-                await client.CreateQueueAsync(queueName);
+                await client.CreateQueueAsync(queueName, cancellationTokenSource.Token);
+            }
+
+            if (!await client.TopicExistsAsync(topicName, cancellationTokenSource.Token))
+            {
+                await client.CreateTopicAsync(topicName, cancellationTokenSource.Token);
             }
 
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
@@ -36,7 +43,6 @@
             var hasResult = false;
             var hostFailed = false;
             var handlerCalled = false;
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             var handlerCalledCompletionSource = new TaskCompletionSource<bool>();
 
             cancellationTokenSource.Token.Register(state => ((TaskCompletionSource<bool>)state)
