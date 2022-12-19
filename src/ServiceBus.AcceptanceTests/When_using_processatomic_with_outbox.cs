@@ -24,7 +24,7 @@
                     .Run();
             });
 
-            StringAssert.Contains("Calling ProcessAtomic is not possible when the Outbox is enabled as it would cause a message loss in certain scenarios. Use ProcessNonAtomic for endpoints with Outbox", exception.InnerException.Message);
+            StringAssert.Contains("Atomic sends with receive is not supported when the Outbox is enabled as it would risk message loss. Set `SendsAtomicWithReceive` to `false` on the `NServiceBusTriggerFunction` attribute or make sure to call `ProcessNonAtomic` instead of `ProcessAtomic` if using a custom trigger.", exception.InnerException.Message);
         }
 
         public class Context : ScenarioContext
