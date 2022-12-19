@@ -6,6 +6,7 @@
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Messaging.ServiceBus.Administration;
     using NUnit.Framework;
 
     public class When_starting_the_function_host
@@ -15,6 +16,18 @@
         {
             var pathToFuncExe = Environment.GetEnvironmentVariable("PathToFuncExe");
             Assert.IsNotNull(pathToFuncExe, $"Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\MyUser\\AppData\\Local\\AzureFunctionsTools\\Releases\\4.30.0\\cli_x64\\func.exe'");
+
+            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsServiceBus");
+            Assert.IsNotNull(connectionString, $"Environment variable 'AzureWebJobsServiceBus' should be defined to run tests.");
+
+            var client = new ServiceBusAdministrationClient(connectionString);
+
+            const string queueName = "InProcess-HostV4";
+
+            if (!await client.QueueExistsAsync(queueName))
+            {
+                await client.CreateQueueAsync(queueName);
+            }
 
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
             var port = 7076; //Use non-standard port to avoid clashing when debugging locally
