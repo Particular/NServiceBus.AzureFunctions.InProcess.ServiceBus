@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.AcceptanceTests", "ServiceBus.AcceptanceTests\ServiceBus.AcceptanceTests.csproj", "{259C7716-0038-493C-831F-A9193C94741C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManualTests.HostV4", "ManualTests.HostV4\ManualTests.HostV4.csproj", "{D4B26C04-CD88-4356-922F-CCF69D74F442}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests.HostV4", "IntegrationTests.HostV4\IntegrationTests.HostV4.csproj", "{D4B26C04-CD88-4356-922F-CCF69D74F442}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
