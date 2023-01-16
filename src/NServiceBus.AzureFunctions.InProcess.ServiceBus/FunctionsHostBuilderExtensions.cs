@@ -81,6 +81,7 @@
         static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
             ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
         {
+            var serverless = serviceBusTriggeredEndpointConfiguration.MakeServerless();
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
             var startableEndpoint = Configure(
                 serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration,
@@ -89,6 +90,7 @@
 
             functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
             functionsHostBuilder.Services.AddSingleton(startableEndpoint);
+            functionsHostBuilder.Services.AddSingleton(serverless);
             functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
         }
 

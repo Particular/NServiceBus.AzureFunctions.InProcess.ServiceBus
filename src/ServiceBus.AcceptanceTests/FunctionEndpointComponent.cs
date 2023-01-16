@@ -108,6 +108,7 @@
                         }));
 
                 configurationCustomization(functionEndpointConfiguration);
+                var serverless = functionEndpointConfiguration.MakeServerless();
 
                 endpointConfiguration.RegisterComponents(c => c.AddSingleton(scenarioContext.GetType(), scenarioContext));
 
@@ -117,7 +118,7 @@
                 var startableEndpointWithExternallyManagedContainer = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
                 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-                endpoint = new InProcessFunctionEndpoint(startableEndpointWithExternallyManagedContainer, functionEndpointConfiguration, serviceProvider);
+                endpoint = new InProcessFunctionEndpoint(startableEndpointWithExternallyManagedContainer, serverless, serviceProvider);
 
                 return Task.CompletedTask;
             }
