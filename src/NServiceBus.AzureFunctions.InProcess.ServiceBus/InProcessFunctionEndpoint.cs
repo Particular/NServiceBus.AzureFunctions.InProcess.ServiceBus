@@ -18,10 +18,10 @@
     {
         public InProcessFunctionEndpoint(
             IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
-            ServiceBusTriggeredEndpointConfiguration configuration,
+            ServerlessInterceptor serverlessInterceptor,
             IServiceProvider serviceProvider)
         {
-            this.configuration = configuration;
+            this.serverlessInterceptor = serverlessInterceptor;
             endpointFactory = _ => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
@@ -262,7 +262,7 @@
                         var functionExecutionContext = new FunctionExecutionContext(executionContext, logger);
                         endpoint = await endpointFactory(functionExecutionContext).ConfigureAwait(false);
 
-                        pipeline = configuration.PipelineInvoker;
+                        pipeline = serverlessInterceptor.PipelineInvoker;
                     }
                 }
                 finally
@@ -277,6 +277,6 @@
 
         readonly Func<FunctionExecutionContext, Task<IEndpointInstance>> endpointFactory;
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-        readonly ServiceBusTriggeredEndpointConfiguration configuration;
+        readonly ServerlessInterceptor serverlessInterceptor;
     }
 }
