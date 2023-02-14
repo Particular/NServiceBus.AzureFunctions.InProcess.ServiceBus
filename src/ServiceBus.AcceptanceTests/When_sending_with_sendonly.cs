@@ -7,7 +7,7 @@
     using NServiceBus.AcceptanceTesting.Customization;
     using NUnit.Framework;
 
-    public class When_using_sendonly
+    public class When_sending_with_sendonly
     {
         [Test]
         public async Task Should_send_messages()
