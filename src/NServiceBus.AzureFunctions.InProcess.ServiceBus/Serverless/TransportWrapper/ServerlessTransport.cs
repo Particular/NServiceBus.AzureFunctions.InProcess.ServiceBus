@@ -34,7 +34,7 @@
 
             PipelineInvoker = receivers.Length > 0
                 ? (PipelineInvoker)serverlessTransportInfrastructure.Receivers[MainReceiverId]
-                : new PipelineInvoker(new NullReceiver()); // send-only endpoint
+                : new PipelineInvoker(new SendOnlyReceiver()); // send-only endpoint
 
             return serverlessTransportInfrastructure;
         }
@@ -56,22 +56,5 @@
             TransportTransactionMode.ReceiveOnly,
             TransportTransactionMode.SendsAtomicWithReceive
         };
-    }
-
-    class NullReceiver : IMessageReceiver
-    {
-        public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError,
-            CancellationToken cancellationToken = new CancellationToken()) =>
-            throw new System.NotImplementedException();
-
-        public Task StartReceive(CancellationToken cancellationToken = new CancellationToken()) => throw new System.NotImplementedException();
-
-        public Task ChangeConcurrency(PushRuntimeSettings limitations, CancellationToken cancellationToken = new CancellationToken()) => throw new System.NotImplementedException();
-
-        public Task StopReceive(CancellationToken cancellationToken = new CancellationToken()) => throw new System.NotImplementedException();
-
-        public ISubscriptionManager Subscriptions { get; }
-        public string Id { get; }
-        public string ReceiveAddress { get; }
     }
 }
