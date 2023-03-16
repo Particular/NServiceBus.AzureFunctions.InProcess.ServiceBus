@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.AcceptanceTests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests.HostV4", "IntegrationTests.HostV4\IntegrationTests.HostV4.csproj", "{D4B26C04-CD88-4356-922F-CCF69D74F442}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.Analyzer", "NServiceBus.AzureFunctions.Analyzer\NServiceBus.AzureFunctions.Analyzer.csproj", "{0D840DDA-A554-4764-871E-3ACB7A454FF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{D4B26C04-CD88-4356-922F-CCF69D74F442}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4B26C04-CD88-4356-922F-CCF69D74F442}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4B26C04-CD88-4356-922F-CCF69D74F442}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D840DDA-A554-4764-871E-3ACB7A454FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D840DDA-A554-4764-871E-3ACB7A454FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D840DDA-A554-4764-871E-3ACB7A454FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D840DDA-A554-4764-871E-3ACB7A454FF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
