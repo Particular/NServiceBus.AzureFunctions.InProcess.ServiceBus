@@ -8,7 +8,7 @@ namespace NServiceBus.Core.Analyzer.Tests
     public class AwaitOrCaptureTasksAnalyzerTests : AnalyzerTestFixture<AwaitOrCaptureTasksAnalyzer>
     {
         // IEndpointInstance
-        [TestCase("ServiceBusTriggeredEndpointConfiguration", "obj.AdvancedConfiguration.PurgeOnStartup(true);")]
+        [TestCase("ServiceBusTriggeredEndpointConfiguration", "obj.AdvancedConfiguration.PurgeOnStartup(true)")]
         public Task DiagnosticIsReportedForCorePublicMethods(string type, string call)
         {
             var source =
