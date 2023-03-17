@@ -3,6 +3,7 @@ namespace NServiceBus.Core.Analyzer
     using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Diagnostics;
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -21,6 +22,37 @@ namespace NServiceBus.Core.Analyzer
 
         static void Analyze(SyntaxNodeAnalysisContext context)
         {
+
+            if (context.Node is InvocationExpressionSyntax invocationExpression)
+            {
+                if (invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression)
+                {
+                    if (memberAccessExpression.Name.Identifier.Text == "PurgeOnStartup")
+                    {
+                        if (memberAccessExpression.Expression is MemberAccessExpressionSyntax
+                            parentMemberAccessExpression)
+                        {
+                            if (parentMemberAccessExpression.Name.Identifier.Text == "AdvancedConfiguration")
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(diagnostic, invocationExpression.GetLocation(), invocationExpression.ToString()));
+                                //        return;
+                            }
+                        }
+                    }
+                }
+            }
+            //obj.AdvancedConfiguration.PurgeOnStartup
+            //exp[obj.AdvancedConfiguration]+DotToken[.]+Identifier[PurgeOnStartup]
+            //
+
+            //if (context.Node is InvocationExpressionSyntax call)
+            //{
+            //    if (call.Expression is MemberAccessExpressionSyntax expression)
+            //    {
+            //        expression.OperatorToken == SyntaxToken
+            //    }
+            //    call.Expression
+            //}
             //if (!(context.Node is InvocationExpressionSyntax call))
             //{
             //    return;
@@ -47,55 +79,13 @@ namespace NServiceBus.Core.Analyzer
             //}
         }
 
-        //static bool CouldBeMethodRequiringAwait(SyntaxToken syntaxToken) =>
-        //    syntaxToken.Kind() == SyntaxKind.IdentifierToken && methodNames.Contains(syntaxToken.Text);
-
-        //static bool IsMethodRequiringAwait(ExpressionSyntax call, SyntaxNodeAnalysisContext context) =>
-        //    context.SemanticModel.GetSymbolInfo(call, context.CancellationToken).Symbol is IMethodSymbol methodSymbol &&
-        //    methods.Contains(methodSymbol.GetFullName());
-
         static readonly DiagnosticDescriptor diagnostic = new DiagnosticDescriptor(
             DiagnosticId,
-            "Await Task",
-            "A Task returned by an async NServiceBus method is not awaited.",
+            "NServiceBus Azure Functions",
+            "Usage of not allowed configuration options",
             "NServiceBus.Code",
             DiagnosticSeverity.Error,
             true,
-            "Tasks returned by NServiceBus methods must be awaited. Failure to await these Tasks may result in message loss. If the Task is assigned to a variable, this diagnostic is not shown, but the Task must still be awaited.");
-
-        // UniformSession is the only downstream package which can be supported by this analyzer.
-        // All other downstream packages must provide their own analyzer.
-        //static readonly ImmutableHashSet<string> methods = ImmutableHashSet.Create(
-        //    StringComparer.Ordinal,
-        //    "NServiceBus.IPipelineContext.Send",
-        //    "NServiceBus.IPipelineContext.Publish",
-        //    "NServiceBus.PipelineContextExtensions.Send",
-        //    "NServiceBus.PipelineContextExtensions.SendLocal",
-        //    "NServiceBus.PipelineContextExtensions.Publish",
-        //    "NServiceBus.IMessageSession.Send",
-        //    "NServiceBus.IMessageSession.Publish",
-        //    "NServiceBus.IMessageSession.Subscribe",
-        //    "NServiceBus.IMessageSession.Unsubscribe",
-        //    "NServiceBus.MessageSessionExtensions.Send",
-        //    "NServiceBus.MessageSessionExtensions.SendLocal",
-        //    "NServiceBus.MessageSessionExtensions.Publish",
-        //    "NServiceBus.MessageSessionExtensions.Subscribe",
-        //    "NServiceBus.MessageSessionExtensions.Unsubscribe",
-        //    "NServiceBus.IMessageProcessingContext.Reply",
-        //    "NServiceBus.IMessageProcessingContext.ForwardCurrentMessageTo",
-        //    "NServiceBus.MessageProcessingContextExtensions.Reply",
-        //    "NServiceBus.Saga.RequestTimeout",
-        //    "NServiceBus.Saga.ReplyToOriginator",
-        //    "NServiceBus.Endpoint.Create",
-        //    "NServiceBus.Endpoint.Start",
-        //    "NServiceBus.IStartableEndpoint.Start",
-        //    "NServiceBus.IEndpointInstance.Stop",
-        //    "NServiceBus.UniformSession.IUniformSession.Send",
-        //    "NServiceBus.UniformSession.IUniformSession.Publish",
-        //    "NServiceBus.UniformSession.UniformSessionExtensions.Send",
-        //    "NServiceBus.UniformSession.UniformSessionExtensions.SendLocal",
-        //    "NServiceBus.UniformSession.UniformSessionExtensions.Publish");
-
-        //static readonly ImmutableHashSet<string> methodNames = methods.Select(m => m.Split('.').Last()).ToImmutableHashSet();
+            "This API is not supported in Azure Functions.");
     }
 }
