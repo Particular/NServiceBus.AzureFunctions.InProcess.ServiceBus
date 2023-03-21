@@ -77,7 +77,7 @@
 
                 TestContext.Out.WriteLine(e.Data);
 
-                if (e.Data.Contains($"Handling {nameof(SomeOtherMessage)}"))
+                if (e.Data.Contains($"Handling {nameof(SomeEvent)}"))
                 {
                     handlerCalledCompletionSource.SetResult(true);
                 }
