@@ -36,6 +36,13 @@
                 await client.CreateTopicAsync(topicName, cancellationTokenSource.Token);
             }
 
+            var subscriptionName = nameof(SomeEvent);
+
+            if (!await client.SubscriptionExistsAsync(topicName, subscriptionName, cancellationTokenSource.Token))
+            {
+                await client.CreateSubscriptionAsync(topicName, subscriptionName, cancellationTokenSource.Token);
+            }
+
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
             var port = 7076; //Use non-standard port to avoid clashing when debugging locally
             var funcProcess = new Process();
