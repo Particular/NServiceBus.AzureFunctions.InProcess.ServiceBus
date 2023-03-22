@@ -2,7 +2,4 @@
 
 public class SomeOtherMessage : IMessage
 {
-    public SomeOtherMessage()
-    {
-    }
 }
