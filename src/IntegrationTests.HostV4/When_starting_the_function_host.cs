@@ -23,7 +23,7 @@
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             var client = new ServiceBusAdministrationClient(connectionString);
 
-            const string queueName = "InProcess-HostV4";
+            const string queueName = "inprocess-hostv4";
             const string topicName = "bundle-1";
 
             if (!await client.QueueExistsAsync(queueName, cancellationTokenSource.Token))
@@ -36,11 +36,9 @@
                 await client.CreateTopicAsync(topicName, cancellationTokenSource.Token);
             }
 
-            var subscriptionName = nameof(SomeEvent);
-
-            if (!await client.SubscriptionExistsAsync(topicName, subscriptionName, cancellationTokenSource.Token))
+            if (!await client.SubscriptionExistsAsync(topicName, queueName, cancellationTokenSource.Token))
             {
-                await client.CreateSubscriptionAsync(topicName, subscriptionName, cancellationTokenSource.Token);
+                await client.CreateSubscriptionAsync(topicName, queueName, cancellationTokenSource.Token);
             }
 
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
