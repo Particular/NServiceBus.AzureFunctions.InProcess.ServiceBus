@@ -7,6 +7,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Azure.Messaging.ServiceBus.Administration;
+    using Microsoft.Azure.Amqp.Transport;
     using NUnit.Framework;
 
     public class When_starting_the_function_host
@@ -38,7 +39,16 @@
 
             if (!await client.SubscriptionExistsAsync(topicName, queueName, cancellationTokenSource.Token))
             {
-                await client.CreateSubscriptionAsync(topicName, queueName, cancellationTokenSource.Token);
+                var subscription = new CreateSubscriptionOptions(topicName, queueName)
+                {
+                    LockDuration = TimeSpan.FromMinutes(5),
+                    ForwardTo = queueName,
+                    EnableDeadLetteringOnFilterEvaluationExceptions = false,
+                    MaxDeliveryCount = int.MaxValue,
+                    EnableBatchedOperations = true,
+                    UserMetadata = queueName
+                };
+                await client.CreateSubscriptionAsync(subscription, cancellationTokenSource.Token);
             }
 
             var functionRootDir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
