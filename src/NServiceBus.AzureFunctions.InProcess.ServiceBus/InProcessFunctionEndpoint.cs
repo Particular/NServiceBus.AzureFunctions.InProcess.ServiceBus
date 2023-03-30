@@ -247,7 +247,8 @@
             "Microsoft.Identity.Client.dll",
             "Microsoft.Identity.Client.Extensions.Msal.dll",
             "Azure.Storage.Common.dll",
-            "Azure.Storage.Blobs.dll"
+            "Azure.Storage.Blobs.dll",
+            "Azure.Security.KeyVault.Secrets.dll"
         };
 
         internal async Task InitializeEndpointIfNecessary(ExecutionContext executionContext, ILogger logger, CancellationToken cancellationToken)
