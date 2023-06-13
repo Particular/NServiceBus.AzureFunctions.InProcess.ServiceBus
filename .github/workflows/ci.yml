@@ -68,4 +68,4 @@ jobs:
           connection-string-name: AzureWebJobsServiceBus
           tag: ASBFunctions
       - name: Run tests
-        uses: Particular/run-tests-action@v1.5.1
+        uses: Particular/run-tests-action@v1.6.0
