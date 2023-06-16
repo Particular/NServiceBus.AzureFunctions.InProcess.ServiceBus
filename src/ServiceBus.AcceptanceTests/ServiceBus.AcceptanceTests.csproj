@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.0.3" />
+    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.1.0" />
     <PackageReference Include="NServiceBus.Persistence.NonDurable" Version="1.0.0" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.0" />
   </ItemGroup>
