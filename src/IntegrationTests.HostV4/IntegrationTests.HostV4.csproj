@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
-    <PackageReference Include="NServiceBus" Version="8.0.3" />
+    <PackageReference Include="NServiceBus" Version="8.1.1" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.0" />
   </ItemGroup>
 
@@ -23,6 +23,13 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Prevent Functions from removing NServiceBus dependencies that it thinks are included "in the box" -->
+    <FunctionsPreservedDependencies Include="System.Diagnostics.DiagnosticSource.dll" />
+    <FunctionsPreservedDependencies Include="System.Text.Json.dll" />
+    <FunctionsPreservedDependencies Include="System.Text.Encodings.Web.dll" />
   </ItemGroup>
 
   <ItemGroup>

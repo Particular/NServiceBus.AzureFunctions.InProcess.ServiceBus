@@ -3,10 +3,12 @@
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using Azure.Messaging.ServiceBus.Administration;
+    using Microsoft.Extensions.Configuration;
     using NUnit.Framework;
 
     [TestFixture]
@@ -15,10 +17,50 @@
         [Test]
         public async Task Should_not_blow_up()
         {
-            var pathToFuncExe = Environment.GetEnvironmentVariable("PathToFuncExe");
-            Assert.IsNotNull(pathToFuncExe, "Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\MyUser\\AppData\\Local\\AzureFunctionsTools\\Releases\\4.30.0\\cli_x64\\func.exe'");
+            var configBuilder = new ConfigurationBuilder();
+            configBuilder.SetBasePath(Directory.GetCurrentDirectory());
+            configBuilder.AddEnvironmentVariables();
+            configBuilder.AddJsonFile("local.settings.json", true);
 
-            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsServiceBus");
+            var config = configBuilder.Build();
+
+            var pathToFuncExe = config.GetValue<string>("PathToFuncExe");
+
+            if (pathToFuncExe == null)
+            {
+                Console.WriteLine("Environment variable 'PathToFuncExe' not defined. Going to try to find the latest version.");
+
+                var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var sdkPath = Path.Combine(userProfile, "AppData", "Local", "AzureFunctionsTools", "Releases");
+                if (Directory.Exists(sdkPath))
+                {
+                    var mostRecent = Directory.GetDirectories(sdkPath)
+                        .Select(path =>
+                        {
+                            var name = Path.GetFileName(path);
+                            Version.TryParse(name, out var version);
+                            return new { Name = name, Version = version };
+                        })
+                        .Where(x => x.Version is not null)
+                        .OrderByDescending(x => x.Version)
+                        .FirstOrDefault()
+                        ?.Name;
+
+                    if (mostRecent is not null)
+                    {
+                        var exePath = Path.Combine(sdkPath, mostRecent, "cli_x64", "func.exe");
+                        if (File.Exists(exePath))
+                        {
+                            Console.WriteLine("Found " + exePath);
+                            pathToFuncExe = exePath;
+                        }
+                    }
+                }
+            }
+
+            Assert.IsNotNull(pathToFuncExe, "Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\<username>\\AppData\\Local\\AzureFunctionsTools\\Releases\\<version>\\cli_x64\\func.exe'");
+
+            var connectionString = config.GetValue<string>("AzureWebJobsServiceBus") ?? config.GetValue<string>("Values:AzureWebJobsServiceBus");
             Assert.IsNotNull(connectionString, "Environment variable 'AzureWebJobsServiceBus' should be defined to run tests.");
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
