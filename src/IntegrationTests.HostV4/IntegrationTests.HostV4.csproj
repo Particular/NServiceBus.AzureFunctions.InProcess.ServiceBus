@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -26,15 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Prevent Functions from removing NServiceBus dependencies that it thinks are included "in the box" -->
-    <FunctionsPreservedDependencies Include="System.Diagnostics.DiagnosticSource.dll" />
-    <FunctionsPreservedDependencies Include="System.Text.Json.dll" />
-    <FunctionsPreservedDependencies Include="System.Text.Encodings.Web.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="host.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="local.settings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" />
   </ItemGroup>
+
+  <!-- Import the props file from the component because it's referenced as a ProjectReference here, not a PackageReference -->
+  <Import Project="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\build\NServiceBus.AzureFunctions.InProcess.ServiceBus.props" />
 
 </Project>
