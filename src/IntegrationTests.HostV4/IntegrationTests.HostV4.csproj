@@ -26,6 +26,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Prevent Functions from removing NServiceBus dependencies that it thinks are included "in the box" -->
+    <FunctionsPreservedDependencies Include="System.Diagnostics.DiagnosticSource.dll" />
+    <FunctionsPreservedDependencies Include="System.Text.Json.dll" />
+    <FunctionsPreservedDependencies Include="System.Text.Encodings.Web.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="host.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="local.settings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" />
   </ItemGroup>
