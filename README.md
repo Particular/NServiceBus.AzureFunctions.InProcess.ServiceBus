@@ -4,4 +4,7 @@ Process messages in AzureFunctions using the Azure Service Bus trigger and the N
 
 ## Running tests locally
 
-Test projects included in the solution rely on the environment variable `AzureWebJobsServiceBus` used by Azure Functions SDK.
+Requirements:
+
+- Have the [Microsoft Azurite Storage Emulator](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio) running
+- Configure an environment variable named `AzureWebJobsServiceBus` with an Azure Service Bus connection string
