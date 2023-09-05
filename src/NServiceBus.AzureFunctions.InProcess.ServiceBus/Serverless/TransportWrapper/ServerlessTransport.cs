@@ -9,6 +9,7 @@
     {
         // HINT: This constant is defined in NServiceBus but is not exposed
         const string MainReceiverId = "Main";
+        const string SendOnlyConfigKey = "Endpoint.SendOnly";
 
         public ServerlessTransport(AzureServiceBusTransport baseTransport) : base(
             baseTransport.TransportTransactionMode,
@@ -32,9 +33,11 @@
 
             var serverlessTransportInfrastructure = new ServerlessTransportInfrastructure(baseTransportInfrastructure);
 
-            PipelineInvoker = receivers.Length > 0
-                ? (PipelineInvoker)serverlessTransportInfrastructure.Receivers[MainReceiverId]
-                : new PipelineInvoker(new SendOnlyReceiver()); // send-only endpoint
+            var isSendOnly = hostSettings.CoreSettings.GetOrDefault<bool>(SendOnlyConfigKey);
+
+            PipelineInvoker = isSendOnly
+                ? new PipelineInvoker(new SendOnlyReceiver()) // send-only endpoint
+                : (PipelineInvoker)serverlessTransportInfrastructure.Receivers[MainReceiverId];
 
             return serverlessTransportInfrastructure;
         }
