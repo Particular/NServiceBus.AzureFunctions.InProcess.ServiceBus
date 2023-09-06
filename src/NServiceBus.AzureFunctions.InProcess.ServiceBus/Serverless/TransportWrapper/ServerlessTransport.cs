@@ -11,6 +11,8 @@
         const string MainReceiverId = "Main";
         const string SendOnlyConfigKey = "Endpoint.SendOnly";
 
+        public IMessageProcessor MessageProcessor { get; private set; }
+
         public ServerlessTransport(AzureServiceBusTransport baseTransport) : base(
             baseTransport.TransportTransactionMode,
             baseTransport.SupportsDelayedDelivery,
@@ -35,14 +37,12 @@
 
             var isSendOnly = hostSettings.CoreSettings.GetOrDefault<bool>(SendOnlyConfigKey);
 
-            PipelineInvoker = isSendOnly
-                ? new PipelineInvoker(new SendOnlyReceiver()) // send-only endpoint
-                : (PipelineInvoker)serverlessTransportInfrastructure.Receivers[MainReceiverId];
+            MessageProcessor = isSendOnly
+                ? new SendOnlyMessageProcessor() // send-only endpoint
+                : (IMessageProcessor)serverlessTransportInfrastructure.Receivers[MainReceiverId];
 
             return serverlessTransportInfrastructure;
         }
-
-        public PipelineInvoker PipelineInvoker { get; private set; }
 
 #pragma warning disable CS0672 // Member overrides obsolete member
 #pragma warning disable CS0618 // Type or member is obsolete

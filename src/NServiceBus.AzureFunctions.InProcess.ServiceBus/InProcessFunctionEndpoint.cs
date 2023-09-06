@@ -3,15 +3,11 @@
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Transactions;
     using Azure.Messaging.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus.Serverless;
-    using Extensibility;
     using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
-    using Transport;
-    using Transport.AzureServiceBus;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
     class InProcessFunctionEndpoint : IFunctionEndpoint
@@ -23,6 +19,44 @@
         {
             this.serverlessInterceptor = serverlessInterceptor;
             endpointFactory = () => externallyManagedContainerEndpoint.Start(serviceProvider);
+        }
+
+        public async Task ProcessAtomic(
+           ServiceBusReceivedMessage message,
+           ExecutionContext executionContext,
+           ServiceBusClient serviceBusClient,
+           ServiceBusMessageActions messageActions,
+           ILogger functionsLogger = null,
+           CancellationToken cancellationToken = default)
+        {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
+            try
+            {
+                await InitializeEndpointIfNecessary(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
+                throw;
+            }
+
+            await messageProcessor.ProcessAtomic(message, serviceBusClient, messageActions, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        public async Task ProcessNonAtomic(
+            ServiceBusReceivedMessage message,
+            ExecutionContext executionContext,
+            ILogger functionsLogger = null,
+            CancellationToken cancellationToken = default)
+        {
+            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
+
+            await InitializeEndpointIfNecessary(cancellationToken).ConfigureAwait(false);
+
+            await messageProcessor.ProcessNonAtomic(message, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task Send(object message, SendOptions options, ExecutionContext executionContext, ILogger functionsLogger = null, CancellationToken cancellationToken = default)
@@ -103,137 +137,6 @@
             return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
         }
 
-        public async Task ProcessNonAtomic(
-            ServiceBusReceivedMessage message,
-            ExecutionContext executionContext,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default)
-        {
-            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
-
-            await InitializeEndpointIfNecessary(cancellationToken)
-                .ConfigureAwait(false);
-
-            try
-            {
-                var messageContext = CreateMessageContext(message, new TransportTransaction(), false);
-
-                await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
-
-            }
-            catch (Exception exception)
-            {
-                var errorContext = CreateErrorContext(message, new TransportTransaction(), exception);
-
-                var errorHandleResult = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
-
-                if (errorHandleResult == ErrorHandleResult.Handled)
-                {
-                    return;
-                }
-                throw;
-            }
-        }
-
-        public async Task ProcessAtomic(
-            ServiceBusReceivedMessage message,
-            ExecutionContext executionContext,
-            ServiceBusClient serviceBusClient,
-            ServiceBusMessageActions messageActions,
-            ILogger functionsLogger = null,
-            CancellationToken cancellationToken = default)
-        {
-            FunctionsLoggerFactory.Instance.SetCurrentLogger(functionsLogger);
-
-            try
-            {
-                await InitializeEndpointIfNecessary(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
-                throw;
-            }
-
-            try
-            {
-                using (var azureServiceBusTransaction = CreateTransaction(message.PartitionKey, serviceBusClient))
-                {
-                    var messageContext = CreateMessageContext(message, azureServiceBusTransaction.TransportTransaction, true);
-
-                    await pipeline.PushMessage(messageContext, cancellationToken).ConfigureAwait(false);
-
-                    await SafeCompleteMessageAsync(messageActions, message, azureServiceBusTransaction, cancellationToken).ConfigureAwait(false);
-                    azureServiceBusTransaction.Commit();
-                }
-            }
-            catch (Exception exception)
-            {
-                ErrorHandleResult result;
-                using (var azureServiceBusTransaction = CreateTransaction(message.PartitionKey, serviceBusClient))
-                {
-                    var errorContext = CreateErrorContext(message, azureServiceBusTransaction.TransportTransaction, exception);
-
-                    result = await pipeline.PushFailedMessage(errorContext, cancellationToken).ConfigureAwait(false);
-
-                    if (result == ErrorHandleResult.Handled)
-                    {
-                        await SafeCompleteMessageAsync(messageActions, message, azureServiceBusTransaction, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    azureServiceBusTransaction.Commit();
-                }
-
-                if (result != ErrorHandleResult.Handled)
-                {
-                    await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
-                }
-            }
-        }
-
-        ErrorContext CreateErrorContext(ServiceBusReceivedMessage message, TransportTransaction transportTransaction, Exception exception)
-        {
-            var errorContext = new ErrorContext(
-                exception,
-                message.GetHeaders(),
-                message.MessageId,
-                message.Body,
-                transportTransaction,
-                message.DeliveryCount,
-                pipeline.ReceiveAddress,
-                new ContextBag());
-            return errorContext;
-        }
-
-        MessageContext CreateMessageContext(ServiceBusReceivedMessage message, TransportTransaction transportTransaction, bool atomic)
-        {
-            var contextBag = new ContextBag();
-            var invocationMode = new FunctionInvocationMode(atomic);
-            contextBag.Set(invocationMode);
-            var messageContext = new MessageContext(
-                message.MessageId,
-                message.GetHeaders(),
-                message.Body,
-                transportTransaction,
-                pipeline.ReceiveAddress,
-                contextBag);
-            return messageContext;
-        }
-
-        static async Task SafeCompleteMessageAsync(ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, AzureServiceBusTransportTransaction azureServiceBusTransaction, CancellationToken cancellationToken = default)
-        {
-            using var scope = azureServiceBusTransaction.ToTransactionScope();
-            await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
-            scope.Complete();
-        }
-
-        static AzureServiceBusTransportTransaction CreateTransaction(string messagePartitionKey, ServiceBusClient serviceBusClient) =>
-            new(serviceBusClient, messagePartitionKey, new TransactionOptions
-            {
-                IsolationLevel = IsolationLevel.Serializable,
-                Timeout = TransactionManager.MaximumTimeout
-            });
-
         internal static readonly string[] AssembliesToExcludeFromScanning = {
             "NCrontab.Signed.dll",
             "Azure.Core.dll",
@@ -253,16 +156,16 @@
 
         internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken)
         {
-            if (pipeline == null)
+            if (messageProcessor == null)
             {
                 await semaphoreLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    if (pipeline == null)
+                    if (messageProcessor == null)
                     {
                         endpoint = await endpointFactory().ConfigureAwait(false);
 
-                        pipeline = serverlessInterceptor.PipelineInvoker;
+                        messageProcessor = serverlessInterceptor.MessageProcessor;
                     }
                 }
                 finally
@@ -272,7 +175,7 @@
             }
         }
 
-        PipelineInvoker pipeline;
+        IMessageProcessor messageProcessor;
         IEndpointInstance endpoint;
 
         readonly Func<Task<IEndpointInstance>> endpointFactory;

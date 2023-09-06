@@ -15,7 +15,7 @@
             Dispatcher = baseTransportInfrastructure.Dispatcher;
             Receivers = baseTransportInfrastructure.Receivers.ToDictionary(
                 r => r.Key,
-                r => (IMessageReceiver)new PipelineInvoker(r.Value)
+                r => (IMessageReceiver)new PipelineInvokingMessageProcessor(r.Value)
                 );
         }
 
