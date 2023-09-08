@@ -41,42 +41,6 @@ namespace NServiceBus.Core.Analyzer
                     }
                 }
             }
-            //obj.AdvancedConfiguration.PurgeOnStartup
-            //exp[obj.AdvancedConfiguration]+DotToken[.]+Identifier[PurgeOnStartup]
-            //
-
-            //if (context.Node is InvocationExpressionSyntax call)
-            //{
-            //    if (call.Expression is MemberAccessExpressionSyntax expression)
-            //    {
-            //        expression.OperatorToken == SyntaxToken
-            //    }
-            //    call.Expression
-            //}
-            //if (!(context.Node is InvocationExpressionSyntax call))
-            //{
-            //    return;
-            //}
-
-            //if (!(call.Parent is ExpressionStatementSyntax))
-            //{
-            //    return;
-            //}
-
-            //foreach (var token in call.Expression?.DescendantTokens() ?? Enumerable.Empty<SyntaxToken>())
-            //{
-            //    if (context.CancellationToken.IsCancellationRequested)
-            //    {
-            //        return;
-            //    }
-
-            //    // check syntax tree (cheap) first for possible call requiring await and then check semantic model (expensive) to confirm
-            //    if (CouldBeMethodRequiringAwait(token) && IsMethodRequiringAwait(call, context))
-            //    {
-            //        context.ReportDiagnostic(Diagnostic.Create(diagnostic, call.GetLocation(), call.ToString()));
-            //        return;
-            //    }
-            //}
         }
 
         static readonly DiagnosticDescriptor diagnostic = new DiagnosticDescriptor(
