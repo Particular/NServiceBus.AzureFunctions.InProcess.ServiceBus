@@ -1,5 +1,6 @@
 namespace NServiceBus.AzureFunctions.Analyzer
 {
+    using System;
     using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -23,22 +24,31 @@ namespace NServiceBus.AzureFunctions.Analyzer
 
         static void Analyze(SyntaxNodeAnalysisContext context)
         {
-
-            if (context.Node is InvocationExpressionSyntax invocationExpression)
+            if (!(context.Node is InvocationExpressionSyntax invocationExpression))
             {
-                if (invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression)
-                {
-                    if (memberAccessExpression.Name.Identifier.Text == "PurgeOnStartup")
-                    {
-                        if (memberAccessExpression.Expression is MemberAccessExpressionSyntax parentMemberAccessExpression)
-                        {
-                            if (parentMemberAccessExpression.Name.Identifier.Text == "AdvancedConfiguration")
-                            {
-                                context.ReportDiagnostic(AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed, invocationExpression);
-                            }
-                        }
-                    }
-                }
+                return;
+            }
+
+            if (!(invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression))
+            {
+                return;
+            }
+
+            if (memberAccessExpression.Name.Identifier.Text != "PurgeOnStartup")
+            {
+                return;
+            }
+
+            var memberAccessSymbol = context.SemanticModel.GetSymbolInfo(memberAccessExpression, context.CancellationToken);
+
+            if (!(memberAccessSymbol.Symbol is IMethodSymbol methodSymbol))
+            {
+                return;
+            }
+
+            if (methodSymbol.ReceiverType.ToString() == "NServiceBus.EndpointConfiguration")
+            {
+                context.ReportDiagnostic(AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed, invocationExpression);
             }
         }
     }
