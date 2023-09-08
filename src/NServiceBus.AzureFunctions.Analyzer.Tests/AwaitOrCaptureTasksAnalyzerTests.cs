@@ -1,11 +1,10 @@
-namespace NServiceBus.Core.Analyzer.Tests
+namespace NServiceBus.AzureFunctions.Analyzer.Tests
 {
     using System.Threading.Tasks;
-    using Helpers;
     using NUnit.Framework;
 
     [TestFixture]
-    public class AwaitOrCaptureTasksAnalyzerTests : AnalyzerTestFixture<AwaitOrCaptureTasksAnalyzer>
+    public class AzureFunctionsConfigurationAnalyzerTests : AnalyzerTestFixture<AzureFunctionsConfigurationAnalyzer>
     {
         // IEndpointInstance
         [TestCase("ServiceBusTriggeredEndpointConfiguration", "obj.AdvancedConfiguration.PurgeOnStartup(true)")]
@@ -23,7 +22,7 @@ class Foo
     }}
 }}";
 
-            return Assert(AwaitOrCaptureTasksAnalyzer.DiagnosticId, source);
+            return Assert(AzureFunctionsDiagnostics.PurgeOnStartupNotAllowedId, source);
         }
     }
 }

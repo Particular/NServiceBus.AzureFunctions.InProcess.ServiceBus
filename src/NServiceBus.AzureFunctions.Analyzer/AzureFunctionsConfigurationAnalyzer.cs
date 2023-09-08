@@ -1,17 +1,18 @@
-namespace NServiceBus.Core.Analyzer
+namespace NServiceBus.AzureFunctions.Analyzer
 {
     using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Diagnostics;
+    using NServiceBus.AzureFunctions.Analyzer.Extensions;
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class AwaitOrCaptureTasksAnalyzer : DiagnosticAnalyzer
+    public class AzureFunctionsConfigurationAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "NSB0001";
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(diagnostic);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
+            AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed
+        );
 
         public override void Initialize(AnalysisContext context)
         {
@@ -29,27 +30,16 @@ namespace NServiceBus.Core.Analyzer
                 {
                     if (memberAccessExpression.Name.Identifier.Text == "PurgeOnStartup")
                     {
-                        if (memberAccessExpression.Expression is MemberAccessExpressionSyntax
-                            parentMemberAccessExpression)
+                        if (memberAccessExpression.Expression is MemberAccessExpressionSyntax parentMemberAccessExpression)
                         {
                             if (parentMemberAccessExpression.Name.Identifier.Text == "AdvancedConfiguration")
                             {
-                                context.ReportDiagnostic(Diagnostic.Create(diagnostic, invocationExpression.GetLocation(), invocationExpression.ToString()));
-                                //        return;
+                                context.ReportDiagnostic(AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed, invocationExpression);
                             }
                         }
                     }
                 }
             }
         }
-
-        static readonly DiagnosticDescriptor diagnostic = new DiagnosticDescriptor(
-            DiagnosticId,
-            "NServiceBus Azure Functions",
-            "Usage of not allowed configuration options",
-            "NServiceBus.Code",
-            DiagnosticSeverity.Error,
-            true,
-            "This API is not supported in Azure Functions.");
     }
 }

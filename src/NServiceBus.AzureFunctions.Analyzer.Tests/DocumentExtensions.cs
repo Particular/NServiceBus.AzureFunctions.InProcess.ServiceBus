@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.Core.Analyzer.Tests.Helpers
+﻿namespace NServiceBus.AzureFunctions.Analyzer.Tests
 {
     using System.Collections.Generic;
     using System.Linq;
