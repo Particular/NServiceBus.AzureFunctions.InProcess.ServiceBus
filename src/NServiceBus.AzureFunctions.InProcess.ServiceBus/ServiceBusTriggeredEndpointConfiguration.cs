@@ -3,6 +3,7 @@
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Identity;
     using AzureFunctions.InProcess.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus.Serverless;
     using Logging;
@@ -27,7 +28,7 @@
         /// <summary>
         /// The Azure Service Bus Transport configuration.
         /// </summary>
-        public AzureServiceBusTransport Transport { get; }
+        public AzureServiceBusTransport Transport { private set; get; }
 
         /// <summary>
         /// The routing configuration.
@@ -79,6 +80,8 @@
                 }
             }
 
+            this.connectionString = connectionString;
+
             Transport = new AzureServiceBusTransport(connectionString)
             {
                 // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
@@ -126,6 +129,18 @@
         {
             return AdvancedConfiguration.UseSerialization<T>();
         }
+        /// <summary>
+        /// Use Managed Identity
+        /// </summary>
+        public void WithManagedIdentity()
+        {
+            Transport = new AzureServiceBusTransport(connectionString, new DefaultAzureCredential())
+            {
+                // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
+                // endpoint API (calling ProcessAtomic vs ProcessNonAtomic).
+                TransportTransactionMode = TransportTransactionMode.ReceiveOnly
+            };
+        }
 
         /// <summary>
         /// Disables moving messages to the error queue even if an error queue name is configured.
@@ -143,6 +158,7 @@
             };
 
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
+        readonly string connectionString;
         internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
     }
 }
