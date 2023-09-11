@@ -5,6 +5,7 @@
     public static class AzureFunctionsDiagnostics
     {
         public const string PurgeOnStartupNotAllowedId = "NSBAF0001";
+        public const string LimitMessageProcessingToNotAllowedId = "NSBAF0002";
 
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
 
@@ -16,5 +17,15 @@
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
             );
+
+        internal static readonly DiagnosticDescriptor LimitMessageProcessingToNotAllowed = new DiagnosticDescriptor(
+             id: LimitMessageProcessingToNotAllowedId,
+             title: "LimitMessageProcessing is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot limit message processing concurrency.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
     }
 }

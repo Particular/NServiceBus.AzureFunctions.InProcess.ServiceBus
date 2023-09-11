@@ -6,9 +6,8 @@ namespace NServiceBus.AzureFunctions.Analyzer.Tests
     [TestFixture]
     public class AzureFunctionsConfigurationAnalyzerTests : AnalyzerTestFixture<AzureFunctionsConfigurationAnalyzer>
     {
-        // IEndpointInstance
-        [TestCase("ServiceBusTriggeredEndpointConfiguration", "obj.AdvancedConfiguration.PurgeOnStartup(true)")]
-        public Task DiagnosticIsReportedForCorePublicMethods(string type, string call)
+        [Test]
+        public Task DiagnosticIsReportedForPurgeOnStartup()
         {
             var source =
                 $@"using NServiceBus; 
@@ -16,13 +15,38 @@ using System;
 using System.Threading.Tasks; 
 class Foo
 {{
-    void Bar({type} obj)
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
     {{
-        [|{call}|];
+        [|endpointConfig.AdvancedConfiguration.PurgeOnStartup(true)|];
+
+        var advancedConfig = endpointConfig.AdvancedConfiguration;
+        [|advancedConfig.PurgeOnStartup(true)|];
     }}
 }}";
 
             return Assert(AzureFunctionsDiagnostics.PurgeOnStartupNotAllowedId, source);
         }
+
+        [Test]
+        public Task DiagnosticIsReportedForLimitMessageProcessingConcurrencyTo()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        [|endpointConfig.AdvancedConfiguration.LimitMessageProcessingConcurrencyTo(5)|];
+
+        var advancedConfig = endpointConfig.AdvancedConfiguration;
+        [|advancedConfig.LimitMessageProcessingConcurrencyTo(5)|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowedId, source);
+        }
+
     }
 }

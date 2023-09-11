@@ -1,5 +1,6 @@
 namespace NServiceBus.AzureFunctions.Analyzer
 {
+    using System.Collections.Generic;
     using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -11,7 +12,8 @@ namespace NServiceBus.AzureFunctions.Analyzer
     public class AzureFunctionsConfigurationAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
-            AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed
+            AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed,
+            AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowed
         );
 
         public override void Initialize(AnalysisContext context)
@@ -33,7 +35,7 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 return;
             }
 
-            if (memberAccessExpression.Name.Identifier.Text != "PurgeOnStartup")
+            if (!NotAllowedEndpointConfigurationMethods.TryGetValue(memberAccessExpression.Name.Identifier.Text, out var diagnosticDescriptor))
             {
                 return;
             }
@@ -47,8 +49,15 @@ namespace NServiceBus.AzureFunctions.Analyzer
 
             if (methodSymbol.ReceiverType.ToString() == "NServiceBus.EndpointConfiguration")
             {
-                context.ReportDiagnostic(AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed, invocationExpression);
+                context.ReportDiagnostic(diagnosticDescriptor, invocationExpression);
             }
         }
+
+        static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
+            = new Dictionary<string, DiagnosticDescriptor>
+            {
+                ["PurgeOnStartup"] = AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed,
+                ["LimitMessageProcessingConcurrencyTo"] = AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowed
+            };
     }
 }
