@@ -112,7 +112,8 @@
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
 #endif
                 MetadataReference.CreateFromFile(typeof(IFunctionEndpoint).GetTypeInfo().Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(EndpointConfiguration).GetTypeInfo().Assembly.Location));
+                MetadataReference.CreateFromFile(typeof(EndpointConfiguration).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(AzureServiceBusTransport).GetTypeInfo().Assembly.Location));
         }
 
         static readonly ImmutableList<PortableExecutableReference> ProjectReferences;

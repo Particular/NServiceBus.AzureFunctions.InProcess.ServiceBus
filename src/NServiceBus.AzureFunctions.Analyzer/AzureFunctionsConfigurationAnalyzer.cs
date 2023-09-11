@@ -13,8 +13,26 @@ namespace NServiceBus.AzureFunctions.Analyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed,
-            AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowed
+            AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowed,
+            AzureFunctionsDiagnostics.DefineCriticalErrorActionNotAllowed,
+            AzureFunctionsDiagnostics.SetDiagnosticsPathNotAllowed,
+            AzureFunctionsDiagnostics.MakeInstanceUniquelyAddressableNotAllowed,
+            AzureFunctionsDiagnostics.UseTransportNotAllowed,
+            AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed
         );
+
+        static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
+            = new Dictionary<string, DiagnosticDescriptor>
+            {
+                ["PurgeOnStartup"] = AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed,
+                ["LimitMessageProcessingConcurrencyTo"] = AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowed,
+                ["DefineCriticalErrorAction"] = AzureFunctionsDiagnostics.DefineCriticalErrorActionNotAllowed,
+                ["SetDiagnosticsPath"] = AzureFunctionsDiagnostics.SetDiagnosticsPathNotAllowed,
+                ["MakeInstanceUniquelyAddressable"] = AzureFunctionsDiagnostics.MakeInstanceUniquelyAddressableNotAllowed,
+                ["UseTransport"] = AzureFunctionsDiagnostics.UseTransportNotAllowed,
+                ["OverrideLocalAddress"] = AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed,
+            };
+
 
         public override void Initialize(AnalysisContext context)
         {
@@ -52,12 +70,5 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 context.ReportDiagnostic(diagnosticDescriptor, invocationExpression);
             }
         }
-
-        static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
-            = new Dictionary<string, DiagnosticDescriptor>
-            {
-                ["PurgeOnStartup"] = AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed,
-                ["LimitMessageProcessingConcurrencyTo"] = AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowed
-            };
     }
 }

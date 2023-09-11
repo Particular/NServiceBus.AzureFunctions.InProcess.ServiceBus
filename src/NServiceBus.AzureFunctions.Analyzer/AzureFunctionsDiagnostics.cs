@@ -6,6 +6,11 @@
     {
         public const string PurgeOnStartupNotAllowedId = "NSBAF0001";
         public const string LimitMessageProcessingToNotAllowedId = "NSBAF0002";
+        public const string DefineCriticalErrorActionNotAllowedId = "NSBAF0003";
+        public const string SetDiagnosticsPathNotAllowedId = "NSBAF0004";
+        public const string MakeInstanceUniquelyAddressableNotAllowedId = "NSBAF0005";
+        public const string UseTransportNotAllowedId = "NSBAF0006";
+        public const string OverrideLocalAddressNotAllowedId = "NSBAF0007";
 
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
 
@@ -27,5 +32,49 @@
              isEnabledByDefault: true
             );
 
+        internal static readonly DiagnosticDescriptor DefineCriticalErrorActionNotAllowed = new DiagnosticDescriptor(
+             id: DefineCriticalErrorActionNotAllowedId,
+             title: "DefineCriticalErrorAction is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the application lifecycle and should not define behavior in the case of critical errors.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor SetDiagnosticsPathNotAllowed = new DiagnosticDescriptor(
+             id: SetDiagnosticsPathNotAllowedId,
+             title: "SetDiagnosticsPath is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints should not write diagnostics to the local file system. Use CustomDiagnosticsWriter to write diagnostics to another location.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor MakeInstanceUniquelyAddressableNotAllowed = new DiagnosticDescriptor(
+             id: MakeInstanceUniquelyAddressableNotAllowedId,
+             title: "MakeInstanceUniquelyAddressable is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints have unpredictable lifecycles and should not be uniquely addressable.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor UseTransportNotAllowed = new DiagnosticDescriptor(
+             id: UseTransportNotAllowedId,
+             title: "UseTransport is not supported in Azure Functions",
+             messageFormat: "The package configures Azure Service Bus transport by default. Use ServiceBusTriggeredEndpointConfiguration.Transport to access the transport configuration.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Warning,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor OverrideLocalAddressNotAllowed = new DiagnosticDescriptor(
+             id: OverrideLocalAddressNotAllowedId,
+             title: "OverrideLocalAddress is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the local address.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
     }
 }
