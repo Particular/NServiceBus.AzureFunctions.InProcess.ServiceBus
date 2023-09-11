@@ -153,5 +153,43 @@ class Foo
 
             return Assert(AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowedId, source);
         }
+
+        [Test]
+        public Task DiagnosticIsReportedForRouteReplyToThisInstance()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        var replyOptions = new ReplyOptions();
+        [|replyOptions.RouteReplyToThisInstance()|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForRouteToThisInstance()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        var options = new SendOptions();
+        [|options.RouteToThisInstance()|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowedId, source);
+        }
     }
 }

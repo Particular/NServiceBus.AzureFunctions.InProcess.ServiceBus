@@ -18,7 +18,9 @@ namespace NServiceBus.AzureFunctions.Analyzer
             AzureFunctionsDiagnostics.SetDiagnosticsPathNotAllowed,
             AzureFunctionsDiagnostics.MakeInstanceUniquelyAddressableNotAllowed,
             AzureFunctionsDiagnostics.UseTransportNotAllowed,
-            AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed
+            AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed,
+            AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowed,
+            AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed
         );
 
         static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
@@ -33,6 +35,12 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 ["OverrideLocalAddress"] = AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed,
             };
 
+        static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedSendAndReplyOptions
+            = new Dictionary<string, DiagnosticDescriptor>
+            {
+                ["RouteReplyToThisInstance"] = AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowed,
+                ["RouteToThisInstance"] = AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed
+            };
 
         public override void Initialize(AnalysisContext context)
         {
@@ -53,6 +61,13 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 return;
             }
 
+            AnalyzeEndpointConfiguration(context, invocationExpression, memberAccessExpression);
+
+            AnalyzeSendAndReplyOptions(context, invocationExpression, memberAccessExpression);
+        }
+
+        static void AnalyzeEndpointConfiguration(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpression, MemberAccessExpressionSyntax memberAccessExpression)
+        {
             if (!NotAllowedEndpointConfigurationMethods.TryGetValue(memberAccessExpression.Name.Identifier.Text, out var diagnosticDescriptor))
             {
                 return;
@@ -66,6 +81,26 @@ namespace NServiceBus.AzureFunctions.Analyzer
             }
 
             if (methodSymbol.ReceiverType.ToString() == "NServiceBus.EndpointConfiguration")
+            {
+                context.ReportDiagnostic(diagnosticDescriptor, invocationExpression);
+            }
+        }
+
+        static void AnalyzeSendAndReplyOptions(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpression, MemberAccessExpressionSyntax memberAccessExpression)
+        {
+            if (!NotAllowedSendAndReplyOptions.TryGetValue(memberAccessExpression.Name.Identifier.Text, out var diagnosticDescriptor))
+            {
+                return;
+            }
+
+            var memberAccessSymbol = context.SemanticModel.GetSymbolInfo(memberAccessExpression, context.CancellationToken);
+
+            if (!(memberAccessSymbol.Symbol is IMethodSymbol methodSymbol))
+            {
+                return;
+            }
+
+            if (methodSymbol.ReceiverType.ToString() == "NServiceBus.SendOptions" || methodSymbol.ReceiverType.ToString() == "NServiceBus.ReplyOptions")
             {
                 context.ReportDiagnostic(diagnosticDescriptor, invocationExpression);
             }

@@ -11,6 +11,8 @@
         public const string MakeInstanceUniquelyAddressableNotAllowedId = "NSBAF0005";
         public const string UseTransportNotAllowedId = "NSBAF0006";
         public const string OverrideLocalAddressNotAllowedId = "NSBAF0007";
+        public const string RouteReplyToThisInstanceNotAllowedId = "NSBAF0008";
+        public const string RouteToThisInstanceNotAllowedId = "NSBAF0009";
 
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
 
@@ -72,6 +74,24 @@
              id: OverrideLocalAddressNotAllowedId,
              title: "OverrideLocalAddress is not supported in Azure Functions",
              messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the local address.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor RouteReplyToThisInstanceNotAllowed = new DiagnosticDescriptor(
+             id: RouteReplyToThisInstanceNotAllowedId,
+             title: "RouteReplyToThisInstance is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure receiver routing.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor RouteToThisInstanceNotAllowed = new DiagnosticDescriptor(
+             id: RouteToThisInstanceNotAllowedId,
+             title: "RouteToThisInstance is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure receiver routing.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
