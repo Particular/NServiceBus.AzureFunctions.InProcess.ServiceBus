@@ -1,14 +1,25 @@
 namespace NServiceBus.AzureFunctions.Analyzer.Tests
 {
     using System.Threading.Tasks;
+    using Microsoft.CodeAnalysis.CSharp;
     using NUnit.Framework;
 
     [TestFixture]
     public class AzureFunctionsConfigurationAnalyzerTests : AnalyzerTestFixture<AzureFunctionsConfigurationAnalyzer>
     {
-        [Test]
-        public Task DiagnosticIsReportedForPurgeOnStartup()
+        [TestCase("DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)", AzureFunctionsDiagnostics.DefineCriticalErrorActionNotAllowedId, LanguageVersion.CSharp7)]
+        [TestCase("LimitMessageProcessingConcurrencyTo(5)", AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowedId, LanguageVersion.CSharp7)]
+        [TestCase("MakeInstanceUniquelyAddressable(null)", AzureFunctionsDiagnostics.MakeInstanceUniquelyAddressableNotAllowedId, LanguageVersion.CSharp7)]
+        [TestCase("OverrideLocalAddress(null)", AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowedId, LanguageVersion.CSharp7)]
+        [TestCase("PurgeOnStartup(true)", AzureFunctionsDiagnostics.PurgeOnStartupNotAllowedId, LanguageVersion.CSharp7)]
+        [TestCase("SetDiagnosticsPath(null)", AzureFunctionsDiagnostics.SetDiagnosticsPathNotAllowedId, LanguageVersion.CSharp7)]
+        // HINT: In C# 7 this call is ambiguous with the LearningTransport version as the compiler cannot differentiate method calls via generic type constraints
+        [TestCase("UseTransport<AzureServiceBusTransport>()", AzureFunctionsDiagnostics.UseTransportNotAllowedId, LanguageVersion.CSharp8)]
+        [TestCase("UseTransport(new AzureServiceBusTransport(null))", AzureFunctionsDiagnostics.UseTransportNotAllowedId, LanguageVersion.CSharp7)]
+        public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId, LanguageVersion minimumLangVersion)
         {
+            testSpecificLangVersion = minimumLangVersion;
+
             var source =
                 $@"using NServiceBus; 
 using System;
@@ -17,141 +28,17 @@ class Foo
 {{
     void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
     {{
-        [|endpointConfig.AdvancedConfiguration.PurgeOnStartup(true)|];
+        [|endpointConfig.AdvancedConfiguration.{configuration}|];
 
         var advancedConfig = endpointConfig.AdvancedConfiguration;
-        [|advancedConfig.PurgeOnStartup(true)|];
+        [|advancedConfig.{configuration}|];
     }}
 }}";
 
-            return Assert(AzureFunctionsDiagnostics.PurgeOnStartupNotAllowedId, source);
+            return Assert(diagnosticId, source);
         }
 
-        [Test]
-        public Task DiagnosticIsReportedForLimitMessageProcessingConcurrencyTo()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
-    {{
-        [|endpointConfig.AdvancedConfiguration.LimitMessageProcessingConcurrencyTo(5)|];
-
-        var advancedConfig = endpointConfig.AdvancedConfiguration;
-        [|advancedConfig.LimitMessageProcessingConcurrencyTo(5)|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.LimitMessageProcessingToNotAllowedId, source);
-        }
-
-        [Test]
-        public Task DiagnosticIsReportedForDefineCriticalErrorAction()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
-    {{
-        [|endpointConfig.AdvancedConfiguration.DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)|];
-
-        var advancedConfig = endpointConfig.AdvancedConfiguration;
-        [|advancedConfig.DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.DefineCriticalErrorActionNotAllowedId, source);
-        }
-
-        [Test]
-        public Task DiagnosticIsReportedForSetDiagnosticsPath()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
-    {{
-        [|endpointConfig.AdvancedConfiguration.SetDiagnosticsPath(null)|];
-
-        var advancedConfig = endpointConfig.AdvancedConfiguration;
-        [|advancedConfig.SetDiagnosticsPath(null)|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.SetDiagnosticsPathNotAllowedId, source);
-        }
-
-        [Test]
-        public Task DiagnosticIsReportedForMakeInstanceUniquelyAddressable()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
-    {{
-        [|endpointConfig.AdvancedConfiguration.MakeInstanceUniquelyAddressable(null)|];
-
-        var advancedConfig = endpointConfig.AdvancedConfiguration;
-        [|advancedConfig.MakeInstanceUniquelyAddressable(null)|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.MakeInstanceUniquelyAddressableNotAllowedId, source);
-        }
-
-        // TODO: Figue out how to test UseTransport<T> extensions
-        [Test]
-        public Task DiagnosticIsReportedForUseTransport()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
-    {{
-        [|endpointConfig.AdvancedConfiguration.UseTransport(new AzureServiceBusTransport(null))|];
-
-        var advancedConfig = endpointConfig.AdvancedConfiguration;
-        [|advancedConfig.UseTransport(new AzureServiceBusTransport(null))|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.UseTransportNotAllowedId, source);
-        }
-
-        [Test]
-        public Task DiagnosticIsReportedForOverrideLocalAddress()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
-    {{
-        [|endpointConfig.AdvancedConfiguration.OverrideLocalAddress(null)|];
-
-        var advancedConfig = endpointConfig.AdvancedConfiguration;
-        [|advancedConfig.OverrideLocalAddress(null)|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowedId, source);
-        }
+        LanguageVersion testSpecificLangVersion;
+        protected override LanguageVersion AnalyzerLanguageVersion => testSpecificLangVersion;
     }
 }

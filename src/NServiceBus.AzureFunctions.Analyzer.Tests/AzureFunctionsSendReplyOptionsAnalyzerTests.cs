@@ -6,67 +6,24 @@ namespace NServiceBus.AzureFunctions.Analyzer.Tests
     [TestFixture]
     public class AzureFunctionsSendReplyOptionsAnalyzerTests : AnalyzerTestFixture<AzureFunctionsConfigurationAnalyzer>
     {
-        [Test]
-        public Task DiagnosticIsReportedForRouteReplyToThisInstance()
+        [TestCase("SendOptions", "RouteReplyToAnyInstance", AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowedId)]
+        [TestCase("SendOptions", "RouteReplyToThisInstance", AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowedId)]
+        [TestCase("SendOptions", "RouteToThisInstance", AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowedId)]
+        [TestCase("ReplyOptions", "RouteReplyToAnyInstance", AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowedId)]
+        [TestCase("ReplyOptions", "RouteReplyToThisInstance", AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowedId)]
+        public Task DiagnosticIsReportedForOptions(string optionsType, string method, string diagnosticId)
         {
             var source =
                 $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
 class Foo
 {{
-    void Bar()
+    void Bar({optionsType} options)
     {{
-        var replyOptions = new ReplyOptions();
-        [|replyOptions.RouteReplyToThisInstance()|];
-
-        var sendOptions = new SendOptions();
-        [|sendOptions.RouteReplyToThisInstance()|];
+        [|options.{method}()|];
     }}
 }}";
 
-            return Assert(AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowedId, source);
-        }
-
-        [Test]
-        public Task DiagnosticIsReportedForRouteToThisInstance()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar()
-    {{
-        var options = new SendOptions();
-        [|options.RouteToThisInstance()|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowedId, source);
-        }
-
-        [Test]
-        public Task DiagnosticIsReportedForRouteReplyToAnyInstance()
-        {
-            var source =
-                $@"using NServiceBus; 
-using System;
-using System.Threading.Tasks; 
-class Foo
-{{
-    void Bar()
-    {{
-        var options = new SendOptions();
-        [|options.RouteReplyToAnyInstance()|];
-
-        var replyOptions = new ReplyOptions();
-        [|replyOptions.RouteReplyToAnyInstance()|];
-    }}
-}}";
-
-            return Assert(AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowedId, source);
+            return Assert(diagnosticId, source);
         }
     }
 }
