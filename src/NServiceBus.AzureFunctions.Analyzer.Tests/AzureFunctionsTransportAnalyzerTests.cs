@@ -6,6 +6,32 @@ namespace NServiceBus.AzureFunctions.Analyzer.Tests
     [TestFixture]
     public class AzureFunctionsTransportAnalyzerTests : AnalyzerTestFixture<AzureFunctionsConfigurationAnalyzer>
     {
+        [TestCase("PrefetchCount", "5", AzureFunctionsDiagnostics.PrefetchCountNotAllowedId)]
+        public Task DiagnosticIsReportedTransportConfiguration(string configName, string configValue, string diagnosticId)
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Direct(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        [|endpointConfig.Transport.{configName}|] = {configValue};
+
+        var transportConfig = endpointConfig.Transport;
+        [|transportConfig.{configName}|] = {configValue};
+    }}
+
+    void Extension(TransportExtensions<AzureServiceBusTransport> transportExtension)
+    {{
+        [|transportExtension.{configName}({configValue})|];
+    }}
+}}";
+
+            return Assert(diagnosticId, source);
+        }
+
         [Test]
         public Task DiagnosticIsReportedForPrefetchCount()
         {
