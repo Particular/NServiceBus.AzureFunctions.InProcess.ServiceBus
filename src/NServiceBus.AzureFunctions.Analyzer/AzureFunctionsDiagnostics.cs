@@ -15,6 +15,11 @@
         public const string RouteToThisInstanceNotAllowedId = "NSBFUNC011";
         public const string RouteReplyToAnyInstanceNotAllowedId = "NSBFUNC012";
 
+        public const string MaxAutoLockRenewalDurationNotAllowedId = "NSBFUNC013";
+        public const string PrefetchCountNotAllowedId = "NSBFUNC014";
+        public const string PrefetchMultiplierNotAllowedId = "NSBFUNC015";
+        public const string TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId = "NSBFUNC016";
+
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
 
         internal static readonly DiagnosticDescriptor PurgeOnStartupNotAllowed = new DiagnosticDescriptor(
@@ -104,6 +109,42 @@
              messageFormat: "Azure Functions endpoints do not control the message receiver and by default route the replies to any instance.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Warning,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor MaxAutoLockRenewalDurationNotAllowed = new DiagnosticDescriptor(
+             id: MaxAutoLockRenewalDurationNotAllowedId,
+             title: "MaxAutoLockRenewalDuration is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the lock renewal duration.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor PrefetchCountNotAllowed = new DiagnosticDescriptor(
+             id: PrefetchCountNotAllowedId,
+             title: "PrefetchCount is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the prefetch count.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor PrefetchMultiplierNotAllowed = new DiagnosticDescriptor(
+             id: PrefetchMultiplierNotAllowedId,
+             title: "PrefetchMultiplier is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the prefetch multiplier.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed = new DiagnosticDescriptor(
+             id: TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId,
+             title: "TimeToWaitBeforeTriggeringCircuitBreaker is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot access circuit breaker settings.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
             );
     }

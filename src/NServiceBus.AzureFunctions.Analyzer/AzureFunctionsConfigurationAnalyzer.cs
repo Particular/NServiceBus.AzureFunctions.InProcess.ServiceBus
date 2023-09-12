@@ -21,7 +21,11 @@ namespace NServiceBus.AzureFunctions.Analyzer
             AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed,
             AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowed,
             AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed,
-            AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowed
+            AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowed,
+            AzureFunctionsDiagnostics.MaxAutoLockRenewalDurationNotAllowed,
+            AzureFunctionsDiagnostics.PrefetchCountNotAllowed,
+            AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowed,
+            AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed
         );
 
         static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
@@ -44,11 +48,21 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 ["RouteReplyToAnyInstance"] = AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowed
             };
 
+        static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedTransportSettings
+            = new Dictionary<string, DiagnosticDescriptor>
+            {
+                ["MaxAutoLockRenewalDuration"] = AzureFunctionsDiagnostics.MaxAutoLockRenewalDurationNotAllowed,
+                ["PrefetchCount"] = AzureFunctionsDiagnostics.PrefetchCountNotAllowed,
+                ["PrefetchMultiplier"] = AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowed,
+                ["TimeToWaitBeforeTriggeringCircuitBreaker"] = AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed
+            };
+
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterSyntaxNodeAction(Analyze, SyntaxKind.InvocationExpression);
+            context.RegisterSyntaxNodeAction(AnalyzeTransport, SyntaxKind.SimpleMemberAccessExpression);
         }
 
         static void Analyze(SyntaxNodeAnalysisContext context)
@@ -66,6 +80,33 @@ namespace NServiceBus.AzureFunctions.Analyzer
             AnalyzeEndpointConfiguration(context, invocationExpression, memberAccessExpression);
 
             AnalyzeSendAndReplyOptions(context, invocationExpression, memberAccessExpression);
+        }
+
+        static void AnalyzeTransport(SyntaxNodeAnalysisContext context)
+        {
+            if (!(context.Node is MemberAccessExpressionSyntax memberAccess))
+            {
+                return;
+            }
+
+            if (!NotAllowedTransportSettings.TryGetValue(memberAccess.Name.ToString(), out var diagnosticDescriptor))
+            {
+                return;
+
+            }
+
+            var memberAccessSymbol = context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken);
+
+            if (!(memberAccessSymbol.Symbol is IPropertySymbol propertySymbol))
+            {
+                return;
+            }
+
+            if (propertySymbol.ContainingType.ToString() == "NServiceBus.AzureServiceBusTransport")
+            {
+                context.ReportDiagnostic(diagnosticDescriptor, memberAccess);
+
+            }
         }
 
         static void AnalyzeEndpointConfiguration(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpression, MemberAccessExpressionSyntax memberAccessExpression)

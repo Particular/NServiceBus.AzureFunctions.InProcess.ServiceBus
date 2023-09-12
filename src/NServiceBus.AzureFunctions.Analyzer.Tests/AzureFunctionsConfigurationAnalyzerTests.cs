@@ -216,5 +216,89 @@ class Foo
 
             return Assert(AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowedId, source);
         }
+
+        [Test]
+        public Task DiagnosticIsReportedForMaxAutoLockRenewalDuration()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        [|endpointConfig.Transport.MaxAutoLockRenewalDuration|] = new System.TimeSpan(0, 0, 5, 0);
+
+        var transportConfig = endpointConfig.Transport;
+        [|transportConfig.MaxAutoLockRenewalDuration|] = new System.TimeSpan(0, 0, 5, 0);
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.MaxAutoLockRenewalDurationNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForPrefetchCount()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        [|endpointConfig.Transport.PrefetchCount|] = 5;
+
+        var transportConfig = endpointConfig.Transport;
+        [|transportConfig.PrefetchCount|] = 5;
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.PrefetchCountNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForPrefetchMultiplier()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        [|endpointConfig.Transport.PrefetchMultiplier|] = 5;
+
+        var transportConfig = endpointConfig.Transport;
+        [|transportConfig.PrefetchMultiplier|] = 5;
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForTimeToWaitBeforeTriggeringCircuitBreaker()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    {{
+        [|endpointConfig.Transport.TimeToWaitBeforeTriggeringCircuitBreaker|] = new System.TimeSpan(0, 0, 5, 0);
+
+        var transportConfig = endpointConfig.Transport;
+        [|transportConfig.TimeToWaitBeforeTriggeringCircuitBreaker|] = new System.TimeSpan(0, 0, 5, 0);
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId, source);
+        }
     }
 }
