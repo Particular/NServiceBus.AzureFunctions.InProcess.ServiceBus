@@ -25,7 +25,8 @@ namespace NServiceBus.AzureFunctions.Analyzer
             AzureFunctionsDiagnostics.MaxAutoLockRenewalDurationNotAllowed,
             AzureFunctionsDiagnostics.PrefetchCountNotAllowed,
             AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowed,
-            AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed
+            AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed,
+            AzureFunctionsDiagnostics.EntityMaximumSizeNotAllowed
         );
 
         static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
@@ -54,7 +55,8 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 ["MaxAutoLockRenewalDuration"] = AzureFunctionsDiagnostics.MaxAutoLockRenewalDurationNotAllowed,
                 ["PrefetchCount"] = AzureFunctionsDiagnostics.PrefetchCountNotAllowed,
                 ["PrefetchMultiplier"] = AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowed,
-                ["TimeToWaitBeforeTriggeringCircuitBreaker"] = AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed
+                ["TimeToWaitBeforeTriggeringCircuitBreaker"] = AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed,
+                ["EntityMaximumSize"] = AzureFunctionsDiagnostics.EntityMaximumSizeNotAllowed
             };
 
         public override void Initialize(AnalysisContext context)

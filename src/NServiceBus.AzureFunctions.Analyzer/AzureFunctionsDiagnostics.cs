@@ -20,6 +20,8 @@
         public const string PrefetchMultiplierNotAllowedId = "NSBFUNC015";
         public const string TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId = "NSBFUNC016";
 
+        public const string EntityMaximumSizeNotAllowedId = "NSBFUNC017";
+
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
 
         internal static readonly DiagnosticDescriptor PurgeOnStartupNotAllowed = new DiagnosticDescriptor(
@@ -143,6 +145,15 @@
              id: TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId,
              title: "TimeToWaitBeforeTriggeringCircuitBreaker is not supported in Azure Functions",
              messageFormat: "Azure Functions endpoints do not control the message receiver and cannot access circuit breaker settings.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor EntityMaximumSizeNotAllowed = new DiagnosticDescriptor(
+             id: EntityMaximumSizeNotAllowedId,
+             title: "EntityMaximumSize is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not support automatic queue creation.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
