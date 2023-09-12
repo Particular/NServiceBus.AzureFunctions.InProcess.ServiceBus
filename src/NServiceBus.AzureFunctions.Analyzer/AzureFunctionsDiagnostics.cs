@@ -4,15 +4,16 @@
 
     public static class AzureFunctionsDiagnostics
     {
-        public const string PurgeOnStartupNotAllowedId = "NSBAF0001";
-        public const string LimitMessageProcessingToNotAllowedId = "NSBAF0002";
-        public const string DefineCriticalErrorActionNotAllowedId = "NSBAF0003";
-        public const string SetDiagnosticsPathNotAllowedId = "NSBAF0004";
-        public const string MakeInstanceUniquelyAddressableNotAllowedId = "NSBAF0005";
-        public const string UseTransportNotAllowedId = "NSBAF0006";
-        public const string OverrideLocalAddressNotAllowedId = "NSBAF0007";
-        public const string RouteReplyToThisInstanceNotAllowedId = "NSBAF0008";
-        public const string RouteToThisInstanceNotAllowedId = "NSBAF0009";
+        public const string PurgeOnStartupNotAllowedId = "NSBFUNC003";
+        public const string LimitMessageProcessingToNotAllowedId = "NSBFUNC004";
+        public const string DefineCriticalErrorActionNotAllowedId = "NSBFUNC005";
+        public const string SetDiagnosticsPathNotAllowedId = "NSBFUNC006";
+        public const string MakeInstanceUniquelyAddressableNotAllowedId = "NSBFUNC007";
+        public const string UseTransportNotAllowedId = "NSBFUNC008";
+        public const string OverrideLocalAddressNotAllowedId = "NSBFUNC009";
+        public const string RouteReplyToThisInstanceNotAllowedId = "NSBFUNC010";
+        public const string RouteToThisInstanceNotAllowedId = "NSBFUNC011";
+        public const string RouteReplyToAnyInstanceNotAllowedId = "NSBFUNC012";
 
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
 
@@ -82,7 +83,7 @@
         internal static readonly DiagnosticDescriptor RouteReplyToThisInstanceNotAllowed = new DiagnosticDescriptor(
              id: RouteReplyToThisInstanceNotAllowedId,
              title: "RouteReplyToThisInstance is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure receiver routing.",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure specific instance routing.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
@@ -91,9 +92,18 @@
         internal static readonly DiagnosticDescriptor RouteToThisInstanceNotAllowed = new DiagnosticDescriptor(
              id: RouteToThisInstanceNotAllowedId,
              title: "RouteToThisInstance is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure receiver routing.",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure specific instance routing.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor RouteReplyToAnyInstanceNotAllowed = new DiagnosticDescriptor(
+             id: RouteReplyToAnyInstanceNotAllowedId,
+             title: "RouteReplyToAnyInstance is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not control the message receiver and by default route the replies to any instance.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Warning,
              isEnabledByDefault: true
             );
     }

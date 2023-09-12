@@ -163,10 +163,13 @@ using System;
 using System.Threading.Tasks; 
 class Foo
 {{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    void Bar()
     {{
         var replyOptions = new ReplyOptions();
         [|replyOptions.RouteReplyToThisInstance()|];
+
+        var sendOptions = new SendOptions();
+        [|sendOptions.RouteReplyToThisInstance()|];
     }}
 }}";
 
@@ -182,7 +185,7 @@ using System;
 using System.Threading.Tasks; 
 class Foo
 {{
-    void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
+    void Bar()
     {{
         var options = new SendOptions();
         [|options.RouteToThisInstance()|];
@@ -190,6 +193,28 @@ class Foo
 }}";
 
             return Assert(AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForRouteReplyToAnyInstance()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar()
+    {{
+        var options = new SendOptions();
+        [|options.RouteReplyToAnyInstance()|];
+
+        var replyOptions = new ReplyOptions();
+        [|replyOptions.RouteReplyToAnyInstance()|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowedId, source);
         }
     }
 }

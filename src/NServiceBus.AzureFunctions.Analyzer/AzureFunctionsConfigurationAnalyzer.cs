@@ -20,7 +20,8 @@ namespace NServiceBus.AzureFunctions.Analyzer
             AzureFunctionsDiagnostics.UseTransportNotAllowed,
             AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed,
             AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowed,
-            AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed
+            AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed,
+            AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowed
         );
 
         static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
@@ -39,7 +40,8 @@ namespace NServiceBus.AzureFunctions.Analyzer
             = new Dictionary<string, DiagnosticDescriptor>
             {
                 ["RouteReplyToThisInstance"] = AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowed,
-                ["RouteToThisInstance"] = AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed
+                ["RouteToThisInstance"] = AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed,
+                ["RouteReplyToAnyInstance"] = AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowed
             };
 
         public override void Initialize(AnalysisContext context)
