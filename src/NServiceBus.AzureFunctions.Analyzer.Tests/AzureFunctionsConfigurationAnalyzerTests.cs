@@ -300,5 +300,77 @@ class Foo
 
             return Assert(AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId, source);
         }
+
+        [Test]
+        public Task DiagnosticIsReportedForPrefetchCountAsExtension()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(TransportExtensions<AzureServiceBusTransport> transportExtension)
+    {{
+        [|transportExtension.PrefetchCount(5)|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.PrefetchCountNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForPrefetchMultiplierAsExtension()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(TransportExtensions<AzureServiceBusTransport> transportExtension)
+    {{
+        [|transportExtension.PrefetchMultiplier(5)|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForMaxAutoLockRenewalDurationAsExtension()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(TransportExtensions<AzureServiceBusTransport> transportExtension)
+    {{
+        [|transportExtension.MaxAutoLockRenewalDuration(new System.TimeSpan(0, 0, 5, 0))|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.MaxAutoLockRenewalDurationNotAllowedId, source);
+        }
+
+        [Test]
+        public Task DiagnosticIsReportedForTimeToWaitBeforeTriggeringCircuitBreakerAsExtension()
+        {
+            var source =
+                $@"using NServiceBus; 
+using System;
+using System.Threading.Tasks; 
+class Foo
+{{
+    void Bar(TransportExtensions<AzureServiceBusTransport> transportExtension)
+    {{
+        [|transportExtension.TimeToWaitBeforeTriggeringCircuitBreaker(new System.TimeSpan(0, 0, 5, 0))|];
+    }}
+}}";
+
+            return Assert(AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId, source);
+        }
     }
 }

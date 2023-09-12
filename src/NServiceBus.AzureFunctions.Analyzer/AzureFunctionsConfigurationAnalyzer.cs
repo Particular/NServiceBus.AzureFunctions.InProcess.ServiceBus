@@ -80,6 +80,8 @@ namespace NServiceBus.AzureFunctions.Analyzer
             AnalyzeEndpointConfiguration(context, invocationExpression, memberAccessExpression);
 
             AnalyzeSendAndReplyOptions(context, invocationExpression, memberAccessExpression);
+
+            AnalyzeTransportExtensions(context, invocationExpression, memberAccessExpression);
         }
 
         static void AnalyzeTransport(SyntaxNodeAnalysisContext context)
@@ -144,6 +146,26 @@ namespace NServiceBus.AzureFunctions.Analyzer
             }
 
             if (methodSymbol.ReceiverType.ToString() == "NServiceBus.SendOptions" || methodSymbol.ReceiverType.ToString() == "NServiceBus.ReplyOptions")
+            {
+                context.ReportDiagnostic(diagnosticDescriptor, invocationExpression);
+            }
+        }
+
+        static void AnalyzeTransportExtensions(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocationExpression, MemberAccessExpressionSyntax memberAccessExpression)
+        {
+            if (!NotAllowedTransportSettings.TryGetValue(memberAccessExpression.Name.Identifier.Text, out var diagnosticDescriptor))
+            {
+                return;
+            }
+
+            var memberAccessSymbol = context.SemanticModel.GetSymbolInfo(memberAccessExpression, context.CancellationToken);
+
+            if (!(memberAccessSymbol.Symbol is IMethodSymbol methodSymbol))
+            {
+                return;
+            }
+
+            if (methodSymbol.ReceiverType.ToString() == "NServiceBus.TransportExtensions<NServiceBus.AzureServiceBusTransport>")
             {
                 context.ReportDiagnostic(diagnosticDescriptor, invocationExpression);
             }
