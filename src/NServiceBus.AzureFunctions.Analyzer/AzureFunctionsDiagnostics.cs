@@ -90,7 +90,7 @@
         internal static readonly DiagnosticDescriptor RouteReplyToThisInstanceNotAllowed = new DiagnosticDescriptor(
              id: RouteReplyToThisInstanceNotAllowedId,
              title: "RouteReplyToThisInstance is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure specific instance routing.",
+             messageFormat: "Azure Functions instances cannot be directly addressed as they have a highly volatile lifetime. Use 'RouteToThisEndpoint' instead.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
@@ -99,7 +99,7 @@
         internal static readonly DiagnosticDescriptor RouteToThisInstanceNotAllowed = new DiagnosticDescriptor(
              id: RouteToThisInstanceNotAllowedId,
              title: "RouteToThisInstance is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot configure specific instance routing.",
+             messageFormat: "Azure Functions instances cannot be directly addressed as they have a highly volatile lifetime. Use 'RouteToThisEndpoint' instead.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
@@ -126,7 +126,7 @@
         internal static readonly DiagnosticDescriptor PrefetchCountNotAllowed = new DiagnosticDescriptor(
              id: PrefetchCountNotAllowedId,
              title: "PrefetchCount is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the prefetch count.",
+             messageFormat: "Message prefetching is controlled by the Azure Service Bus trigger and cannot be configured via the NServiceBus transport configuration API when using Azure Functions.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
@@ -135,7 +135,7 @@
         internal static readonly DiagnosticDescriptor PrefetchMultiplierNotAllowed = new DiagnosticDescriptor(
              id: PrefetchMultiplierNotAllowedId,
              title: "PrefetchMultiplier is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the prefetch multiplier.",
+             messageFormat: "Message prefetching is controlled by the Azure Service Bus trigger and cannot be configured via the NServiceBus transport configuration API when using Azure Functions",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
