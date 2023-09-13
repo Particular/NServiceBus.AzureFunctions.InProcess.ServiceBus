@@ -1,13 +1,11 @@
 namespace NServiceBus.AzureFunctions.Analyzer.Tests
 {
-    using System.Threading;
-    using System;
     using System.Threading.Tasks;
     using NUnit.Framework;
     using static AzureFunctionsDiagnostics;
 
     [TestFixture]
-    public class AzureFunctionsConfigurationAnalyzerTests : AnalyzerTestFixture<AzureFunctionsConfigurationAnalyzer>
+    public class ConfigurationAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
     {
         [TestCase("DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)", DefineCriticalErrorActionNotAllowedId)]
         [TestCase("LimitMessageProcessingConcurrencyTo(5)", LimitMessageProcessingToNotAllowedId)]

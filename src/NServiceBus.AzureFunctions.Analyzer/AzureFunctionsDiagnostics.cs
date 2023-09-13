@@ -13,21 +13,21 @@
         public const string OverrideLocalAddressNotAllowedId = "NSBFUNC009";
         public const string RouteReplyToThisInstanceNotAllowedId = "NSBFUNC010";
         public const string RouteToThisInstanceNotAllowedId = "NSBFUNC011";
-        public const string RouteReplyToAnyInstanceNotAllowedId = "NSBFUNC012";
-
+        public const string TransportTransactionModeNotAllowedId = "NSBFUNC012";
         public const string MaxAutoLockRenewalDurationNotAllowedId = "NSBFUNC013";
         public const string PrefetchCountNotAllowedId = "NSBFUNC014";
         public const string PrefetchMultiplierNotAllowedId = "NSBFUNC015";
         public const string TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId = "NSBFUNC016";
 
         public const string EntityMaximumSizeNotAllowedId = "NSBFUNC017";
+        public const string EnablePartitioningNotAllowedId = "NSBFUNC018";
 
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
 
         internal static readonly DiagnosticDescriptor PurgeOnStartupNotAllowed = new DiagnosticDescriptor(
              id: PurgeOnStartupNotAllowedId,
              title: "PurgeOnStartup is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints are started when the first message arrives. PurgeOnStartup may purge whenever a new instance is started.",
+             messageFormat: "Azure Functions endpoints do not support PurgeOnStartup.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
@@ -36,7 +36,7 @@
         internal static readonly DiagnosticDescriptor LimitMessageProcessingToNotAllowed = new DiagnosticDescriptor(
              id: LimitMessageProcessingToNotAllowedId,
              title: "LimitMessageProcessing is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot limit message processing concurrency.",
+             messageFormat: "Concurrency-related settings are controlled via the Azure Function host.json configuration file.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
@@ -81,7 +81,7 @@
         internal static readonly DiagnosticDescriptor OverrideLocalAddressNotAllowed = new DiagnosticDescriptor(
              id: OverrideLocalAddressNotAllowedId,
              title: "OverrideLocalAddress is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and cannot decide the local address.",
+             messageFormat: "The NServiceBus endpoint address in Azure Functions is determined by the ServiceBusTrigger attribute.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
@@ -102,15 +102,6 @@
              messageFormat: "Azure Functions instances cannot be directly addressed as they have a highly volatile lifetime. Use 'RouteToThisEndpoint' instead.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
-             isEnabledByDefault: true
-            );
-
-        internal static readonly DiagnosticDescriptor RouteReplyToAnyInstanceNotAllowed = new DiagnosticDescriptor(
-             id: RouteReplyToAnyInstanceNotAllowedId,
-             title: "RouteReplyToAnyInstance is not supported in Azure Functions",
-             messageFormat: "Azure Functions endpoints do not control the message receiver and by default route the replies to any instance.",
-             category: DiagnosticCategory,
-             defaultSeverity: DiagnosticSeverity.Warning,
              isEnabledByDefault: true
             );
 
@@ -154,6 +145,24 @@
              id: EntityMaximumSizeNotAllowedId,
              title: "EntityMaximumSize is not supported in Azure Functions",
              messageFormat: "Azure Functions endpoints do not support automatic queue creation.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor EnablePartitioningNotAllowed = new DiagnosticDescriptor(
+             id: EnablePartitioningNotAllowedId,
+             title: "EnablePartitioning is not supported in Azure Functions",
+             messageFormat: "Azure Functions endpoints do not support automatic queue creation.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
+        internal static readonly DiagnosticDescriptor TransportTransactionModeNotAllowed = new DiagnosticDescriptor(
+             id: TransportTransactionModeNotAllowedId,
+             title: "TransportTransactionMode is not supported in Azure Functions",
+             messageFormat: "Transport TransactionMode is controlled by the Azure Service Bus trigger and cannot be configured via the NServiceBus transport configuration API when using Azure Functions.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true

@@ -9,7 +9,7 @@ namespace NServiceBus.AzureFunctions.Analyzer
     using NServiceBus.AzureFunctions.Analyzer.Extensions;
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class AzureFunctionsConfigurationAnalyzer : DiagnosticAnalyzer
+    public class ConfigurationAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             AzureFunctionsDiagnostics.PurgeOnStartupNotAllowed,
@@ -21,12 +21,13 @@ namespace NServiceBus.AzureFunctions.Analyzer
             AzureFunctionsDiagnostics.OverrideLocalAddressNotAllowed,
             AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowed,
             AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed,
-            AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowed,
             AzureFunctionsDiagnostics.MaxAutoLockRenewalDurationNotAllowed,
             AzureFunctionsDiagnostics.PrefetchCountNotAllowed,
             AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowed,
             AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed,
-            AzureFunctionsDiagnostics.EntityMaximumSizeNotAllowed
+            AzureFunctionsDiagnostics.EntityMaximumSizeNotAllowed,
+            AzureFunctionsDiagnostics.EnablePartitioningNotAllowed,
+            AzureFunctionsDiagnostics.TransportTransactionModeNotAllowed
         );
 
         static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedEndpointConfigurationMethods
@@ -46,7 +47,6 @@ namespace NServiceBus.AzureFunctions.Analyzer
             {
                 ["RouteReplyToThisInstance"] = AzureFunctionsDiagnostics.RouteReplyToThisInstanceNotAllowed,
                 ["RouteToThisInstance"] = AzureFunctionsDiagnostics.RouteToThisInstanceNotAllowed,
-                ["RouteReplyToAnyInstance"] = AzureFunctionsDiagnostics.RouteReplyToAnyInstanceNotAllowed
             };
 
         static readonly Dictionary<string, DiagnosticDescriptor> NotAllowedTransportSettings
@@ -56,7 +56,10 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 ["PrefetchCount"] = AzureFunctionsDiagnostics.PrefetchCountNotAllowed,
                 ["PrefetchMultiplier"] = AzureFunctionsDiagnostics.PrefetchMultiplierNotAllowed,
                 ["TimeToWaitBeforeTriggeringCircuitBreaker"] = AzureFunctionsDiagnostics.TimeToWaitBeforeTriggeringCircuitBreakerNotAllowed,
-                ["EntityMaximumSize"] = AzureFunctionsDiagnostics.EntityMaximumSizeNotAllowed
+                ["EntityMaximumSize"] = AzureFunctionsDiagnostics.EntityMaximumSizeNotAllowed,
+                ["EnablePartitioning"] = AzureFunctionsDiagnostics.EnablePartitioningNotAllowed,
+                ["TransportTransactionMode"] = AzureFunctionsDiagnostics.TransportTransactionModeNotAllowed,
+                ["Transactions"] = AzureFunctionsDiagnostics.TransportTransactionModeNotAllowed
             };
 
         public override void Initialize(AnalysisContext context)
@@ -106,7 +109,7 @@ namespace NServiceBus.AzureFunctions.Analyzer
                 return;
             }
 
-            if (propertySymbol.ContainingType.ToString() == "NServiceBus.AzureServiceBusTransport")
+            if (propertySymbol.ContainingType.ToString() == "NServiceBus.AzureServiceBusTransport" || propertySymbol.ContainingType.ToString() == "NServiceBus.Transport.TransportDefinition")
             {
                 context.ReportDiagnostic(diagnosticDescriptor, memberAccess);
 

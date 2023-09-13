@@ -5,12 +5,10 @@ namespace NServiceBus.AzureFunctions.Analyzer.Tests
     using static AzureFunctionsDiagnostics;
 
     [TestFixture]
-    public class AzureFunctionsSendReplyOptionsAnalyzerTests : AnalyzerTestFixture<AzureFunctionsConfigurationAnalyzer>
+    public class OptionsAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
     {
-        [TestCase("SendOptions", "RouteReplyToAnyInstance", RouteReplyToAnyInstanceNotAllowedId)]
         [TestCase("SendOptions", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
         [TestCase("SendOptions", "RouteToThisInstance", RouteToThisInstanceNotAllowedId)]
-        [TestCase("ReplyOptions", "RouteReplyToAnyInstance", RouteReplyToAnyInstanceNotAllowedId)]
         [TestCase("ReplyOptions", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
         public Task DiagnosticIsReportedForOptions(string optionsType, string method, string diagnosticId)
         {
@@ -27,8 +25,6 @@ class Foo
             return Assert(diagnosticId, source);
         }
 
-
-        [TestCase("SomeOtherClass", "RouteReplyToAnyInstance", RouteReplyToAnyInstanceNotAllowedId)]
         [TestCase("SomeOtherClass", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
         [TestCase("SomeOtherClass", "RouteToThisInstance", RouteToThisInstanceNotAllowedId)]
         public Task DiagnosticIsNotReportedForOtherOptions(string optionsType, string method, string diagnosticId)
