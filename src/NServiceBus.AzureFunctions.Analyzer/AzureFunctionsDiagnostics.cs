@@ -74,7 +74,7 @@
              title: "UseTransport is not supported in Azure Functions",
              messageFormat: "The package configures Azure Service Bus transport by default. Use ServiceBusTriggeredEndpointConfiguration.Transport to access the transport configuration.",
              category: DiagnosticCategory,
-             defaultSeverity: DiagnosticSeverity.Warning,
+             defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
             );
 
