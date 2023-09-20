@@ -14,5 +14,11 @@
     <!-- this package can only be upgraded when we drop support for older versions of Visual Studio -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
   </ItemGroup>
+
+  <Target Name="UseMajorMinorPatchForAssemblyVersion" AfterTargets="MinVer">
+    <PropertyGroup>
+      <AssemblyVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch).0</AssemblyVersion>
+    </PropertyGroup>
+  </Target>
   
 </Project>
