@@ -14,7 +14,3 @@ Requirements:
 
 - Have the [Microsoft Azurite Storage Emulator](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio) running
 - Configure an environment variable named `AzureWebJobsServiceBus` with an Azure Service Bus connection string
-
-## Contributing
-
-If you are interested in contributing, please follow the instructions on [How to contribute](https://docs.particular.net/platform/contributing).
