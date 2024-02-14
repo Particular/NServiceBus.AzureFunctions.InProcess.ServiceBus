@@ -7,5 +7,6 @@
     <FunctionsPreservedDependencies Include="System.Diagnostics.DiagnosticSource.dll" />
     <FunctionsPreservedDependencies Include="System.Text.Json.dll" />
     <FunctionsPreservedDependencies Include="System.Text.Encodings.Web.dll" />
+    <FunctionsPreservedDependencies Include="System.Security.Cryptography.Xml.dll" />
   </ItemGroup>
 </Project>
