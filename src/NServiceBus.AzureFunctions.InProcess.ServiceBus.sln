@@ -19,8 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.SourceGenerator.Tests", "NServiceBus.AzureFunctions.SourceGenerator.Tests\NServiceBus.AzureFunctions.SourceGenerator.Tests.csproj", "{22BE8002-D99B-461B-B472-F2361A849E47}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManualTests.HostV3", "ManualTests.HostV3\ManualTests.HostV3.csproj", "{8F3E43FB-D366-4A61-9AE3-9711B088ED11}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManualTests.HostV4", "ManualTests.HostV4\ManualTests.HostV4.csproj", "{48BFF8B1-3672-4C3A-9ED2-EDC3181F8F83}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.AcceptanceTests", "ServiceBus.AcceptanceTests\ServiceBus.AcceptanceTests.csproj", "{804499CB-21B5-4366-AF9C-13E0B0AD2D10}"
@@ -51,10 +49,6 @@ Global
 		{22BE8002-D99B-461B-B472-F2361A849E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22BE8002-D99B-461B-B472-F2361A849E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22BE8002-D99B-461B-B472-F2361A849E47}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8F3E43FB-D366-4A61-9AE3-9711B088ED11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F3E43FB-D366-4A61-9AE3-9711B088ED11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F3E43FB-D366-4A61-9AE3-9711B088ED11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F3E43FB-D366-4A61-9AE3-9711B088ED11}.Release|Any CPU.Build.0 = Release|Any CPU
 		{48BFF8B1-3672-4C3A-9ED2-EDC3181F8F83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{48BFF8B1-3672-4C3A-9ED2-EDC3181F8F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48BFF8B1-3672-4C3A-9ED2-EDC3181F8F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
