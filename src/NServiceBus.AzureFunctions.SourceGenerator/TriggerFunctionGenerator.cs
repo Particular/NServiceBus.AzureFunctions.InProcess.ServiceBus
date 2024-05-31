@@ -110,7 +110,7 @@
 
             var source = syntaxReceiver.enableCrossEntityTransactions ?
                    AtomicSource(syntaxReceiver.triggerFunctionName, syntaxReceiver.endpointName, syntaxReceiver.connection) :
-                   NonAtomicSource(syntaxReceiver.triggerFunctionName, syntaxReceiver.endpointName);
+                   NonAtomicSource(syntaxReceiver.triggerFunctionName, syntaxReceiver.endpointName, syntaxReceiver.connection);
 
             context.AddSource("NServiceBus__FunctionEndpointTrigger", SourceText.From(source, Encoding.UTF8));
         }
