@@ -2,6 +2,7 @@
 {
     using System;
     using NServiceBus;
+    using NServiceBus.AzureFunctions.InProcess.ServiceBus;
     using NUnit.Framework;
 
     [TestFixture]
@@ -10,7 +11,7 @@
         [Test]
         public void Should_guide_user_towards_success()
         {
-            var defaultConnectionStringKey = ServiceBusTriggeredEndpointConfiguration.DefaultServiceBusConnectionName;
+            var defaultConnectionStringKey = ServerlessTransport.DefaultServiceBusConnectionName;
             var connectionString = Environment.GetEnvironmentVariable(defaultConnectionStringKey);
 
             try

@@ -13,6 +13,7 @@
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
+    using NServiceBus.AzureFunctions.InProcess.ServiceBus;
     using NServiceBus.MessageMutator;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -125,8 +126,7 @@
 
             public override async Task ComponentsStarted(CancellationToken cancellationToken)
             {
-                var connectionString = Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration
-                        .DefaultServiceBusConnectionName);
+                var connectionString = Environment.GetEnvironmentVariable(ServerlessTransport.DefaultServiceBusConnectionName);
 
                 var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
                 {

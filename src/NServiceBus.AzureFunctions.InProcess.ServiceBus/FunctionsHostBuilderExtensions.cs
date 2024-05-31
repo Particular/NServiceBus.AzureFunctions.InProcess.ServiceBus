@@ -4,6 +4,7 @@
     using System.IO;
     using System.Reflection;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -19,21 +20,7 @@
             this IFunctionsHostBuilder functionsHostBuilder,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
-            var hostConfiguration = functionsHostBuilder.GetContext().Configuration;
-            var endpointName = hostConfiguration.GetValue<string>("ENDPOINT_NAME")
-                ?? Assembly.GetCallingAssembly()
-                    .GetCustomAttribute<NServiceBusTriggerFunctionAttribute>()
-                    ?.EndpointName;
-
-            if (string.IsNullOrWhiteSpace(endpointName))
-            {
-                throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
-- Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
-- Use `functionsHostBuilder.UseNServiceBus(endpointName, configuration)` 
-- Add a configuration or environment variable with the key ENDPOINT_NAME");
-            }
-
-            functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory);
+            RegisterEndpointFactory(functionsHostBuilder, null, Assembly.GetCallingAssembly(), (c) => configurationFactory?.Invoke(c));
         }
 
         /// <summary>
@@ -44,10 +31,11 @@
             string endpointName,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
-            var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, null);
-            configurationFactory?.Invoke(serviceBusConfiguration);
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new ArgumentException($"{nameof(endpointName)} must have a value");
+            }
+            RegisterEndpointFactory(functionsHostBuilder, endpointName, null, configurationFactory);
         }
 
         /// <summary>
@@ -59,10 +47,11 @@
             string connectionString,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
-            var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, connectionString);
-            configurationFactory?.Invoke(serviceBusConfiguration);
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new ArgumentException($"{nameof(endpointName)} must have a value");
+            }
+            RegisterEndpointFactory(functionsHostBuilder, endpointName, null, configurationFactory, connectionString);
         }
 
         /// <summary>
@@ -75,10 +64,42 @@
             var configuration = functionsHostBuilder.GetContext().Configuration;
             var serviceBusTriggeredEndpointConfiguration = configurationFactory(configuration);
 
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
+            ConfigureEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
         }
 
         static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
+            string endpointName,
+            Assembly callingAssembly,
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory,
+            string connectionString = null)
+        {
+            var configuration = functionsHostBuilder.GetContext().Configuration;
+            var triggerAttribute = callingAssembly
+                    ?.GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
+            var endpointNameValue = triggerAttribute?.EndpointName;
+            var connectionName = triggerAttribute?.Connection;
+
+            endpointName ??= configuration.GetValue<string>("ENDPOINT_NAME")
+                             ?? endpointNameValue;
+
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
+- Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
+- Use `functionsHostBuilder.UseNServiceBus(endpointName, configuration)` 
+- Add a configuration or environment variable with the key ENDPOINT_NAME");
+            }
+
+            functionsHostBuilder.Services.AddAzureClientsCore();
+
+            var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, configuration, connectionString, connectionName);
+
+            configurationFactory?.Invoke(functionEndpointConfiguration);
+
+            ConfigureEndpointFactory(functionsHostBuilder, functionEndpointConfiguration);
+        }
+
+        static void ConfigureEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
             ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
         {
             var serverless = serviceBusTriggeredEndpointConfiguration.MakeServerless();

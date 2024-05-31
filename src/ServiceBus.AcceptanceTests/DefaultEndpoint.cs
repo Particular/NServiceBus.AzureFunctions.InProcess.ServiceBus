@@ -6,6 +6,7 @@
     using NServiceBus;
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
+    using NServiceBus.AzureFunctions.InProcess.ServiceBus;
 
     class DefaultEndpoint : IEndpointSetupTemplate
     {
@@ -28,8 +29,7 @@
             configuration.SendFailedMessagesTo("error");
 
             var connectionString =
-                Environment.GetEnvironmentVariable(ServiceBusTriggeredEndpointConfiguration
-                    .DefaultServiceBusConnectionName);
+                Environment.GetEnvironmentVariable(ServerlessTransport.DefaultServiceBusConnectionName);
 
             var azureServiceBusTransport = new AzureServiceBusTransport(connectionString)
             {

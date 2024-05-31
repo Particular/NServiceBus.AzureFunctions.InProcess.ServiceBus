@@ -42,8 +42,10 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint.
         /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, string connectionString = default)
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, string connectionString = default, string connectionName = default)
         {
+            this.connectionString = connectionString;
+            this.connectionName = connectionName;
             var endpointConfiguration = new EndpointConfiguration(endpointName);
 
             var recoverability = endpointConfiguration.Recoverability();
@@ -69,35 +71,24 @@
                 endpointConfiguration.License(licenseText);
             }
 
-            if (connectionString == null)
-            {
-                connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-
-                if (string.IsNullOrWhiteSpace(connectionString))
-                {
-                    throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {DefaultServiceBusConnectionName} or passing it to `UseNServiceBus(ENDPOINTNAME,CONNECTIONSTRING)`");
-                }
-            }
-
-            Transport = new AzureServiceBusTransport(connectionString)
-            {
-                // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
-                // endpoint API (calling ProcessAtomic vs ProcessNonAtomic).
-                TransportTransactionMode = TransportTransactionMode.ReceiveOnly
-            };
-
-            Routing = endpointConfiguration.UseTransport(Transport);
+            // We are deliberately using the old way of creating a transport here because it allows us to create an
+            // uninitialized transport that can later be configured with a connection string or a fully qualified name and
+            // a token provider. Once we deprecate the old way we can for example add make the internal constructor
+            // visible to functions or the code base has already moved into a different direction.
+            transportExtensions = endpointConfiguration.UseTransport<AzureServiceBusTransport>();
+            Transport = transportExtensions.Transport;
+            Routing = transportExtensions.Routing();
 
             endpointConfiguration.UseSerialization<NewtonsoftJsonSerializer>();
 
             AdvancedConfiguration = endpointConfiguration;
         }
 
-        internal ServerlessInterceptor MakeServerless()
+        internal ServerlessTransport MakeServerless()
         {
-            var serverlessTransport = new ServerlessTransport(Transport);
+            var serverlessTransport = new ServerlessTransport(transportExtensions, connectionString, connectionName);
             AdvancedConfiguration.UseTransport(serverlessTransport);
-            return new ServerlessInterceptor(serverlessTransport);
+            return serverlessTransport;
         }
 
         static string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)
@@ -143,6 +134,8 @@
             };
 
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
-        internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
+        readonly string connectionString;
+        readonly string connectionName;
+        readonly TransportExtensions<AzureServiceBusTransport> transportExtensions;
     }
 }
