@@ -82,7 +82,7 @@
 
             public override string Name { get; }
 
-            public override Task Start(CancellationToken token)
+            public override Task Start(CancellationToken cancellationToken = default)
             {
                 var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(Name, default, null);
                 var endpointConfiguration = functionEndpointConfiguration.AdvancedConfiguration;
@@ -124,7 +124,7 @@
                 return Task.CompletedTask;
             }
 
-            public override async Task ComponentsStarted(CancellationToken cancellationToken)
+            public override async Task ComponentsStarted(CancellationToken cancellationToken = default)
             {
                 var connectionString = Environment.GetEnvironmentVariable(ServerlessTransport.DefaultServiceBusConnectionName);
 
@@ -148,10 +148,12 @@
 
                     var serviceBusMessage = new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
                     {
-                        MessageId = messageId
+                        MessageId = messageId,
+                        ApplicationProperties =
+                        {
+                            ["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName
+                        }
                     };
-
-                    serviceBusMessage.ApplicationProperties["NServiceBus.EnclosedMessageTypes"] = message.GetType().FullName;
 
                     await sender.SendMessageAsync(serviceBusMessage, cancellationToken);
 
