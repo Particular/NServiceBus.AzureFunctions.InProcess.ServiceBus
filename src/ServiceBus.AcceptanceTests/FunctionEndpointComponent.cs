@@ -20,34 +20,27 @@
 
     abstract class FunctionEndpointComponent : IComponentBehavior
     {
-        public FunctionEndpointComponent(TransportTransactionMode transactionMode)
-        {
-            if (transactionMode == TransportTransactionMode.SendsAtomicWithReceive)
+        protected FunctionEndpointComponent(TransportTransactionMode transactionMode = TransportTransactionMode.ReceiveOnly) =>
+            sendsAtomicWithReceive = transactionMode switch
             {
-                sendsAtomicWithReceive = true;
-            }
-            else if (transactionMode == TransportTransactionMode.ReceiveOnly)
-            {
-                sendsAtomicWithReceive = false;
-            }
-            else
-            {
-                throw new Exception("Unsupported transaction mode " + transactionMode);
-            }
-        }
+                TransportTransactionMode.SendsAtomicWithReceive => true,
+                TransportTransactionMode.ReceiveOnly => false,
+                TransportTransactionMode.None => throw new Exception("Unsupported transaction mode " + transactionMode),
+                TransportTransactionMode.TransactionScope => throw new Exception("Unsupported transaction mode " + transactionMode),
+                _ => throw new Exception("Unsupported transaction mode " + transactionMode),
+            };
 
-        public Task<ComponentRunner> CreateRunner(RunDescriptor runDescriptor)
-        {
-            return Task.FromResult<ComponentRunner>(
+        public Task<ComponentRunner> CreateRunner(RunDescriptor runDescriptor) =>
+            Task.FromResult<ComponentRunner>(
                 new FunctionRunner(
                     Messages,
                     CustomizeConfiguration,
+                    OnStartCore,
                     runDescriptor.ScenarioContext,
                     GetType(),
                     DoNotFailOnErrorMessages,
                     sendsAtomicWithReceive,
                     ServiceBusMessageActionsFactory));
-        }
 
         public IList<object> Messages { get; } = new List<object>();
 
@@ -57,12 +50,17 @@
 
         public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
 
+        protected virtual Task OnStart(IFunctionEndpoint functionEndpoint, ExecutionContext executionContext) => Task.CompletedTask;
+
+        Task OnStartCore(IFunctionEndpoint functionEndpoint, ExecutionContext executionContext) => OnStart(functionEndpoint, executionContext);
+
         readonly bool sendsAtomicWithReceive;
 
         class FunctionRunner : ComponentRunner
         {
             public FunctionRunner(IList<object> messages,
                 Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization,
+                Func<IFunctionEndpoint, ExecutionContext, Task> onStart,
                 ScenarioContext scenarioContext,
                 Type functionComponentType,
                 bool doNotFailOnErrorMessages,
@@ -71,6 +69,7 @@
             {
                 this.messages = messages;
                 this.configurationCustomization = configurationCustomization;
+                this.onStart = onStart;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
                 this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
@@ -126,6 +125,8 @@
 
             public override async Task ComponentsStarted(CancellationToken cancellationToken = default)
             {
+                await onStart(endpoint, new ExecutionContext());
+
                 var connectionString = Environment.GetEnvironmentVariable(ServerlessTransport.DefaultServiceBusConnectionName);
 
                 var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
@@ -226,6 +227,7 @@
             IFunctionEndpoint endpoint;
 
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
+            readonly Func<IFunctionEndpoint, ExecutionContext, Task> onStart;
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
             readonly bool doNotFailOnErrorMessages;
