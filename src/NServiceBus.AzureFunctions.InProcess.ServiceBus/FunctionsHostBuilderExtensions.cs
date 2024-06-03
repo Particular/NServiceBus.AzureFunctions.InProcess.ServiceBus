@@ -3,6 +3,7 @@
     using System;
     using System.IO;
     using System.Reflection;
+    using AzureFunctions.InProcess.ServiceBus;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Configuration;
@@ -18,10 +19,8 @@
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
-            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
-        {
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) =>
             RegisterEndpointFactory(functionsHostBuilder, null, Assembly.GetCallingAssembly(), (c) => configurationFactory?.Invoke(c));
-        }
 
         /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
@@ -61,10 +60,11 @@
             this IFunctionsHostBuilder functionsHostBuilder,
             Func<IConfiguration, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
-            var configuration = functionsHostBuilder.GetContext().Configuration;
+            var functionsHostBuilderContext = functionsHostBuilder.GetContextInternal();
+            var configuration = functionsHostBuilderContext.Configuration;
             var serviceBusTriggeredEndpointConfiguration = configurationFactory(configuration);
 
-            ConfigureEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
+            ConfigureEndpointFactory(functionsHostBuilder.Services, functionsHostBuilderContext, serviceBusTriggeredEndpointConfiguration);
         }
 
         static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
@@ -73,7 +73,8 @@
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory,
             string connectionString = null)
         {
-            var configuration = functionsHostBuilder.GetContext().Configuration;
+            var functionsHostBuilderContext = functionsHostBuilder.GetContextInternal();
+            var configuration = functionsHostBuilderContext.Configuration;
             var triggerAttribute = callingAssembly
                     ?.GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
             var endpointNameValue = triggerAttribute?.EndpointName;
@@ -96,23 +97,34 @@
 
             configurationFactory?.Invoke(functionEndpointConfiguration);
 
-            ConfigureEndpointFactory(functionsHostBuilder, functionEndpointConfiguration);
+            ConfigureEndpointFactory(functionsHostBuilder.Services, functionsHostBuilderContext, functionEndpointConfiguration);
         }
 
-        static void ConfigureEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
+        static void ConfigureEndpointFactory(IServiceCollection services, FunctionsHostBuilderContext functionsHostBuilderContext,
             ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
         {
             var serverless = serviceBusTriggeredEndpointConfiguration.MakeServerless();
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
             var startableEndpoint = Configure(
                 serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration,
-                functionsHostBuilder.Services,
-                Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
+                services,
+                Path.Combine(functionsHostBuilderContext.ApplicationRootPath, "bin"));
 
-            functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
-            functionsHostBuilder.Services.AddSingleton(startableEndpoint);
-            functionsHostBuilder.Services.AddSingleton(serverless);
-            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
+            services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
+            services.AddSingleton(startableEndpoint);
+            services.AddSingleton(serverless);
+            services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
+        }
+
+        internal static FunctionsHostBuilderContext GetContextInternal(this IFunctionsHostBuilder functionsHostBuilder)
+        {
+            // This check is for testing purposes only. See more details on the internal interface below.
+            if (functionsHostBuilder is IFunctionsHostBuilderExt internalBuilder)
+            {
+                return internalBuilder.Context;
+            }
+
+            return functionsHostBuilder.GetContext();
         }
 
         internal static IStartableEndpointWithExternallyManagedContainer Configure(
