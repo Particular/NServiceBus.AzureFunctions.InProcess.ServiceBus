@@ -4,6 +4,7 @@
     using System.IO;
     using System.Reflection;
     using AzureFunctions.InProcess.ServiceBus;
+    using Configuration.AdvancedExtensibility;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Configuration;
@@ -106,10 +107,12 @@
         {
             var serverless = serviceBusTriggeredEndpointConfiguration.MakeServerless();
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
+            EndpointConfiguration advancedConfiguration = serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration;
+            var assemblyDirectoryName = advancedConfiguration.GetSettings().GetOrDefault<string>("NServiceBus.AzureFunctions.InProcess.ServiceBus.AssemblyDirectoryName") ?? "bin";
             var startableEndpoint = Configure(
-                serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration,
+                advancedConfiguration,
                 services,
-                Path.Combine(functionsHostBuilderContext.ApplicationRootPath, "bin"));
+                Path.Combine(functionsHostBuilderContext.ApplicationRootPath, assemblyDirectoryName));
 
             services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
             services.AddSingleton(startableEndpoint);

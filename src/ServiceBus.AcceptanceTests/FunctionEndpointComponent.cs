@@ -18,6 +18,7 @@
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
     using NServiceBus.AzureFunctions.InProcess.ServiceBus;
+    using NServiceBus.Configuration.AdvancedExtensibility;
     using NServiceBus.MessageMutator;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -43,16 +44,19 @@
                     runDescriptor.ScenarioContext,
                     GetType(),
                     DoNotFailOnErrorMessages,
+                    TypesScopedByTestClassAssemblyScanningEnabled,
                     sendsAtomicWithReceive,
                     ServiceBusMessageActionsFactory));
 
-        public IList<object> Messages { get; } = new List<object>();
+        protected IList<object> Messages { get; } = new List<object>();
 
-        public bool DoNotFailOnErrorMessages { get; set; }
+        protected bool DoNotFailOnErrorMessages { get; init; }
 
-        public Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; set; } = (r, _) => new TestableServiceBusMessageActions(r);
+        protected bool TypesScopedByTestClassAssemblyScanningEnabled { get; init; } = true;
 
-        public Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; set; } = _ => { };
+        protected Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; set; } = (r, _) => new TestableServiceBusMessageActions(r);
+
+        protected Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; init; } = _ => { };
 
         protected virtual Task OnStart(IFunctionEndpoint functionEndpoint, ExecutionContext executionContext) => Task.CompletedTask;
 
@@ -68,6 +72,7 @@
                 ScenarioContext scenarioContext,
                 Type functionComponentType,
                 bool doNotFailOnErrorMessages,
+                bool typesScopedByTestClassAssemblyScanningEnabled,
                 bool sendsAtomicWithReceive,
                 Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory)
             {
@@ -76,6 +81,7 @@
                 this.onStart = onStart;
                 this.scenarioContext = scenarioContext;
                 this.functionComponentType = functionComponentType;
+                this.typesScopedByTestClassAssemblyScanningEnabled = typesScopedByTestClassAssemblyScanningEnabled;
                 this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
                 this.sendsAtomicWithReceive = sendsAtomicWithReceive;
                 this.serviceBusMessageActionsFactory = serviceBusMessageActionsFactory;
@@ -92,7 +98,10 @@
                 {
                     var endpointConfiguration = triggerConfiguration.AdvancedConfiguration;
 
-                    endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
+                    if (typesScopedByTestClassAssemblyScanningEnabled)
+                    {
+                        endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
+                    }
 
                     endpointConfiguration.Recoverability()
                         .Immediate(i => i.NumberOfRetries(0))
@@ -303,6 +312,7 @@
             readonly Func<IFunctionEndpoint, ExecutionContext, Task> onStart;
             readonly ScenarioContext scenarioContext;
             readonly Type functionComponentType;
+            readonly bool typesScopedByTestClassAssemblyScanningEnabled;
             readonly bool doNotFailOnErrorMessages;
             readonly bool sendsAtomicWithReceive;
             readonly Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory;
