@@ -287,6 +287,7 @@
                     // Forwarding all the service registrations to the host builder
                     hostBuilder.ConfigureServices(services =>
                     {
+                        services.AddHostedService<InitializationHost>();
                         foreach (var service in Services)
                         {
                             services.Add(service);

@@ -92,7 +92,6 @@
 - Add a configuration or environment variable with the key ENDPOINT_NAME");
             }
 
-            functionsHostBuilder.Services.AddHostedService<InitializationHost>();
             functionsHostBuilder.Services.AddAzureClientsCore();
 
             var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, configuration, connectionString, connectionName);
