@@ -39,6 +39,7 @@ namespace NServiceBus
     public sealed class NServiceBusTriggerFunctionAttribute : System.Attribute
     {
         public NServiceBusTriggerFunctionAttribute(string endpointName) { }
+        public string Connection { get; set; }
         public string EndpointName { get; }
         public bool SendsAtomicWithReceive { get; set; }
         public string TriggerFunctionName { get; set; }
