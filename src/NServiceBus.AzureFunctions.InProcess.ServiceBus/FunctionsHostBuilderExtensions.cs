@@ -91,6 +91,7 @@
 - Add a configuration or environment variable with the key ENDPOINT_NAME");
             }
 
+            functionsHostBuilder.Services.AddHostedService<InitializationHost>();
             functionsHostBuilder.Services.AddAzureClientsCore();
 
             var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, configuration, connectionString, connectionName);
@@ -113,7 +114,8 @@
             services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
             services.AddSingleton(startableEndpoint);
             services.AddSingleton(serverless);
-            services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
+            services.AddSingleton<InProcessFunctionEndpoint>();
+            services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<InProcessFunctionEndpoint>());
         }
 
         internal static FunctionsHostBuilderContext GetContextInternal(this IFunctionsHostBuilder functionsHostBuilder)

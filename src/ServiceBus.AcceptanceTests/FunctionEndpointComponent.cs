@@ -85,7 +85,7 @@
 
             public override string Name { get; }
 
-            public override Task Start(CancellationToken cancellationToken = default)
+            public override async Task Start(CancellationToken cancellationToken = default)
             {
                 var hostBuilder = new FunctionHostBuilder();
                 hostBuilder.UseNServiceBus(Name, triggerConfiguration =>
@@ -121,15 +121,20 @@
                     configurationCustomization(triggerConfiguration);
                 });
 
-                serviceProvider = hostBuilder.Build();
-                endpoint = serviceProvider.GetRequiredService<IFunctionEndpoint>();
+                host = hostBuilder.Build();
+                await host.StartAsync(cancellationToken);
 
-                return Task.CompletedTask;
+                endpoint = host.Services.GetRequiredService<IFunctionEndpoint>();
             }
 
             public override async Task ComponentsStarted(CancellationToken cancellationToken = default)
             {
                 await onStart(endpoint, new ExecutionContext());
+
+                if (messages.Count == 0)
+                {
+                    return;
+                }
 
                 var connectionString = Environment.GetEnvironmentVariable(ServerlessTransport.DefaultServiceBusConnectionName);
 
@@ -216,25 +221,34 @@
 
             public override async Task Stop()
             {
-                await serviceProvider.DisposeAsync();
-
-                if (!doNotFailOnErrorMessages)
+                try
                 {
-                    if (scenarioContext.FailedMessages.TryGetValue(Name, out var failedMessages))
+                    await host.StopAsync();
+
+                    if (!doNotFailOnErrorMessages)
                     {
-                        throw new MessageFailedException(failedMessages.First(), scenarioContext);
+                        if (scenarioContext.FailedMessages.TryGetValue(Name, out var failedMessages))
+                        {
+                            throw new MessageFailedException(failedMessages.First(), scenarioContext);
+                        }
                     }
+                }
+                finally
+                {
+                    host.Dispose();
                 }
             }
 
-            // There is some non-trivial hackery going on in order to bypass the azure function host assumptions. Unfortunately
-            // it is not possible to use the hostbuilder here directly because functions is still using the old hostbuilder
-            // that uses lambdas, and we need to be able to forward the service collection to the infrastructure. The consequence
-            // of this is that some default things the host would normally provide like loading configuration from environment
-            // variables, registering configuration and more needs to be done manually.
+            // There is some non-trivial hackery going on in order to bypass the azure function host assumptions. In order to
+            // simulate a similar environment we have to use a host builder so that we also get the possibility to run
+            // hosted services etc. But the function hosts requires an already initialized service collection early on
+            // but the host builder used by functions is still using the lambda based approach. To work around this we
+            // have to forward the service registrations to the host builder and some other things manually. This is not
+            // great but once the functions host moved to the new host builder this can be simplified.
             sealed class FunctionHostBuilder : IFunctionsHostBuilder, IFunctionsHostBuilderExt
             {
                 HostBuilderContext context;
+                readonly HostBuilder hostBuilder = new();
 
                 public IServiceCollection Services { get; } = new ServiceCollection();
 
@@ -250,13 +264,28 @@
                         var configurationBuilder = new ConfigurationBuilder();
                         configurationBuilder.AddEnvironmentVariables();
                         var configurationRoot = configurationBuilder.Build();
-                        Services.AddSingleton<IConfiguration>(configurationRoot);
                         context = new HostBuilderContext(new WebJobsBuilderContext { Configuration = configurationRoot, ApplicationRootPath = AppDomain.CurrentDomain.BaseDirectory });
                         return context;
                     }
                 }
 
-                public ServiceProvider Build() => Services.BuildServiceProvider();
+                public IHost Build()
+                {
+                    hostBuilder.ConfigureHostConfiguration(configuration =>
+                    {
+                        configuration.AddEnvironmentVariables();
+                    });
+                    // Forwarding all the service registrations to the host builder
+                    hostBuilder.ConfigureServices(services =>
+                    {
+                        foreach (var service in Services)
+                        {
+                            services.Add(service);
+                        }
+                        Services.Clear();
+                    });
+                    return hostBuilder.Build();
+                }
 
                 sealed class HostBuilderContext : FunctionsHostBuilderContext
                 {
@@ -267,7 +296,7 @@
             }
 
             IList<object> messages;
-            ServiceProvider serviceProvider;
+            IHost host;
             IFunctionEndpoint endpoint;
 
             readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;

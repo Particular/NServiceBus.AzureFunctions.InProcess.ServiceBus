@@ -16,10 +16,7 @@
     /// </summary>
     public partial class ServiceBusTriggeredEndpointConfiguration
     {
-        static ServiceBusTriggeredEndpointConfiguration()
-        {
-            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
-        }
+        static ServiceBusTriggeredEndpointConfiguration() => LogManager.UseFactory(FunctionsLoggerFactory.Instance);
 
         // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
         Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
