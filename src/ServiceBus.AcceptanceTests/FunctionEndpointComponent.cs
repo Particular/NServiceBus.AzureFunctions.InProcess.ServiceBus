@@ -18,7 +18,6 @@
     using NServiceBus.AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTesting.Support;
     using NServiceBus.AzureFunctions.InProcess.ServiceBus;
-    using NServiceBus.Configuration.AdvancedExtensibility;
     using NServiceBus.MessageMutator;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
