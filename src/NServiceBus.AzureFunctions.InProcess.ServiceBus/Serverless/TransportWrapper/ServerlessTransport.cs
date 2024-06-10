@@ -20,7 +20,7 @@
         public IServiceProvider ServiceProvider { get; set; }
 
         public ServerlessTransport(TransportExtensions<AzureServiceBusTransport> transportExtensions, string connectionString, string connectionName) : base(
-            TransportTransactionMode.ReceiveOnly,
+            transportExtensions.Transport.TransportTransactionMode,
             transportExtensions.Transport.SupportsDelayedDelivery,
             transportExtensions.Transport.SupportsPublishSubscribe,
             transportExtensions.Transport.SupportsTTBR)
