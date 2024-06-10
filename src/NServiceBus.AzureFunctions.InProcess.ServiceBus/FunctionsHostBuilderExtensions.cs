@@ -81,8 +81,7 @@
             var endpointNameValue = triggerAttribute?.EndpointName;
             var connectionName = triggerAttribute?.Connection;
 
-            endpointName ??= configuration.GetValue<string>("ENDPOINT_NAME")
-                             ?? endpointNameValue;
+            endpointName ??= configuration.GetValue<string>("ENDPOINT_NAME") ?? endpointNameValue;
 
             if (string.IsNullOrWhiteSpace(endpointName))
             {
@@ -104,7 +103,7 @@
         static void ConfigureEndpointFactory(IServiceCollection services, FunctionsHostBuilderContext functionsHostBuilderContext,
             ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
         {
-            var serverless = serviceBusTriggeredEndpointConfiguration.MakeServerless();
+            var serverless = serviceBusTriggeredEndpointConfiguration.InitializeTransport();
             // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
             var advancedConfiguration = serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration;
             var assemblyDirectoryName = advancedConfiguration.GetSettings().GetOrDefault<string>("NServiceBus.AzureFunctions.InProcess.ServiceBus.AssemblyDirectoryName") ?? "bin";
@@ -120,7 +119,7 @@
             services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<InProcessFunctionEndpoint>());
         }
 
-        internal static FunctionsHostBuilderContext GetContextInternal(this IFunctionsHostBuilder functionsHostBuilder)
+        static FunctionsHostBuilderContext GetContextInternal(this IFunctionsHostBuilder functionsHostBuilder)
         {
             // This check is for testing purposes only. See more details on the internal interface below.
             if (functionsHostBuilder is IFunctionsHostBuilderExt internalBuilder)
@@ -131,7 +130,7 @@
             return functionsHostBuilder.GetContext();
         }
 
-        internal static IStartableEndpointWithExternallyManagedContainer Configure(
+        static IStartableEndpointWithExternallyManagedContainer Configure(
             EndpointConfiguration endpointConfiguration,
             IServiceCollection serviceCollection,
             string appDirectory = null)
@@ -144,9 +143,7 @@
 
             scanner.ExcludeAssemblies(InProcessFunctionEndpoint.AssembliesToExcludeFromScanning);
 
-            return EndpointWithExternallyManagedContainer.Create(
-                    endpointConfiguration,
-                    serviceCollection);
+            return EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
         }
     }
 }

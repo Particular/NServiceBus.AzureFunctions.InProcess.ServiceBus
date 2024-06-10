@@ -84,7 +84,7 @@
             AdvancedConfiguration = endpointConfiguration;
         }
 
-        internal ServerlessTransport MakeServerless()
+        internal ServerlessTransport InitializeTransport()
         {
             var serverlessTransport = new ServerlessTransport(transportExtensions, connectionString, connectionName);
             AdvancedConfiguration.UseTransport(serverlessTransport);
