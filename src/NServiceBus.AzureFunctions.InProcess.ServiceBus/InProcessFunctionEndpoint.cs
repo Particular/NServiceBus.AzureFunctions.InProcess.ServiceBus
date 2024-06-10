@@ -140,10 +140,13 @@
         internal static readonly string[] AssembliesToExcludeFromScanning = {
             "NCrontab.Signed.dll",
             "Azure.Core.dll",
+            "Grpc.AspNetCore.Server.dll",
+            "Grpc.AspNetCore.Server.ClientFactory.dll",
             "Grpc.Core.Api.dll",
             "Grpc.Net.Common.dll",
             "Grpc.Net.Client.dll",
             "Grpc.Net.ClientFactory.dll",
+            "Google.Protobuf.dll",
             "Azure.Identity.dll",
             "Microsoft.Extensions.Azure.dll",
             "NServiceBus.Extensions.DependencyInjection.dll",
