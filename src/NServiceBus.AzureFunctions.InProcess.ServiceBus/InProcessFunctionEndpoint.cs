@@ -5,7 +5,6 @@
     using System.Threading.Tasks;
     using Azure.Messaging.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus;
-    using AzureFunctions.InProcess.ServiceBus.Serverless;
     using Microsoft.Azure.WebJobs.ServiceBus;
     using Microsoft.Extensions.Logging;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
@@ -14,10 +13,11 @@
     {
         public InProcessFunctionEndpoint(
             IStartableEndpointWithExternallyManagedContainer externallyManagedContainerEndpoint,
-            ServerlessInterceptor serverlessInterceptor,
+            ServerlessTransport serverlessTransport,
             IServiceProvider serviceProvider)
         {
-            this.serverlessInterceptor = serverlessInterceptor;
+            this.serverlessTransport = serverlessTransport;
+            this.serverlessTransport.ServiceProvider = serviceProvider;
             endpointFactory = () => externallyManagedContainerEndpoint.Start(serviceProvider);
         }
 
@@ -165,7 +165,7 @@
                     {
                         endpoint = await endpointFactory().ConfigureAwait(false);
 
-                        messageProcessor = serverlessInterceptor.MessageProcessor;
+                        messageProcessor = serverlessTransport.MessageProcessor;
                     }
                 }
                 finally
@@ -180,6 +180,6 @@
 
         readonly Func<Task<IEndpointInstance>> endpointFactory;
         readonly SemaphoreSlim semaphoreLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-        readonly ServerlessInterceptor serverlessInterceptor;
+        readonly ServerlessTransport serverlessTransport;
     }
 }

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
+    <ProjectReference Include="..\Testing.Handlers\Testing.Handlers.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +22,10 @@
     <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.1.6" />
     <PackageReference Include="NServiceBus.Persistence.NonDurable" Version="1.0.0" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Testing.Handlers\bin\$(Configuration)\$(TargetFramework)\Testing.Handlers.dll" Link="ExternalHandlers\Testing.Handlers.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

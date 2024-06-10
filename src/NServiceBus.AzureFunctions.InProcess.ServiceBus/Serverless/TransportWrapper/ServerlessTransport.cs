@@ -1,8 +1,12 @@
 ﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Azure;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
     using Transport;
 
     class ServerlessTransport : TransportDefinition
@@ -13,20 +17,27 @@
 
         public IMessageProcessor MessageProcessor { get; private set; }
 
-        public ServerlessTransport(AzureServiceBusTransport baseTransport) : base(
-            baseTransport.TransportTransactionMode,
-            baseTransport.SupportsDelayedDelivery,
-            baseTransport.SupportsPublishSubscribe,
-            baseTransport.SupportsTTBR)
+        public IServiceProvider ServiceProvider { get; set; }
+
+        public ServerlessTransport(TransportExtensions<AzureServiceBusTransport> transportExtensions, string connectionString, string connectionName) : base(
+            transportExtensions.Transport.TransportTransactionMode,
+            transportExtensions.Transport.SupportsDelayedDelivery,
+            transportExtensions.Transport.SupportsPublishSubscribe,
+            transportExtensions.Transport.SupportsTTBR)
         {
-            this.baseTransport = baseTransport;
+            this.transportExtensions = transportExtensions;
+            this.connectionString = connectionString;
+            this.connectionName = connectionName;
         }
 
         public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers,
             string[] sendingAddresses,
             CancellationToken cancellationToken = default)
         {
-            var baseTransportInfrastructure = await baseTransport.Initialize(
+            var configuredTransport = ConfigureTransportConnection(connectionString, connectionName, ServiceProvider.GetRequiredService<IConfiguration>(), transportExtensions,
+                ServiceProvider.GetRequiredService<AzureComponentFactory>());
+
+            var baseTransportInfrastructure = await configuredTransport.Initialize(
                     hostSettings,
                     receivers,
                     sendingAddresses,
@@ -46,18 +57,62 @@
 
 #pragma warning disable CS0672 // Member overrides obsolete member
 #pragma warning disable CS0618 // Type or member is obsolete
-        public override string ToTransportAddress(QueueAddress address) => baseTransport.ToTransportAddress(address);
+        public override string ToTransportAddress(QueueAddress address) => transportExtensions.Transport.ToTransportAddress(address);
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0672 // Member overrides obsolete member
 
         public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() =>
             supportedTransactionModes;
 
-        readonly AzureServiceBusTransport baseTransport;
+        // We are deliberately using the old way of configuring a transport here because it allows us configuring
+        // the uninitialized transport with a connection string or a fully qualified name and a token provider.
+        // Once we deprecate the old way we can for example add make the internal ConnectionString, FQDN or
+        // TokenProvider properties visible to functions or the code base has already moved into a different direction.
+        static AzureServiceBusTransport ConfigureTransportConnection(string connectionString, string connectionName, IConfiguration configuration,
+            TransportExtensions<AzureServiceBusTransport> transportExtensions, AzureComponentFactory azureComponentFactory)
+        {
+            if (connectionString != null)
+            {
+                _ = transportExtensions.ConnectionString(connectionString);
+            }
+            else
+            {
+                var serviceBusConnectionName = string.IsNullOrWhiteSpace(connectionName) ? DefaultServiceBusConnectionName : connectionName;
+                IConfigurationSection connectionSection = configuration.GetSection(serviceBusConnectionName);
+                if (!connectionSection.Exists())
+                {
+                    throw new Exception($"Azure Service Bus connection string/section has not been configured. Specify a connection string through IConfiguration, an environment variable named {serviceBusConnectionName} or passing it to `UseNServiceBus(ENDPOINTNAME,CONNECTIONSTRING)`");
+                }
+
+                if (!string.IsNullOrWhiteSpace(connectionSection.Value))
+                {
+                    _ = transportExtensions.ConnectionString(connectionSection.Value);
+                }
+                else
+                {
+                    string fullyQualifiedNamespace = connectionSection["fullyQualifiedNamespace"];
+                    if (string.IsNullOrWhiteSpace(fullyQualifiedNamespace))
+                    {
+                        throw new Exception("Connection should have an 'fullyQualifiedNamespace' property or be a string representing a connection string.");
+                    }
+
+                    var credential = azureComponentFactory.CreateTokenCredential(connectionSection);
+                    _ = transportExtensions.CustomTokenCredential(fullyQualifiedNamespace, credential);
+                }
+            }
+
+            return transportExtensions.Transport;
+        }
+
+        internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
+
         readonly TransportTransactionMode[] supportedTransactionModes =
         {
             TransportTransactionMode.ReceiveOnly,
             TransportTransactionMode.SendsAtomicWithReceive
         };
+        readonly TransportExtensions<AzureServiceBusTransport> transportExtensions;
+        readonly string connectionString;
+        readonly string connectionName;
     }
 }

@@ -13,17 +13,14 @@
 
     class PipelineInvokingMessageProcessor : IMessageReceiver, IMessageProcessor
     {
-        public PipelineInvokingMessageProcessor(IMessageReceiver baseTransportReceiver)
-        {
-            this.baseTransportReceiver = baseTransportReceiver;
-        }
+        public PipelineInvokingMessageProcessor(IMessageReceiver baseTransportReceiver) => this.baseTransportReceiver = baseTransportReceiver;
 
         public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError,
             CancellationToken cancellationToken)
         {
             this.onMessage = onMessage;
             this.onError = onError;
-            return baseTransportReceiver?.Initialize(limitations,
+            return baseTransportReceiver.Initialize(limitations,
                 (_, __) => Task.CompletedTask,
                 (_, __) => Task.FromResult(ErrorHandleResult.Handled),
                 cancellationToken) ?? Task.CompletedTask;
@@ -142,7 +139,7 @@
         public Task StartReceive(CancellationToken cancellationToken) => Task.CompletedTask;
 
         // No-op because the rate at which Azure Functions pushes messages to the pipeline can't be controlled.
-        public Task ChangeConcurrency(PushRuntimeSettings limitations, CancellationToken cancellationToken = new CancellationToken()) => Task.CompletedTask;
+        public Task ChangeConcurrency(PushRuntimeSettings limitations, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task StopReceive(CancellationToken cancellationToken) => Task.CompletedTask;
         public ISubscriptionManager Subscriptions => baseTransportReceiver.Subscriptions;

@@ -16,10 +16,7 @@
     /// </summary>
     public partial class ServiceBusTriggeredEndpointConfiguration
     {
-        static ServiceBusTriggeredEndpointConfiguration()
-        {
-            LogManager.UseFactory(FunctionsLoggerFactory.Instance);
-        }
+        static ServiceBusTriggeredEndpointConfiguration() => LogManager.UseFactory(FunctionsLoggerFactory.Instance);
 
         // Disable diagnostics by default as it will fail to create the diagnostics file in the default path.
         Func<string, CancellationToken, Task> customDiagnosticsWriter = (_, __) => Task.CompletedTask;
@@ -42,8 +39,10 @@
         /// <summary>
         /// Creates a serverless NServiceBus endpoint.
         /// </summary>
-        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, string connectionString = default)
+        internal ServiceBusTriggeredEndpointConfiguration(string endpointName, IConfiguration configuration, string connectionString = default, string connectionName = default)
         {
+            this.connectionString = connectionString;
+            this.connectionName = connectionName;
             var endpointConfiguration = new EndpointConfiguration(endpointName);
 
             var recoverability = endpointConfiguration.Recoverability();
@@ -58,65 +57,38 @@
             endpointConfiguration.CustomDiagnosticsWriter(customDiagnosticsWriter);
 
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
-            var functionAppName = GetConfiguredValueOrFallback(configuration, "WEBSITE_SITE_NAME", true) ?? Environment.MachineName;
+            var functionAppName = configuration?.GetValue<string>("WEBSITE_SITE_NAME") ?? Environment.MachineName;
             endpointConfiguration.UniquelyIdentifyRunningInstance()
                 .UsingCustomDisplayName(functionAppName)
                 .UsingCustomIdentifier(DeterministicGuid.Create(functionAppName));
 
-            var licenseText = GetConfiguredValueOrFallback(configuration, "NSERVICEBUS_LICENSE", optional: true);
+            var licenseText = configuration?.GetValue<string>("NSERVICEBUS_LICENSE");
             if (!string.IsNullOrWhiteSpace(licenseText))
             {
                 endpointConfiguration.License(licenseText);
             }
 
-            if (connectionString == null)
-            {
-                connectionString = GetConfiguredValueOrFallback(configuration, DefaultServiceBusConnectionName, optional: true);
-
-                if (string.IsNullOrWhiteSpace(connectionString))
-                {
-                    throw new Exception($@"Azure Service Bus connection string has not been configured. Specify a connection string through IConfiguration, an environment variable named {DefaultServiceBusConnectionName} or passing it to `UseNServiceBus(ENDPOINTNAME,CONNECTIONSTRING)`");
-                }
-            }
-
-            Transport = new AzureServiceBusTransport(connectionString)
-            {
-                // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
-                // endpoint API (calling ProcessAtomic vs ProcessNonAtomic).
-                TransportTransactionMode = TransportTransactionMode.ReceiveOnly
-            };
-
-            Routing = endpointConfiguration.UseTransport(Transport);
+            // We are deliberately using the old way of creating a transport here because it allows us to create an
+            // uninitialized transport that can later be configured with a connection string or a fully qualified name and
+            // a token provider. Once we deprecate the old way we can for example add make the internal constructor
+            // visible to functions or the code base has already moved into a different direction.
+            transportExtensions = endpointConfiguration.UseTransport<AzureServiceBusTransport>();
+            // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
+            // endpoint API (calling ProcessAtomic vs ProcessNonAtomic).
+            transportExtensions.Transactions(TransportTransactionMode.ReceiveOnly);
+            Transport = transportExtensions.Transport;
+            Routing = transportExtensions.Routing();
 
             endpointConfiguration.UseSerialization<NewtonsoftJsonSerializer>();
 
             AdvancedConfiguration = endpointConfiguration;
         }
 
-        internal ServerlessInterceptor MakeServerless()
+        internal ServerlessTransport InitializeTransport()
         {
-            var serverlessTransport = new ServerlessTransport(Transport);
+            var serverlessTransport = new ServerlessTransport(transportExtensions, connectionString, connectionName);
             AdvancedConfiguration.UseTransport(serverlessTransport);
-            return new ServerlessInterceptor(serverlessTransport);
-        }
-
-        static string GetConfiguredValueOrFallback(IConfiguration configuration, string key, bool optional)
-        {
-            if (configuration != null)
-            {
-                var configuredValue = configuration.GetValue<string>(key);
-                if (!string.IsNullOrWhiteSpace(configuredValue))
-                {
-                    return configuredValue;
-                }
-            }
-
-            var environmentVariable = Environment.GetEnvironmentVariable(key);
-            if (string.IsNullOrWhiteSpace(environmentVariable) && !optional)
-            {
-                throw new Exception($"Configuration or environment value for '{key}' was not set or was empty.");
-            }
-            return environmentVariable;
+            return serverlessTransport;
         }
 
         /// <summary>
@@ -143,6 +115,8 @@
             };
 
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
-        internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
+        readonly string connectionString;
+        readonly string connectionName;
+        readonly TransportExtensions<AzureServiceBusTransport> transportExtensions;
     }
 }

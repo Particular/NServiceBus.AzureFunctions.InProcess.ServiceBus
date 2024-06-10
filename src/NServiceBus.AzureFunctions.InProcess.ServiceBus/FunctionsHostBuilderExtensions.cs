@@ -3,7 +3,10 @@
     using System;
     using System.IO;
     using System.Reflection;
+    using AzureFunctions.InProcess.ServiceBus;
+    using Configuration.AdvancedExtensibility;
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -17,24 +20,8 @@
         /// </summary>
         public static void UseNServiceBus(
             this IFunctionsHostBuilder functionsHostBuilder,
-            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
-        {
-            var hostConfiguration = functionsHostBuilder.GetContext().Configuration;
-            var endpointName = hostConfiguration.GetValue<string>("ENDPOINT_NAME")
-                ?? Assembly.GetCallingAssembly()
-                    .GetCustomAttribute<NServiceBusTriggerFunctionAttribute>()
-                    ?.EndpointName;
-
-            if (string.IsNullOrWhiteSpace(endpointName))
-            {
-                throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
-- Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
-- Use `functionsHostBuilder.UseNServiceBus(endpointName, configuration)` 
-- Add a configuration or environment variable with the key ENDPOINT_NAME");
-            }
-
-            functionsHostBuilder.UseNServiceBus(endpointName, configurationFactory);
-        }
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) =>
+            RegisterEndpointFactory(functionsHostBuilder, null, Assembly.GetCallingAssembly(), (c) => configurationFactory?.Invoke(c));
 
         /// <summary>
         /// Configures an NServiceBus endpoint that can be injected into a function trigger as a <see cref="IFunctionEndpoint"/> via dependency injection.
@@ -44,10 +31,11 @@
             string endpointName,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
-            var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, null);
-            configurationFactory?.Invoke(serviceBusConfiguration);
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new ArgumentException($"{nameof(endpointName)} must have a value");
+            }
+            RegisterEndpointFactory(functionsHostBuilder, endpointName, null, configurationFactory);
         }
 
         /// <summary>
@@ -59,10 +47,11 @@
             string connectionString,
             Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory = null)
         {
-            var config = functionsHostBuilder.GetContext().Configuration;
-            var serviceBusConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, config, connectionString);
-            configurationFactory?.Invoke(serviceBusConfiguration);
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusConfiguration);
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new ArgumentException($"{nameof(endpointName)} must have a value");
+            }
+            RegisterEndpointFactory(functionsHostBuilder, endpointName, null, configurationFactory, connectionString);
         }
 
         /// <summary>
@@ -72,29 +61,76 @@
             this IFunctionsHostBuilder functionsHostBuilder,
             Func<IConfiguration, ServiceBusTriggeredEndpointConfiguration> configurationFactory)
         {
-            var configuration = functionsHostBuilder.GetContext().Configuration;
+            var functionsHostBuilderContext = functionsHostBuilder.GetContextInternal();
+            var configuration = functionsHostBuilderContext.Configuration;
             var serviceBusTriggeredEndpointConfiguration = configurationFactory(configuration);
 
-            RegisterEndpointFactory(functionsHostBuilder, serviceBusTriggeredEndpointConfiguration);
+            ConfigureEndpointFactory(functionsHostBuilder.Services, functionsHostBuilderContext, serviceBusTriggeredEndpointConfiguration);
         }
 
         static void RegisterEndpointFactory(IFunctionsHostBuilder functionsHostBuilder,
-            ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
+            string endpointName,
+            Assembly callingAssembly,
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationFactory,
+            string connectionString = null)
         {
-            var serverless = serviceBusTriggeredEndpointConfiguration.MakeServerless();
-            // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
-            var startableEndpoint = Configure(
-                serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration,
-                functionsHostBuilder.Services,
-                Path.Combine(functionsHostBuilder.GetContext().ApplicationRootPath, "bin"));
+            var functionsHostBuilderContext = functionsHostBuilder.GetContextInternal();
+            var configuration = functionsHostBuilderContext.Configuration;
+            var triggerAttribute = callingAssembly
+                    ?.GetCustomAttribute<NServiceBusTriggerFunctionAttribute>();
+            var endpointNameValue = triggerAttribute?.EndpointName;
+            var connectionName = triggerAttribute?.Connection;
 
-            functionsHostBuilder.Services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
-            functionsHostBuilder.Services.AddSingleton(startableEndpoint);
-            functionsHostBuilder.Services.AddSingleton(serverless);
-            functionsHostBuilder.Services.AddSingleton<IFunctionEndpoint, InProcessFunctionEndpoint>();
+            endpointName ??= configuration?.GetValue<string>("ENDPOINT_NAME") ?? endpointNameValue;
+
+            if (string.IsNullOrWhiteSpace(endpointName))
+            {
+                throw new Exception($@"Endpoint name cannot be determined automatically. Use one of the following options to specify endpoint name: 
+- Use `{nameof(NServiceBusTriggerFunctionAttribute)}(endpointName)` to generate a trigger
+- Use `functionsHostBuilder.UseNServiceBus(endpointName, configuration)` 
+- Add a configuration or environment variable with the key ENDPOINT_NAME");
+            }
+
+            functionsHostBuilder.Services.AddAzureClientsCore();
+
+            var functionEndpointConfiguration = new ServiceBusTriggeredEndpointConfiguration(endpointName, configuration, connectionString, connectionName);
+
+            configurationFactory?.Invoke(functionEndpointConfiguration);
+
+            ConfigureEndpointFactory(functionsHostBuilder.Services, functionsHostBuilderContext, functionEndpointConfiguration);
         }
 
-        internal static IStartableEndpointWithExternallyManagedContainer Configure(
+        static void ConfigureEndpointFactory(IServiceCollection services, FunctionsHostBuilderContext functionsHostBuilderContext,
+            ServiceBusTriggeredEndpointConfiguration serviceBusTriggeredEndpointConfiguration)
+        {
+            var serverless = serviceBusTriggeredEndpointConfiguration.InitializeTransport();
+            // When using functions, assemblies are moved to a 'bin' folder within FunctionsHostBuilderContext.ApplicationRootPath.
+            var advancedConfiguration = serviceBusTriggeredEndpointConfiguration.AdvancedConfiguration;
+            var assemblyDirectoryName = advancedConfiguration.GetSettings().GetOrDefault<string>("NServiceBus.AzureFunctions.InProcess.ServiceBus.AssemblyDirectoryName") ?? "bin";
+            var startableEndpoint = Configure(
+                advancedConfiguration,
+                services,
+                Path.Combine(functionsHostBuilderContext.ApplicationRootPath, assemblyDirectoryName));
+
+            services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
+            services.AddSingleton(startableEndpoint);
+            services.AddSingleton(serverless);
+            services.AddSingleton<InProcessFunctionEndpoint>();
+            services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<InProcessFunctionEndpoint>());
+        }
+
+        static FunctionsHostBuilderContext GetContextInternal(this IFunctionsHostBuilder functionsHostBuilder)
+        {
+            // This check is for testing purposes only. See more details on the internal interface below.
+            if (functionsHostBuilder is IFunctionsHostBuilderExt internalBuilder)
+            {
+                return internalBuilder.Context;
+            }
+
+            return functionsHostBuilder.GetContext();
+        }
+
+        static IStartableEndpointWithExternallyManagedContainer Configure(
             EndpointConfiguration endpointConfiguration,
             IServiceCollection serviceCollection,
             string appDirectory = null)
@@ -107,9 +143,7 @@
 
             scanner.ExcludeAssemblies(InProcessFunctionEndpoint.AssembliesToExcludeFromScanning);
 
-            return EndpointWithExternallyManagedContainer.Create(
-                    endpointConfiguration,
-                    serviceCollection);
+            return EndpointWithExternallyManagedContainer.Create(endpointConfiguration, serviceCollection);
         }
     }
 }
