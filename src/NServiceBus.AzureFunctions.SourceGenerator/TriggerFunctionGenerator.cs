@@ -132,6 +132,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.WebJobs.ServiceBus;
 using NServiceBus;
 
+[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
 class FunctionEndpointTrigger
 {{
     readonly IFunctionEndpoint endpoint;
@@ -171,6 +172,7 @@ using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using NServiceBus;
 
+[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
 class FunctionEndpointTrigger
 {{
     readonly IFunctionEndpoint endpoint;
