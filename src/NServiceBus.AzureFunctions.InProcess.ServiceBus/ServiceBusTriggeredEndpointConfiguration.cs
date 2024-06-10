@@ -73,6 +73,9 @@
             // a token provider. Once we deprecate the old way we can for example add make the internal constructor
             // visible to functions or the code base has already moved into a different direction.
             transportExtensions = endpointConfiguration.UseTransport<AzureServiceBusTransport>();
+            // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
+            // endpoint API (calling ProcessAtomic vs ProcessNonAtomic).
+            transportExtensions.Transactions(TransportTransactionMode.ReceiveOnly);
             Transport = transportExtensions.Transport;
             Routing = transportExtensions.Routing();
 
