@@ -138,20 +138,23 @@
         }
 
         internal static readonly string[] AssembliesToExcludeFromScanning = {
-            "NCrontab.Signed.dll",
             "Azure.Core.dll",
+            "Azure.Identity.dll",
+            "Azure.Security.KeyVault.Secrets.dll",
+            "Azure.Storage.Blobs.dll",
+            "Azure.Storage.Common.dll",
+            "Google.Protobuf.dll",
+            "Grpc.AspNetCore.Server.ClientFactory.dll",
+            "Grpc.AspNetCore.Server.dll",
             "Grpc.Core.Api.dll",
-            "Grpc.Net.Common.dll",
             "Grpc.Net.Client.dll",
             "Grpc.Net.ClientFactory.dll",
-            "Azure.Identity.dll",
+            "Grpc.Net.Common.dll",
             "Microsoft.Extensions.Azure.dll",
-            "NServiceBus.Extensions.DependencyInjection.dll",
             "Microsoft.Identity.Client.dll",
             "Microsoft.Identity.Client.Extensions.Msal.dll",
-            "Azure.Storage.Common.dll",
-            "Azure.Storage.Blobs.dll",
-            "Azure.Security.KeyVault.Secrets.dll"
+            "NCrontab.Signed.dll",
+            "NServiceBus.Extensions.DependencyInjection.dll"
         };
 
         internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken)

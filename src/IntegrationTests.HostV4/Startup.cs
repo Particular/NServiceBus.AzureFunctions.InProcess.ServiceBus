@@ -8,6 +8,6 @@ public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
     {
-        builder.UseNServiceBus();
+        builder.UseNServiceBus(c => c.AdvancedConfiguration.EnableInstallers());
     }
 }
