@@ -18,9 +18,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-2022
             name: Windows
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             name: Linux
       fail-fast: false
     steps:
@@ -36,7 +36,6 @@ jobs:
         uses: actions/setup-dotnet@v4.0.0
         with:
           dotnet-version: |
-            7.0.x
             6.0.x
       - name: Setup Azure Core tools - Windows
         if: runner.os == 'Windows'
