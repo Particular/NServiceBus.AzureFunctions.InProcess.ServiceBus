@@ -57,12 +57,12 @@
             endpointConfiguration.CustomDiagnosticsWriter(customDiagnosticsWriter);
 
             // 'WEBSITE_SITE_NAME' represents an Azure Function App and the environment variable is set when hosting the function in Azure.
-            var functionAppName = configuration.GetValue<string>("WEBSITE_SITE_NAME") ?? Environment.MachineName;
+            var functionAppName = configuration?.GetValue<string>("WEBSITE_SITE_NAME") ?? Environment.MachineName;
             endpointConfiguration.UniquelyIdentifyRunningInstance()
                 .UsingCustomDisplayName(functionAppName)
                 .UsingCustomIdentifier(DeterministicGuid.Create(functionAppName));
 
-            var licenseText = configuration.GetValue<string>("NSERVICEBUS_LICENSE");
+            var licenseText = configuration?.GetValue<string>("NSERVICEBUS_LICENSE");
             if (!string.IsNullOrWhiteSpace(licenseText))
             {
                 endpointConfiguration.License(licenseText);

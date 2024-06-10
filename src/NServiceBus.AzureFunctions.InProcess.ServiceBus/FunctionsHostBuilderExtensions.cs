@@ -81,7 +81,7 @@
             var endpointNameValue = triggerAttribute?.EndpointName;
             var connectionName = triggerAttribute?.Connection;
 
-            endpointName ??= configuration.GetValue<string>("ENDPOINT_NAME") ?? endpointNameValue;
+            endpointName ??= configuration?.GetValue<string>("ENDPOINT_NAME") ?? endpointNameValue;
 
             if (string.IsNullOrWhiteSpace(endpointName))
             {
