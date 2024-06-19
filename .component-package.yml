@@ -1,0 +1,3 @@
+ComponentType: Host
+ComponentPackages:
+  - Name: NServiceBus.AzureFunctions.InProcess.ServiceBus
