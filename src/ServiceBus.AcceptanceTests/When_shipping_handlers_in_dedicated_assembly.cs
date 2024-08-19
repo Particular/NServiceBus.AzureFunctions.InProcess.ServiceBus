@@ -34,7 +34,7 @@
             // // Verify the handler and message type have been identified and loaded:
             var registry = functionWithHandlersInDedicatedAssembly.SettingsHolder.Get<MessageHandlerRegistry>();
             var dummyMessageType = registry.GetMessageTypes().FirstOrDefault(t => t.FullName == "Testing.Handlers.DummyMessage");
-            Assert.NotNull(dummyMessageType);
+            Assert.That(dummyMessageType, Is.Not.Null);
             var dummyMessageHandler = registry.GetHandlersFor(dummyMessageType).SingleOrDefault();
             Assert.That(dummyMessageHandler.HandlerType.FullName, Is.EqualTo("Testing.Handlers.DummyMessageHandler"));
 
