@@ -18,7 +18,7 @@
             var loggerA = FunctionsLoggerFactory.Instance.GetLogger("A");
             var loggerB = FunctionsLoggerFactory.Instance.GetLogger("B");
 
-            Assert.AreSame(loggerA, loggerB);
+            Assert.That(loggerB, Is.SameAs(loggerA));
         }
 
         [Test]
