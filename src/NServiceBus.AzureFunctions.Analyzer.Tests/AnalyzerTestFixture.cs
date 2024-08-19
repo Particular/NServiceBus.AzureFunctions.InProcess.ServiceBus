@@ -55,7 +55,7 @@
                 .Select(diagnostic => (diagnostic.Location.SourceTree.FilePath, diagnostic.Location.SourceSpan, diagnostic.Id))
                 .ToList();
 
-            NUnit.Framework.CollectionAssert.AreEqual(expectedSpansAndIds, actualSpansAndIds);
+            Assert.That(actualSpansAndIds, Is.EqualTo(expectedSpansAndIds).AsCollection);
         }
 
         protected static async Task WriteCode(Project project)
