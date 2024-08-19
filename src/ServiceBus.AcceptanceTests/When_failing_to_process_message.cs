@@ -22,7 +22,7 @@
                 .Run();
 
             Assert.IsTrue(context.TerminatingEventReceived);
-            Assert.IsFalse(context.AbortedEventReceived);
+            Assert.That(context.AbortedEventReceived, Is.False);
         }
 
         [TestCase(TransportTransactionMode.ReceiveOnly)]
