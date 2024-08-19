@@ -19,7 +19,7 @@
         public async Task Should_load_handlers_from_assembly()
         {
             // The message handler assembly shouldn't be loaded at this point because there is no reference in the code to it.
-            Assert.False(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
+            Assert.That(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"), Is.False);
 
             var functionWithHandlersInDedicatedAssembly = new FunctionWithHandlersInDedicatedAssembly();
 
