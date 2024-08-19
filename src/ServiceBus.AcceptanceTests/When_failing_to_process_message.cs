@@ -21,7 +21,7 @@
                 .Done(c => c.TerminatingEventReceived)
                 .Run();
 
-            Assert.IsTrue(context.TerminatingEventReceived);
+            Assert.That(context.TerminatingEventReceived, Is.True);
             Assert.That(context.AbortedEventReceived, Is.False);
         }
 
@@ -34,8 +34,8 @@
                 .Done(c => c.TerminatingEventReceived)
                 .Run();
 
-            Assert.IsTrue(context.TerminatingEventReceived);
-            Assert.IsTrue(context.AbortedEventReceived);
+            Assert.That(context.TerminatingEventReceived, Is.True);
+            Assert.That(context.AbortedEventReceived, Is.True);
         }
 
         class Context : ScenarioContext
