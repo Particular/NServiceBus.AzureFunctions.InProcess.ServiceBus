@@ -23,7 +23,7 @@
             });
 
             Assert.That(testContext.HandlerInvocations, Is.EqualTo(1), "the handler should only be invoked once");
-            Assert.IsInstanceOf<SimulatedException>(exception.InnerException, "it should be the exception from the handler");
+            Assert.That(exception.InnerException, Is.InstanceOf<SimulatedException>(), "it should be the exception from the handler");
             Assert.That(testContext.FailedMessages.Single().Value.Count, Is.EqualTo(1), "there should be only one failed message");
         }
 
