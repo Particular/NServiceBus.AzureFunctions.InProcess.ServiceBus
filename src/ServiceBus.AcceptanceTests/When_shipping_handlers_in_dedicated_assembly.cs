@@ -29,7 +29,7 @@
                 .Run();
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
-            Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
+            Assert.That(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"), Is.True);
 
             // // Verify the handler and message type have been identified and loaded:
             var registry = functionWithHandlersInDedicatedAssembly.SettingsHolder.Get<MessageHandlerRegistry>();

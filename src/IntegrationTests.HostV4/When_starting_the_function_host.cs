@@ -193,9 +193,9 @@
             }
 
             Assert.That(hostFailed, Is.False, "Host should startup without errors");
-            Assert.True(hasResult, "Http trigger should respond successfully");
-            Assert.True(commandHandlerCalled, $"{nameof(SomeOtherMessageHandler)} should have been called");
-            Assert.True(eventHandlerCalled, $"{nameof(SomeEventMessageHandler)} should have been called");
+            Assert.That(hasResult, Is.True, "Http trigger should respond successfully");
+            Assert.That(commandHandlerCalled, Is.True, $"{nameof(SomeOtherMessageHandler)} should have been called");
+            Assert.That(eventHandlerCalled, Is.True, $"{nameof(SomeEventMessageHandler)} should have been called");
         }
     }
 }

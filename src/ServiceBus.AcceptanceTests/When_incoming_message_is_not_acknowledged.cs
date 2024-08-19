@@ -20,8 +20,8 @@
                 .Done(c => c.MessageReceived && c.MessageRetried)
                 .Run();
 
-            Assert.True(context.MessageRetried);
-            Assert.True(context.MessageReceived);
+            Assert.That(context.MessageRetried, Is.True);
+            Assert.That(context.MessageReceived, Is.True);
         }
 
         public class Context : ScenarioContext
