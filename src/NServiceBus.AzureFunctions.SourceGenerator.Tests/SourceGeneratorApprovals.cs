@@ -230,7 +230,7 @@ public class Startup
             var compilationErrors = compilation
                 .GetDiagnostics()
                 .Where(d => d.Severity >= DiagnosticSeverity.Warning);
-            Assert.IsEmpty(compilationErrors, compilationErrors.FirstOrDefault()?.GetMessage());
+            Assert.That(compilationErrors, Is.Empty, compilationErrors.FirstOrDefault()?.GetMessage());
 
             return compilation;
         }
