@@ -13,6 +13,7 @@
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Diagnostics;
     using Microsoft.CodeAnalysis.Text;
+    using NUnit.Framework;
 
     public class AnalyzerTestFixture<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new()
     {
@@ -55,7 +56,7 @@
                 .Select(diagnostic => (diagnostic.Location.SourceTree.FilePath, diagnostic.Location.SourceSpan, diagnostic.Id))
                 .ToList();
 
-            Assert.That(actualSpansAndIds, Is.EqualTo(expectedSpansAndIds).AsCollection);
+            NUnit.Framework.Assert.That(actualSpansAndIds, Is.EqualTo(expectedSpansAndIds).AsCollection);
         }
 
         protected static async Task WriteCode(Project project)
