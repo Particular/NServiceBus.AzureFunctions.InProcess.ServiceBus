@@ -20,7 +20,7 @@
                     .Run();
             });
 
-            StringAssert.Contains("Failed to process message", exception.Message);
+            Assert.That(exception.Message, Does.Contain("Failed to process message"));
             Assert.That(exception.InnerException, Is.InstanceOf<SimulatedException>());
         }
 

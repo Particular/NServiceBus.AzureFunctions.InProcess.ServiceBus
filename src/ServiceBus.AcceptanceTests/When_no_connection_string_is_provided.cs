@@ -27,8 +27,8 @@
                 "Exception should be thrown at endpoint creation so that the error will be found during functions startup"
             );
 
-            StringAssert.Contains("UseNServiceBus", exception?.Message, "Should mention the code-first approach");
-            StringAssert.Contains("environment variable", exception?.Message,
+            Assert.That(exception?.Message, Does.Contain("UseNServiceBus"), "Should mention the code-first approach");
+            Assert.That(exception?.Message, Does.Contain("environment variable"),
                 "Should mention the environment variable approach");
         }
 
