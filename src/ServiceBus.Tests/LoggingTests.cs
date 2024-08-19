@@ -64,8 +64,11 @@
             FunctionsLoggerFactory.Instance.SetCurrentLogger(firstLogger);
             FunctionsLoggerFactory.Instance.SetCurrentLogger(secondLogger);
 
-            Assert.That(firstLogger.CapturedLogs.Count, Is.EqualTo(1));
-            Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(firstLogger.CapturedLogs.Count, Is.EqualTo(1));
+                Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -80,8 +83,11 @@
             var firstLogger = firstLoggerTask.Result;
             var secondLogger = secondLoggerTask.Result;
 
-            Assert.That(firstLogger.CapturedLogs.Count, Is.EqualTo(1));
-            Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(firstLogger.CapturedLogs.Count, Is.EqualTo(1));
+                Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(1));
+            });
 
             firstLogger.CapturedLogs.TryDequeue(out var firstLog);
             Assert.That(firstLog.message, Is.EqualTo("Running task 1"));

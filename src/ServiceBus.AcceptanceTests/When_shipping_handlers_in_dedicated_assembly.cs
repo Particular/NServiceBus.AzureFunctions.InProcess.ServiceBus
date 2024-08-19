@@ -36,10 +36,13 @@
             var dummyMessageType = registry.GetMessageTypes().FirstOrDefault(t => t.FullName == "Testing.Handlers.DummyMessage");
             Assert.That(dummyMessageType, Is.Not.Null);
             var dummyMessageHandler = registry.GetHandlersFor(dummyMessageType).SingleOrDefault();
-            Assert.That(dummyMessageHandler.HandlerType.FullName, Is.EqualTo("Testing.Handlers.DummyMessageHandler"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(dummyMessageHandler.HandlerType.FullName, Is.EqualTo("Testing.Handlers.DummyMessageHandler"));
 
-            // ensure the assembly is loaded into the right context
-            Assert.That(AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly), Is.EqualTo(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())));
+                // ensure the assembly is loaded into the right context
+                Assert.That(AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly), Is.EqualTo(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())));
+            });
         }
 
         class FunctionWithHandlersInDedicatedAssembly : FunctionEndpointComponent
