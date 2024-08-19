@@ -31,7 +31,7 @@
 
             FunctionsLoggerFactory.Instance.SetCurrentLogger(fakeLogger);
 
-            Assert.That(fakeLogger.CapturedLogs.Count, Is.EqualTo(1));
+            Assert.That(fakeLogger.CapturedLogs, Has.Count.EqualTo(1));
             fakeLogger.CapturedLogs.TryDequeue(out var capturedLog);
             Assert.That(capturedLog.message, Is.EqualTo("Deferred message"));
         }
@@ -47,7 +47,7 @@
 
             logger.Info("Forwarded message");
 
-            Assert.That(fakeLogger.CapturedLogs.Count, Is.EqualTo(1));
+            Assert.That(fakeLogger.CapturedLogs, Has.Count.EqualTo(1));
             fakeLogger.CapturedLogs.TryDequeue(out var capturedLog);
             Assert.That(capturedLog.message, Is.EqualTo("Forwarded message"));
         }
@@ -66,7 +66,7 @@
 
             Assert.Multiple(() =>
             {
-                Assert.That(firstLogger.CapturedLogs.Count, Is.EqualTo(1));
+                Assert.That(firstLogger.CapturedLogs, Has.Count.EqualTo(1));
                 Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(0));
             });
         }
@@ -85,8 +85,8 @@
 
             Assert.Multiple(() =>
             {
-                Assert.That(firstLogger.CapturedLogs.Count, Is.EqualTo(1));
-                Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(1));
+                Assert.That(firstLogger.CapturedLogs, Has.Count.EqualTo(1));
+                Assert.That(secondLogger.CapturedLogs, Has.Count.EqualTo(1));
             });
 
             firstLogger.CapturedLogs.TryDequeue(out var firstLog);
