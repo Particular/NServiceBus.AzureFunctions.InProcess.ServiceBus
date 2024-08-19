@@ -13,7 +13,7 @@
         public async Task RunBeforeAllTests()
         {
             var connectionString = Environment.GetEnvironmentVariable(ServerlessTransport.DefaultServiceBusConnectionName);
-            Assert.IsNotNull(connectionString, $"Environment variable '{ServerlessTransport.DefaultServiceBusConnectionName}' should be defined to run tests.");
+            Assert.That(connectionString, Is.Not.Null, $"Environment variable '{ServerlessTransport.DefaultServiceBusConnectionName}' should be defined to run tests.");
 
             var client = new ServiceBusAdministrationClient(connectionString);
 
