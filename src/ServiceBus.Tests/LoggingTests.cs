@@ -18,7 +18,7 @@
             var loggerA = FunctionsLoggerFactory.Instance.GetLogger("A");
             var loggerB = FunctionsLoggerFactory.Instance.GetLogger("B");
 
-            Assert.AreSame(loggerA, loggerB);
+            Assert.That(loggerB, Is.SameAs(loggerA));
         }
 
         [Test]
@@ -31,9 +31,9 @@
 
             FunctionsLoggerFactory.Instance.SetCurrentLogger(fakeLogger);
 
-            Assert.AreEqual(1, fakeLogger.CapturedLogs.Count);
+            Assert.That(fakeLogger.CapturedLogs, Has.Count.EqualTo(1));
             fakeLogger.CapturedLogs.TryDequeue(out var capturedLog);
-            Assert.AreEqual("Deferred message", capturedLog.message);
+            Assert.That(capturedLog.message, Is.EqualTo("Deferred message"));
         }
 
         [Test]
@@ -47,9 +47,9 @@
 
             logger.Info("Forwarded message");
 
-            Assert.AreEqual(1, fakeLogger.CapturedLogs.Count);
+            Assert.That(fakeLogger.CapturedLogs, Has.Count.EqualTo(1));
             fakeLogger.CapturedLogs.TryDequeue(out var capturedLog);
-            Assert.AreEqual("Forwarded message", capturedLog.message);
+            Assert.That(capturedLog.message, Is.EqualTo("Forwarded message"));
         }
 
         [Test]
@@ -64,8 +64,11 @@
             FunctionsLoggerFactory.Instance.SetCurrentLogger(firstLogger);
             FunctionsLoggerFactory.Instance.SetCurrentLogger(secondLogger);
 
-            Assert.AreEqual(1, firstLogger.CapturedLogs.Count);
-            Assert.AreEqual(0, secondLogger.CapturedLogs.Count);
+            Assert.Multiple(() =>
+            {
+                Assert.That(firstLogger.CapturedLogs, Has.Count.EqualTo(1));
+                Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -80,14 +83,17 @@
             var firstLogger = firstLoggerTask.Result;
             var secondLogger = secondLoggerTask.Result;
 
-            Assert.AreEqual(1, firstLogger.CapturedLogs.Count);
-            Assert.AreEqual(1, secondLogger.CapturedLogs.Count);
+            Assert.Multiple(() =>
+            {
+                Assert.That(firstLogger.CapturedLogs, Has.Count.EqualTo(1));
+                Assert.That(secondLogger.CapturedLogs, Has.Count.EqualTo(1));
+            });
 
             firstLogger.CapturedLogs.TryDequeue(out var firstLog);
-            Assert.AreEqual("Running task 1", firstLog.message);
+            Assert.That(firstLog.message, Is.EqualTo("Running task 1"));
 
             secondLogger.CapturedLogs.TryDequeue(out var secondLog);
-            Assert.AreEqual("Running task 2", secondLog.message);
+            Assert.That(secondLog.message, Is.EqualTo("Running task 2"));
 
             async Task<FakeLogger> Execute(ILog log, int n)
             {

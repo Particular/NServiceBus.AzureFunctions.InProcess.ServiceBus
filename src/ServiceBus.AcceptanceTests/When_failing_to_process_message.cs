@@ -21,8 +21,11 @@
                 .Done(c => c.TerminatingEventReceived)
                 .Run();
 
-            Assert.IsTrue(context.TerminatingEventReceived);
-            Assert.IsFalse(context.AbortedEventReceived);
+            Assert.Multiple(() =>
+            {
+                Assert.That(context.TerminatingEventReceived, Is.True);
+                Assert.That(context.AbortedEventReceived, Is.False);
+            });
         }
 
         [TestCase(TransportTransactionMode.ReceiveOnly)]
@@ -34,8 +37,11 @@
                 .Done(c => c.TerminatingEventReceived)
                 .Run();
 
-            Assert.IsTrue(context.TerminatingEventReceived);
-            Assert.IsTrue(context.AbortedEventReceived);
+            Assert.Multiple(() =>
+            {
+                Assert.That(context.TerminatingEventReceived, Is.True);
+                Assert.That(context.AbortedEventReceived, Is.True);
+            });
         }
 
         class Context : ScenarioContext

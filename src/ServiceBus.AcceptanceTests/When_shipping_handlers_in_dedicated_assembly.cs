@@ -19,7 +19,7 @@
         public async Task Should_load_handlers_from_assembly()
         {
             // The message handler assembly shouldn't be loaded at this point because there is no reference in the code to it.
-            Assert.False(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
+            Assert.That(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"), Is.False);
 
             var functionWithHandlersInDedicatedAssembly = new FunctionWithHandlersInDedicatedAssembly();
 
@@ -29,17 +29,20 @@
                 .Run();
 
             // The message handler assembly should be loaded now because scanning should find and load the handler assembly
-            Assert.True(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"));
+            Assert.That(AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == "Testing.Handlers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"), Is.True);
 
             // // Verify the handler and message type have been identified and loaded:
             var registry = functionWithHandlersInDedicatedAssembly.SettingsHolder.Get<MessageHandlerRegistry>();
             var dummyMessageType = registry.GetMessageTypes().FirstOrDefault(t => t.FullName == "Testing.Handlers.DummyMessage");
-            Assert.NotNull(dummyMessageType);
+            Assert.That(dummyMessageType, Is.Not.Null);
             var dummyMessageHandler = registry.GetHandlersFor(dummyMessageType).SingleOrDefault();
-            Assert.AreEqual("Testing.Handlers.DummyMessageHandler", dummyMessageHandler.HandlerType.FullName);
+            Assert.Multiple(() =>
+            {
+                Assert.That(dummyMessageHandler.HandlerType.FullName, Is.EqualTo("Testing.Handlers.DummyMessageHandler"));
 
-            // ensure the assembly is loaded into the right context
-            Assert.AreEqual(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()), AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly));
+                // ensure the assembly is loaded into the right context
+                Assert.That(AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly), Is.EqualTo(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())));
+            });
         }
 
         class FunctionWithHandlersInDedicatedAssembly : FunctionEndpointComponent

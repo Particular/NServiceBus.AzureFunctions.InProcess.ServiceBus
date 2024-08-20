@@ -17,7 +17,7 @@
                 .Done(c => c.EndpointsStarted)
                 .Run();
 
-            Assert.AreEqual(42, context.CounterValue);
+            Assert.That(context.CounterValue, Is.EqualTo(42));
         }
 
         class Context : ScenarioContext

@@ -17,7 +17,7 @@
                 .Done(c => c.EndpointsStarted)
                 .Run());
 
-            StringAssert.Contains("This endpoint cannot process messages because it is configured in send-only mode.", exception.Message);
+            Assert.That(exception.Message, Does.Contain("This endpoint cannot process messages because it is configured in send-only mode."));
         }
 
 

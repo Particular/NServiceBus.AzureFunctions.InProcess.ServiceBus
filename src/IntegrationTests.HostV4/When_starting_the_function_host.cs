@@ -58,10 +58,10 @@
                 }
             }
 
-            Assert.IsNotNull(pathToFuncExe, "Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\<username>\\AppData\\Local\\AzureFunctionsTools\\Releases\\<version>\\cli_x64\\func.exe'");
+            Assert.That(pathToFuncExe, Is.Not.Null, "Environment variable 'PathToFuncExe' should be defined to run tests. When running locally this is usually 'C:\\Users\\<username>\\AppData\\Local\\AzureFunctionsTools\\Releases\\<version>\\cli_x64\\func.exe'");
 
             var connectionString = config.GetValue<string>("AzureWebJobsServiceBus") ?? config.GetValue<string>("Values:AzureWebJobsServiceBus");
-            Assert.IsNotNull(connectionString, "Environment variable 'AzureWebJobsServiceBus' should be defined to run tests.");
+            Assert.That(connectionString, Is.Not.Null, "Environment variable 'AzureWebJobsServiceBus' should be defined to run tests.");
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             var client = new ServiceBusAdministrationClient(connectionString);
@@ -192,10 +192,13 @@
                 }
             }
 
-            Assert.False(hostFailed, "Host should startup without errors");
-            Assert.True(hasResult, "Http trigger should respond successfully");
-            Assert.True(commandHandlerCalled, $"{nameof(SomeOtherMessageHandler)} should have been called");
-            Assert.True(eventHandlerCalled, $"{nameof(SomeEventMessageHandler)} should have been called");
+            Assert.Multiple(() =>
+            {
+                Assert.That(hostFailed, Is.False, "Host should startup without errors");
+                Assert.That(hasResult, Is.True, "Http trigger should respond successfully");
+                Assert.That(commandHandlerCalled, Is.True, $"{nameof(SomeOtherMessageHandler)} should have been called");
+                Assert.That(eventHandlerCalled, Is.True, $"{nameof(SomeEventMessageHandler)} should have been called");
+            });
         }
     }
 }
