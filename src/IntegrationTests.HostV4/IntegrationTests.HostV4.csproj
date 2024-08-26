@@ -14,14 +14,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.4.1" />
-    <PackageReference Include="NServiceBus" Version="8.2.1" />
+    <PackageReference Include="NServiceBus" Version="8.2.3" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.3" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
-    <PackageReference Include="NUnit" Version="4.1.0" />
+    <PackageReference Include="NUnit" Version="4.2.1" />
     <PackageReference Include="NUnit.Analyzers" Version="4.3.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
