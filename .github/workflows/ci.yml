@@ -35,8 +35,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.1.0
         with:
-          dotnet-version: |
-            6.0.x
+          dotnet-version: 8.0.x
       - name: Setup Azure Core tools - Windows
         if: runner.os == 'Windows'
         run: |
