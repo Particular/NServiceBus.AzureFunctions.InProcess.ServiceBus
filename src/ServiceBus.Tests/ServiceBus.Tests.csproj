@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="8.2.3" />
     <PackageReference Include="Particular.Approvals" Version="1.0.0" />
     <PackageReference Include="PublicApiGenerator" Version="11.1.0" />
   </ItemGroup>
