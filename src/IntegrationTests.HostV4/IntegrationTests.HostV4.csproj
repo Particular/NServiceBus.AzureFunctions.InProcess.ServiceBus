@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.4.1" />
-    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.3" />
   </ItemGroup>
 
   <ItemGroup>
