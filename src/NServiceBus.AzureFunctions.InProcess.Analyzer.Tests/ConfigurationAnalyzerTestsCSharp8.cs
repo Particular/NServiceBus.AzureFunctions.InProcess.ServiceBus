@@ -13,9 +13,9 @@
         public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId)
         {
             var source =
-                $@"using NServiceBus; 
+                $@"using NServiceBus;
 using System;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 class Foo
 {{
     void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
