@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\NServiceBus.AzureFunctions.InProcess.Analyzer\bin\$(Configuration)\$(AnalyzerTargetFramework)\NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Link="NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Visible="false" />
+    <None Include="..\NServiceBus.AzureFunctions.InProcess.Analyzer\bin\$(Configuration)\$(AnalyzerTargetFramework)\NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/roslyn4.8/cs/NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Link="NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
