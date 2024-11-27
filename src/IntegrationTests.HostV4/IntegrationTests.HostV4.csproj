@@ -29,7 +29,4 @@
     <None Update="local.settings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
-  <!-- Import the props file from the component because it's referenced as a ProjectReference here, not a PackageReference -->
-  <Import Project="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\build\NServiceBus.AzureFunctions.InProcess.ServiceBus.props" />
-
 </Project>
