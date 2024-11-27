@@ -9,20 +9,6 @@
     [Generator]
     public class TriggerFunctionGenerator : ISourceGenerator
     {
-        internal static readonly DiagnosticDescriptor InvalidEndpointNameError = new DiagnosticDescriptor(id: "NSBFUNC001",
-            title: "Invalid Endpoint Name",
-            messageFormat: "Endpoint name is invalid and cannot be used to generate trigger function",
-            category: "TriggerFunctionGenerator",
-            DiagnosticSeverity.Error,
-            isEnabledByDefault: true);
-
-        internal static readonly DiagnosticDescriptor InvalidTriggerFunctionNameError = new DiagnosticDescriptor(id: "NSBFUNC002",
-            title: "Invalid Trigger Function Name",
-            messageFormat: "Trigger function name is invalid and cannot be used to generate trigger function",
-            category: "TriggerFunctionGenerator",
-            DiagnosticSeverity.Error,
-            isEnabledByDefault: true);
-
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
@@ -97,14 +83,14 @@
             // Generate an error if empty/null/space is used as endpoint name
             if (string.IsNullOrWhiteSpace(syntaxReceiver.endpointName))
             {
-                context.ReportDiagnostic(Diagnostic.Create(InvalidEndpointNameError, Location.None, syntaxReceiver.endpointName));
+                context.ReportDiagnostic(Diagnostic.Create(AzureFunctionsDiagnostics.InvalidEndpointNameError, Location.None, syntaxReceiver.endpointName));
                 return;
             }
 
             // Generate an error if empty/null/space is used as trigger function name
             if (string.IsNullOrWhiteSpace(syntaxReceiver.triggerFunctionName))
             {
-                context.ReportDiagnostic(Diagnostic.Create(InvalidTriggerFunctionNameError, Location.None, syntaxReceiver.triggerFunctionName));
+                context.ReportDiagnostic(Diagnostic.Create(AzureFunctionsDiagnostics.InvalidTriggerFunctionNameError, Location.None, syntaxReceiver.triggerFunctionName));
                 return;
             }
 

@@ -4,6 +4,8 @@
 
     public static class AzureFunctionsDiagnostics
     {
+        public const string InvalidEndpointNameErrorId = "NSBFUNC001";
+        public const string InvalidTriggerFunctionNameErrorId = "NSBFUNC002";
         public const string PurgeOnStartupNotAllowedId = "NSBFUNC003";
         public const string LimitMessageProcessingToNotAllowedId = "NSBFUNC004";
         public const string DefineCriticalErrorActionNotAllowedId = "NSBFUNC005";
@@ -18,11 +20,26 @@
         public const string PrefetchCountNotAllowedId = "NSBFUNC014";
         public const string PrefetchMultiplierNotAllowedId = "NSBFUNC015";
         public const string TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId = "NSBFUNC016";
-
         public const string EntityMaximumSizeNotAllowedId = "NSBFUNC017";
         public const string EnablePartitioningNotAllowedId = "NSBFUNC018";
 
         const string DiagnosticCategory = "NServiceBus.AzureFunctions";
+
+        internal static readonly DiagnosticDescriptor InvalidEndpointNameError = new DiagnosticDescriptor(
+            id: InvalidEndpointNameErrorId,
+            title: "Invalid Endpoint Name",
+            messageFormat: "Endpoint name is invalid and cannot be used to generate trigger function",
+            category: "TriggerFunctionGenerator",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        internal static readonly DiagnosticDescriptor InvalidTriggerFunctionNameError = new DiagnosticDescriptor(
+            id: InvalidTriggerFunctionNameErrorId,
+            title: "Invalid Trigger Function Name",
+            messageFormat: "Trigger function name is invalid and cannot be used to generate trigger function",
+            category: "TriggerFunctionGenerator",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
 
         internal static readonly DiagnosticDescriptor PurgeOnStartupNotAllowed = new DiagnosticDescriptor(
              id: PurgeOnStartupNotAllowedId,
