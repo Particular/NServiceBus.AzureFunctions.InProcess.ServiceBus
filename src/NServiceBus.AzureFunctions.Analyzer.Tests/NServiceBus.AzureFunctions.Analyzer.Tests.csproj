@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3" />
-    <!-- this package can only be upgraded when we drop support for older versions of Visual Studio -->
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
@@ -19,5 +17,5 @@
     <ProjectReference Include="..\NServiceBus.AzureFunctions.Analyzer\NServiceBus.AzureFunctions.Analyzer.csproj" />
     <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
   </ItemGroup>
-  
+
 </Project>
