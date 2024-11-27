@@ -11,9 +11,6 @@ namespace NServiceBus
     public static class FunctionsHostBuilderExtensions
     {
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
-        [System.Obsolete("The member currently throws a NotImplementedException. Will be removed in version" +
-            " 5.0.0.", true)]
-        public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, System.Func<Microsoft.Extensions.Configuration.IConfiguration, NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory) { }
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, string endpointName, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
         public static void UseNServiceBus(this Microsoft.Azure.Functions.Extensions.DependencyInjection.IFunctionsHostBuilder functionsHostBuilder, string endpointName, string connectionString, System.Action<NServiceBus.ServiceBusTriggeredEndpointConfiguration> configurationFactory = null) { }
@@ -46,31 +43,12 @@ namespace NServiceBus
     }
     public class ServiceBusTriggeredEndpointConfiguration
     {
-        [System.Obsolete("The member currently throws a NotImplementedException. Will be removed in version" +
-            " 5.0.0.", true)]
-        public ServiceBusTriggeredEndpointConfiguration(Microsoft.Extensions.Configuration.IConfiguration configuration) { }
-        [System.Obsolete("The member currently throws a NotImplementedException. Will be removed in version" +
-            " 5.0.0.", true)]
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName) { }
-        [System.Obsolete("The member currently throws a NotImplementedException. Will be removed in version" +
-            " 5.0.0.", true)]
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, Microsoft.Extensions.Configuration.IConfiguration configuration = null) { }
-        [System.Obsolete("The member currently throws a NotImplementedException. Will be removed in version" +
-            " 5.0.0.", true)]
-        public ServiceBusTriggeredEndpointConfiguration(string endpointName, string connectionStringName = null) { }
         public NServiceBus.EndpointConfiguration AdvancedConfiguration { get; }
         public NServiceBus.RoutingSettings<NServiceBus.AzureServiceBusTransport> Routing { get; }
-        [System.Obsolete("Use `UseNServiceBus(ENDPOINTNAME, CONNECTIONSTRING)` instead. Will be removed in " +
-            "version 5.0.0.", true)]
-        public string ServiceBusConnectionString { get; set; }
         public NServiceBus.AzureServiceBusTransport Transport { get; }
         public void DoNotSendMessagesToErrorQueue() { }
         public void LogDiagnostics() { }
         public NServiceBus.Serialization.SerializationExtensions<T> UseSerialization<T>()
             where T : NServiceBus.Serialization.SerializationDefinition, new () { }
-        [System.Obsolete("The member currently throws a NotImplementedException. Will be removed in version" +
-            " 5.0.0.", true)]
-        protected NServiceBus.TransportExtensions<TTransport> UseTransport<TTransport>()
-            where TTransport : NServiceBus.Transport.TransportDefinition, new () { }
     }
 }

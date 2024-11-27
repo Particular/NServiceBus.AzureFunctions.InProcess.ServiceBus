@@ -1,4 +1,4 @@
-namespace NServiceBus.AzureFunctions.Analyzer.Tests
+namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
 {
     using System.Threading.Tasks;
     using NUnit.Framework;
@@ -17,9 +17,9 @@ namespace NServiceBus.AzureFunctions.Analyzer.Tests
         public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId)
         {
             var source =
-                $@"using NServiceBus; 
+                $@"using NServiceBus;
 using System;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 class Foo
 {{
     void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
@@ -44,10 +44,10 @@ class Foo
         public Task DiagnosticIsNotReportedForOtherEndpointConfiguration(string configuration, string diagnosticId)
         {
             var source =
-                $@"using NServiceBus; 
+                $@"using NServiceBus;
 using System;
 using System.Threading;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 
 class SomeOtherClass
 {{

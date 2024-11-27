@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.Analyzer.Tests
+﻿namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -44,7 +44,7 @@
                 logAnalyzerExecutionTime: false);
 
             var diagnostics = await compilation
-                .WithAnalyzers(ImmutableArray.Create(analyzer), analysisOptions)
+                .WithAnalyzers([analyzer], analysisOptions)
                 .GetAnalyzerDiagnosticsAsync(cancellationToken);
 
             if (exceptions.Any())
