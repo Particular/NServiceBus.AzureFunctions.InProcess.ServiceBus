@@ -47,6 +47,9 @@ jobs:
           sudo apt-get install azure-functions-core-tools -y
           echo "PathToFuncExe=func" >> $GITHUB_ENV
         shell: bash
+      - name: Fix Azure Functions Core Tools permissions - Linux
+        if: runner.os == 'Linux'
+        run: sudo chmod +x /usr/lib/azure-functions-core-tools/in-proc6/func
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
