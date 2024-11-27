@@ -36,17 +36,20 @@ jobs:
         uses: actions/setup-dotnet@v4.1.0
         with:
           dotnet-version: 8.0.x
-      - name: Setup Azure Core tools - Windows
+      - name: Setup Azure Functions Core Tools - Windows
         if: runner.os == 'Windows'
         run: |
           choco install azure-functions-core-tools
           echo "PathToFuncExe=C:\ProgramData\chocolatey\lib\azure-functions-core-tools\tools\func.exe" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-      - name: Setup Azure Core tools - Linux
+      - name: Setup Azure Functions Core Tools - Linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get install azure-functions-core-tools -y
           echo "PathToFuncExe=func" >> $GITHUB_ENV
         shell: bash
+      - name: Fix Azure Functions Core Tools permissions - Linux
+        if: runner.os == 'Linux'
+        run: sudo chmod +x /usr/lib/azure-functions-core-tools/in-proc6/func
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
