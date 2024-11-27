@@ -23,9 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.AcceptanceTests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests.HostV4", "IntegrationTests.HostV4\IntegrationTests.HostV4.csproj", "{D4B26C04-CD88-4356-922F-CCF69D74F442}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.Analyzer", "NServiceBus.AzureFunctions.Analyzer\NServiceBus.AzureFunctions.Analyzer.csproj", "{0D840DDA-A554-4764-871E-3ACB7A454FF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.InProcess.Analyzer", "NServiceBus.AzureFunctions.InProcess.Analyzer\NServiceBus.AzureFunctions.InProcess.Analyzer.csproj", "{0D840DDA-A554-4764-871E-3ACB7A454FF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBus.AzureFunctions.Analyzer.Tests", "NServiceBus.AzureFunctions.Analyzer.Tests\NServiceBus.AzureFunctions.Analyzer.Tests.csproj", "{BA6AF5D9-9784-498A-9E9E-8A726A35B0EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBus.AzureFunctions.InProcess.Analyzer.Tests", "NServiceBus.AzureFunctions.InProcess.Analyzer.Tests\NServiceBus.AzureFunctions.InProcess.Analyzer.Tests.csproj", "{BA6AF5D9-9784-498A-9E9E-8A726A35B0EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

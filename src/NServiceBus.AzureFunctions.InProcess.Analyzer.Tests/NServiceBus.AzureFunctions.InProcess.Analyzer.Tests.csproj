@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.AzureFunctions.Analyzer\NServiceBus.AzureFunctions.Analyzer.csproj" />
+    <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.Analyzer\NServiceBus.AzureFunctions.InProcess.Analyzer.csproj" />
     <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.ServiceBus\NServiceBus.AzureFunctions.InProcess.ServiceBus.csproj" />
   </ItemGroup>
 

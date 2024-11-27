@@ -1,4 +1,4 @@
-namespace NServiceBus.AzureFunctions.Analyzer.Tests
+namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
 {
     using System.Threading.Tasks;
     using NUnit.Framework;
