@@ -204,7 +204,7 @@
                                         cancellationToken);
                                     await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
                                 }
-                                catch (Exception)
+                                catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
                                 {
                                     await receiver.AbandonMessageAsync(receivedMessage,
                                         cancellationToken: cancellationToken);

@@ -16,7 +16,7 @@
         public PipelineInvokingMessageProcessor(IMessageReceiver baseTransportReceiver) => this.baseTransportReceiver = baseTransportReceiver;
 
         public Task Initialize(PushRuntimeSettings limitations, OnMessage onMessage, OnError onError,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             this.onMessage = onMessage;
             this.onError = onError;
@@ -37,9 +37,9 @@
                 await onMessage(messageContext, cancellationToken).ConfigureAwait(false);
 
             }
-            catch (Exception exception)
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
-                var errorContext = CreateErrorContext(message, new TransportTransaction(), exception);
+                var errorContext = CreateErrorContext(message, new TransportTransaction(), ex);
 
                 var errorHandleResult = await onError(errorContext, cancellationToken).ConfigureAwait(false);
 
@@ -69,12 +69,12 @@
                     azureServiceBusTransaction.Commit();
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
                 ErrorHandleResult result;
                 using (var azureServiceBusTransaction = CreateTransaction(message.PartitionKey, serviceBusClient))
                 {
-                    var errorContext = CreateErrorContext(message, azureServiceBusTransaction.TransportTransaction, exception);
+                    var errorContext = CreateErrorContext(message, azureServiceBusTransaction.TransportTransaction, ex);
 
                     result = await onError(errorContext, cancellationToken).ConfigureAwait(false);
 
@@ -122,7 +122,7 @@
             return messageContext;
         }
 
-        static async Task SafeCompleteMessageAsync(ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, AzureServiceBusTransportTransaction azureServiceBusTransaction, CancellationToken cancellationToken = default)
+        static async Task SafeCompleteMessageAsync(ServiceBusMessageActions messageActions, ServiceBusReceivedMessage message, AzureServiceBusTransportTransaction azureServiceBusTransaction, CancellationToken cancellationToken)
         {
             using var scope = azureServiceBusTransaction.ToTransactionScope();
             await messageActions.CompleteMessageAsync(message, cancellationToken).ConfigureAwait(false);
@@ -136,12 +136,12 @@
                 Timeout = TransactionManager.MaximumTimeout
             });
 
-        public Task StartReceive(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StartReceive(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         // No-op because the rate at which Azure Functions pushes messages to the pipeline can't be controlled.
         public Task ChangeConcurrency(PushRuntimeSettings limitations, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-        public Task StopReceive(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StopReceive(CancellationToken cancellationToken = default) => Task.CompletedTask;
         public ISubscriptionManager Subscriptions => baseTransportReceiver.Subscriptions;
         public string Id => baseTransportReceiver.Id;
 

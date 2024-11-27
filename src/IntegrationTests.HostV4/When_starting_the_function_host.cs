@@ -163,7 +163,7 @@
 
                         hasResult = true;
                     }
-                    catch (OperationCanceledException)
+                    catch (OperationCanceledException) when (cancellationTokenSource.Token.IsCancellationRequested)
                     {
                     }
                     catch (Exception ex)
@@ -186,7 +186,7 @@
                 {
                     await funcProcess.WaitForExitAsync(cancellationTokenSource.Token);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     funcProcess.Kill();
                 }

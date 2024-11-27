@@ -30,7 +30,7 @@
             var (code, markupSpans) = Parse(markupCode);
 
             var project = CreateProject(code);
-            await WriteCode(project);
+            await WriteCode(project, cancellationToken);
 
             var compilerDiagnostics = (await Task.WhenAll(project.Documents
                 .Select(doc => doc.GetCompilerDiagnostics(cancellationToken))))
@@ -59,7 +59,7 @@
             NUnit.Framework.Assert.That(actualSpansAndIds, Is.EqualTo(expectedSpansAndIds).AsCollection);
         }
 
-        protected static async Task WriteCode(Project project)
+        protected static async Task WriteCode(Project project, CancellationToken cancellationToken = default)
         {
             if (!VerboseLogging)
             {
@@ -69,7 +69,7 @@
             foreach (var document in project.Documents)
             {
                 Console.WriteLine(document.Name);
-                var code = await document.GetCode();
+                var code = await document.GetCode(cancellationToken);
                 foreach (var (line, index) in code.Replace("\r\n", "\n").Split('\n')
                 .Select((line, index) => (line, index)))
                 {
