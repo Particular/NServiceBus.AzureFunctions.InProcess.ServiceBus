@@ -11,17 +11,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.16.4" />
+    <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="3.0.0" />
+    <PackageReference Include="NServiceBus" Version="8.2.4" />
+    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.5" />
+    <PackageReference Include="Obsolete.Fody" Version="5.3.0" PrivateAssets="All" />
+    <PackageReference Include="Particular.Packaging" Version="4.2.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\NServiceBus.AzureFunctions.Analyzer\bin\$(Configuration)\$(AnalyzerTargetFramework)\NServiceBus.AzureFunctions.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.Analyzer.dll" Link="NServiceBus.AzureFunctions.Analyzer.dll" Visible="false" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.16.0" />
-    <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="[3.0.0, 4.0.0)" />
-    <PackageReference Include="NServiceBus" Version="[8.2.1, 9.0.0)" />
-    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="[3.2.3, 4.0.0)" />
-    <PackageReference Include="Obsolete.Fody" Version="5.3.0" PrivateAssets="All" />
-    <PackageReference Include="Particular.Packaging" Version="3.0.0" PrivateAssets="All" />
+    <None Remove="build*\*" />
+    <Content Include="build\*" PackagePath="build" />
   </ItemGroup>
 
   <Target Name="AddSourceGeneratorToPackage" BeforeTargets="_GetPackageFiles">
@@ -29,11 +34,6 @@
       <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\bin\$(Configuration)\**\NServiceBus.AzureFunctions.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.SourceGenerator.dll" />
     </ItemGroup>
   </Target>
-  
-  <ItemGroup>
-    <None Remove="build*\*" />
-    <Content Include="build\*" PackagePath="build" />
-  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="ServiceBus.Tests" Key="$(NServiceBusTestsKey)" />
