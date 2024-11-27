@@ -122,6 +122,15 @@
              isEnabledByDefault: true
             );
 
+        internal static readonly DiagnosticDescriptor TransportTransactionModeNotAllowed = new DiagnosticDescriptor(
+             id: TransportTransactionModeNotAllowedId,
+             title: "TransportTransactionMode is not supported in Azure Functions",
+             messageFormat: "Transport TransactionMode is controlled by the Azure Service Bus trigger and cannot be configured via the NServiceBus transport configuration API when using Azure Functions.",
+             category: DiagnosticCategory,
+             defaultSeverity: DiagnosticSeverity.Error,
+             isEnabledByDefault: true
+            );
+
         internal static readonly DiagnosticDescriptor MaxAutoLockRenewalDurationNotAllowed = new DiagnosticDescriptor(
              id: MaxAutoLockRenewalDurationNotAllowedId,
              title: "MaxAutoLockRenewalDuration is not supported in Azure Functions",
@@ -171,15 +180,6 @@
              id: EnablePartitioningNotAllowedId,
              title: "EnablePartitioning is not supported in Azure Functions",
              messageFormat: "Azure Functions endpoints do not support automatic queue creation.",
-             category: DiagnosticCategory,
-             defaultSeverity: DiagnosticSeverity.Error,
-             isEnabledByDefault: true
-            );
-
-        internal static readonly DiagnosticDescriptor TransportTransactionModeNotAllowed = new DiagnosticDescriptor(
-             id: TransportTransactionModeNotAllowedId,
-             title: "TransportTransactionMode is not supported in Azure Functions",
-             messageFormat: "Transport TransactionMode is controlled by the Azure Service Bus trigger and cannot be configured via the NServiceBus transport configuration API when using Azure Functions.",
              category: DiagnosticCategory,
              defaultSeverity: DiagnosticSeverity.Error,
              isEnabledByDefault: true
