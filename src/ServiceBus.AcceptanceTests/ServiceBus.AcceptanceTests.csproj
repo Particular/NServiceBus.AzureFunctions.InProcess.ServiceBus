@@ -4,10 +4,6 @@
     <TargetFramework>net6.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\NServiceBusTests.snk</AssemblyOriginatorKeyFile>
-    <!-- Suppress NU1608 warning for NServiceBus.AcceptanceTesting, newer versions reference NUnit4 but
-     we can't update yet because InProcess Function doesn't officially support NET8 and probably will
-      never support since it gets deprecated -->
-    <NoWarn>$(NoWarn);NU1608</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,16 +13,15 @@
 
   <ItemGroup>
     <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
-    <PackageReference Include="NUnit" Version="4.2.1" />
-    <PackageReference Include="NUnit.Analyzers" Version="4.3.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.4.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.2.3" />
+    <PackageReference Include="NServiceBus.AcceptanceTesting" Version="8.2.4" />
     <PackageReference Include="NServiceBus.Persistence.NonDurable" Version="1.0.0" />
-    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.3" />
   </ItemGroup>
 
   <ItemGroup>
