@@ -28,11 +28,6 @@
     <None Include="..\NServiceBus.AzureFunctions.Analyzer\bin\$(Configuration)\$(AnalyzerTargetFramework)\NServiceBus.AzureFunctions.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.Analyzer.dll" Link="NServiceBus.AzureFunctions.Analyzer.dll" Visible="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="build*\*" />
-    <Content Include="build\*" PackagePath="build" />
-  </ItemGroup>
-
   <Target Name="AddSourceGeneratorToPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\bin\$(Configuration)\**\NServiceBus.AzureFunctions.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.SourceGenerator.dll" />
