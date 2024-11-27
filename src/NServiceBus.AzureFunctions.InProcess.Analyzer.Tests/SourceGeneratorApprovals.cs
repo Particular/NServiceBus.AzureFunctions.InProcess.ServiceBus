@@ -108,7 +108,7 @@ using NServiceBus;
 ";
             var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
-            Assert.That(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidEndpointNameError.Id), Is.True);
+            Assert.That(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == AzureFunctionsDiagnostics.InvalidEndpointNameErrorId), Is.True);
         }
 
         [TestCase(null)]
@@ -123,7 +123,7 @@ using NServiceBus;
 ";
             var (_, diagnostics) = GetGeneratedOutput(source, suppressGeneratedDiagnosticsErrors: true);
 
-            Assert.That(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == TriggerFunctionGenerator.InvalidTriggerFunctionNameError.Id), Is.True);
+            Assert.That(diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error && d.Id == AzureFunctionsDiagnostics.InvalidTriggerFunctionNameErrorId), Is.True);
         }
 
         [Test]
