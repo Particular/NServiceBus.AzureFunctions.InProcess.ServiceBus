@@ -227,11 +227,11 @@
                 }
             }
 
-            public override async Task Stop()
+            public override async Task Stop(CancellationToken cancellationToken = default)
             {
                 try
                 {
-                    await host.StopAsync();
+                    await host.StopAsync(cancellationToken);
 
                     if (!doNotFailOnErrorMessages)
                     {
