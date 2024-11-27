@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.Analyzer
+﻿namespace NServiceBus.AzureFunctions.InProcess.Analyzer
 {
     using Microsoft.CodeAnalysis;
 
