@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NServiceBus.AzureFunctions.SourceGenerator\NServiceBus.AzureFunctions.SourceGenerator.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\NServiceBus.AzureFunctions.InProcess.Analyzer\NServiceBus.AzureFunctions.InProcess.Analyzer.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,12 +27,6 @@
   <ItemGroup>
     <None Include="..\NServiceBus.AzureFunctions.InProcess.Analyzer\bin\$(Configuration)\$(AnalyzerTargetFramework)\NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Link="NServiceBus.AzureFunctions.InProcess.Analyzer.dll" Visible="false" />
   </ItemGroup>
-
-  <Target Name="AddSourceGeneratorToPackage" BeforeTargets="_GetPackageFiles">
-    <ItemGroup>
-      <None Include="..\NServiceBus.AzureFunctions.SourceGenerator\bin\$(Configuration)\**\NServiceBus.AzureFunctions.SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs/NServiceBus.AzureFunctions.SourceGenerator.dll" />
-    </ItemGroup>
-  </Target>
 
   <ItemGroup>
     <InternalsVisibleTo Include="ServiceBus.AcceptanceTests" Key="$(NServiceBusTestsKey)" />

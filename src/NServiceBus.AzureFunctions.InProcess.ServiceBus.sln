@@ -15,10 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing.Handlers", "Testing.Handlers\Testing.Handlers.csproj", "{F922CF8D-9012-4D04-84FF-3C923F79A075}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.SourceGenerator", "NServiceBus.AzureFunctions.SourceGenerator\NServiceBus.AzureFunctions.SourceGenerator.csproj", "{D2345DCC-2A8D-4B30-9701-F276597D6858}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NServiceBus.AzureFunctions.SourceGenerator.Tests", "NServiceBus.AzureFunctions.SourceGenerator.Tests\NServiceBus.AzureFunctions.SourceGenerator.Tests.csproj", "{22BE8002-D99B-461B-B472-F2361A849E47}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBus.AcceptanceTests", "ServiceBus.AcceptanceTests\ServiceBus.AcceptanceTests.csproj", "{259C7716-0038-493C-831F-A9193C94741C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests.HostV4", "IntegrationTests.HostV4\IntegrationTests.HostV4.csproj", "{D4B26C04-CD88-4356-922F-CCF69D74F442}"
@@ -45,14 +41,6 @@ Global
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F922CF8D-9012-4D04-84FF-3C923F79A075}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2345DCC-2A8D-4B30-9701-F276597D6858}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22BE8002-D99B-461B-B472-F2361A849E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{22BE8002-D99B-461B-B472-F2361A849E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{22BE8002-D99B-461B-B472-F2361A849E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{22BE8002-D99B-461B-B472-F2361A849E47}.Release|Any CPU.Build.0 = Release|Any CPU
 		{259C7716-0038-493C-831F-A9193C94741C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{259C7716-0038-493C-831F-A9193C94741C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{259C7716-0038-493C-831F-A9193C94741C}.Release|Any CPU.ActiveCfg = Release|Any CPU

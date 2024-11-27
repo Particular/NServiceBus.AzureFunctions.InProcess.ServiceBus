@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.SourceGenerator
+﻿namespace NServiceBus.AzureFunctions.InProcess.Analyzer
 {
     using System.Linq;
     using System.Text;

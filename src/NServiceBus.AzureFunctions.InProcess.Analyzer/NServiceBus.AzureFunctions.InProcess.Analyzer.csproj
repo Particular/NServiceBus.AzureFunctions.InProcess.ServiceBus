@@ -21,4 +21,8 @@
     </PropertyGroup>
   </Target>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="NServiceBus.AzureFunctions.InProcess.Analyzer.Tests" Key="$(NServiceBusTestsKey)" />
+  </ItemGroup>
+
 </Project>
