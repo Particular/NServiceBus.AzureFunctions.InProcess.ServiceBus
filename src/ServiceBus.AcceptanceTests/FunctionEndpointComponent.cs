@@ -47,7 +47,7 @@
                     sendsAtomicWithReceive,
                     ServiceBusMessageActionsFactory));
 
-        protected IList<object> Messages { get; } = new List<object>();
+        protected IList<object> Messages { get; } = [];
 
         protected bool DoNotFailOnErrorMessages { get; init; }
 
