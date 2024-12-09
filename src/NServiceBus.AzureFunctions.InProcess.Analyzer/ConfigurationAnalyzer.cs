@@ -1,4 +1,4 @@
-namespace NServiceBus.AzureFunctions.Analyzer
+namespace NServiceBus.AzureFunctions.InProcess.Analyzer
 {
     using System.Collections.Generic;
     using System.Collections.Immutable;

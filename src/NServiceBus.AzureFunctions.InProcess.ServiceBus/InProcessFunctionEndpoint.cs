@@ -35,7 +35,7 @@
             {
                 await InitializeEndpointIfNecessary(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
                 await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
                 throw;
@@ -157,7 +157,7 @@
             "NServiceBus.Extensions.DependencyInjection.dll"
         };
 
-        internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken)
+        internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken = default)
         {
             if (messageProcessor == null)
             {

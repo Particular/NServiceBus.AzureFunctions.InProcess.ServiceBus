@@ -1,12 +1,11 @@
 <Project>
 
   <PropertyGroup>
-    <ParticularAnalyzersVersion>0.9.0</ParticularAnalyzersVersion>
     <AnalyzerTargetFramework>netstandard2.0</AnalyzerTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
-    <MinVerMinimumMajorMinor>4.1</MinVerMinimumMajorMinor>
+    <MinVerMinimumMajorMinor>5.0</MinVerMinimumMajorMinor>
     <MinVerAutoIncrement>minor</MinVerAutoIncrement>
   </PropertyGroup>
 

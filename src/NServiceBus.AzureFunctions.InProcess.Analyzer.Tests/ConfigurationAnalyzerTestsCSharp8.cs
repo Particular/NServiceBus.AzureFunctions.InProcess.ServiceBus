@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.Analyzer.Tests
+﻿namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
 {
     using System.Threading.Tasks;
     using Microsoft.CodeAnalysis.CSharp;
@@ -13,9 +13,9 @@
         public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId)
         {
             var source =
-                $@"using NServiceBus; 
+                $@"using NServiceBus;
 using System;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 class Foo
 {{
     void Bar(ServiceBusTriggeredEndpointConfiguration endpointConfig)
