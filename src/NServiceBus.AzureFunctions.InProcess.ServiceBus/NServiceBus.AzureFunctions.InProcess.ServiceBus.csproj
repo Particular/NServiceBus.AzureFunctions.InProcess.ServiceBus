@@ -13,8 +13,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.16.4" />
-    <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="3.0.0" />
     <PackageReference Include="NServiceBus" Version="8.2.4" />
+    <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="3.0.0" />
     <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="3.2.5" />
     <PackageReference Include="Obsolete.Fody" Version="5.3.0" PrivateAssets="All" />
     <PackageReference Include="Particular.Packaging" Version="4.2.0" PrivateAssets="All" />
@@ -36,8 +36,8 @@
   </Target>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="ServiceBus.Tests" Key="$(NServiceBusTestsKey)" />
     <InternalsVisibleTo Include="ServiceBus.AcceptanceTests" Key="$(NServiceBusTestsKey)" />
+    <InternalsVisibleTo Include="ServiceBus.Tests" Key="$(NServiceBusTestsKey)" />
   </ItemGroup>
 
 </Project>
