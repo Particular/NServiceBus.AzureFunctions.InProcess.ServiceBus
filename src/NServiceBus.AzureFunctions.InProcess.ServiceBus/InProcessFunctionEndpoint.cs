@@ -35,7 +35,7 @@
             {
                 await InitializeEndpointIfNecessary(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
                 await messageActions.AbandonMessageAsync(message, cancellationToken: cancellationToken).ConfigureAwait(false);
                 throw;
@@ -154,10 +154,11 @@
             "Microsoft.Identity.Client.dll",
             "Microsoft.Identity.Client.Extensions.Msal.dll",
             "NCrontab.Signed.dll",
-            "NServiceBus.Extensions.DependencyInjection.dll"
+            "NServiceBus.Extensions.DependencyInjection.dll",
+            "System.ClientModel.dll"
         };
 
-        internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken)
+        internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken = default)
         {
             if (messageProcessor == null)
             {

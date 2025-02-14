@@ -35,9 +35,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.3.0
         with:
-          dotnet-version: |
-            8.0.x
-            6.0.x
+          dotnet-version: 8.0.x
       - name: Setup Azure Functions Core Tools - Windows
         if: runner.os == 'Windows'
         run: |
@@ -51,7 +49,7 @@ jobs:
         shell: bash
       - name: Fix Azure Functions Core Tools permissions - Linux
         if: runner.os == 'Linux'
-        run: sudo chmod +x /usr/lib/azure-functions-core-tools/in-proc6/func
+        run: sudo chmod +x /usr/lib/azure-functions-core-tools/in-proc8/func
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages

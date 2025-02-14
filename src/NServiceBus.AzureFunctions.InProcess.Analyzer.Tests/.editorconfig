@@ -1,0 +1,4 @@
+[*.cs]
+
+# ConfigureAwait(false)
+dotnet_diagnostic.CA2007.severity = none

@@ -47,7 +47,7 @@
                     sendsAtomicWithReceive,
                     ServiceBusMessageActionsFactory));
 
-        protected IList<object> Messages { get; } = new List<object>();
+        protected IList<object> Messages { get; } = [];
 
         protected bool DoNotFailOnErrorMessages { get; init; }
 
@@ -204,7 +204,7 @@
                                         cancellationToken);
                                     await receiver.CompleteMessageAsync(receivedMessage, cancellationToken);
                                 }
-                                catch (Exception)
+                                catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
                                 {
                                     await receiver.AbandonMessageAsync(receivedMessage,
                                         cancellationToken: cancellationToken);
@@ -227,11 +227,11 @@
                 }
             }
 
-            public override async Task Stop()
+            public override async Task Stop(CancellationToken cancellationToken = default)
             {
                 try
                 {
-                    await host.StopAsync();
+                    await host.StopAsync(cancellationToken);
 
                     if (!doNotFailOnErrorMessages)
                     {

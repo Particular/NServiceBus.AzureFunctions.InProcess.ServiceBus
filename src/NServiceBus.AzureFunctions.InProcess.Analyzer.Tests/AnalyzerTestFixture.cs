@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.AzureFunctions.Analyzer.Tests
+﻿namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -30,7 +30,7 @@
             var (code, markupSpans) = Parse(markupCode);
 
             var project = CreateProject(code);
-            await WriteCode(project);
+            await WriteCode(project, cancellationToken);
 
             var compilerDiagnostics = (await Task.WhenAll(project.Documents
                 .Select(doc => doc.GetCompilerDiagnostics(cancellationToken))))
@@ -59,7 +59,7 @@
             NUnit.Framework.Assert.That(actualSpansAndIds, Is.EqualTo(expectedSpansAndIds).AsCollection);
         }
 
-        protected static async Task WriteCode(Project project)
+        protected static async Task WriteCode(Project project, CancellationToken cancellationToken = default)
         {
             if (!VerboseLogging)
             {
@@ -69,7 +69,7 @@
             foreach (var document in project.Documents)
             {
                 Console.WriteLine(document.Name);
-                var code = await document.GetCode();
+                var code = await document.GetCode(cancellationToken);
                 foreach (var (line, index) in code.Replace("\r\n", "\n").Split('\n')
                 .Select((line, index) => (line, index)))
                 {
@@ -104,17 +104,16 @@
 
         static AnalyzerTestFixture()
         {
-            ProjectReferences = ImmutableList.Create(
+            ProjectReferences =
+            [
                 MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Enumerable).GetTypeInfo().Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Linq.Expressions.Expression).GetTypeInfo().Assembly
-                    .Location),
-#if NET
+                MetadataReference.CreateFromFile(typeof(System.Linq.Expressions.Expression).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-#endif
                 MetadataReference.CreateFromFile(typeof(IFunctionEndpoint).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(EndpointConfiguration).GetTypeInfo().Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(AzureServiceBusTransport).GetTypeInfo().Assembly.Location));
+                MetadataReference.CreateFromFile(typeof(AzureServiceBusTransport).GetTypeInfo().Assembly.Location),
+            ];
         }
 
         static readonly ImmutableList<PortableExecutableReference> ProjectReferences;
