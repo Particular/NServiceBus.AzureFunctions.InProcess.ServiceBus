@@ -154,7 +154,8 @@
             "Microsoft.Identity.Client.dll",
             "Microsoft.Identity.Client.Extensions.Msal.dll",
             "NCrontab.Signed.dll",
-            "NServiceBus.Extensions.DependencyInjection.dll"
+            "NServiceBus.Extensions.DependencyInjection.dll",
+            "System.ClientModel.dll"
         };
 
         internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken = default)
