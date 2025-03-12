@@ -9,6 +9,8 @@
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Options;
+    using Transport.AzureServiceBus;
 
     /// <summary>
     /// Provides extension methods to configure a <see cref="IFunctionEndpoint"/> using <see cref="IFunctionsHostBuilder"/>.
@@ -112,11 +114,24 @@
                 services,
                 Path.Combine(functionsHostBuilderContext.ApplicationRootPath, assemblyDirectoryName));
 
-            services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
-            services.AddSingleton(startableEndpoint);
-            services.AddSingleton(serverless);
-            services.AddSingleton<InProcessFunctionEndpoint>();
-            services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<InProcessFunctionEndpoint>());
+            _ = services.AddSingleton(serviceBusTriggeredEndpointConfiguration);
+            _ = services.AddSingleton(startableEndpoint);
+            _ = services.AddSingleton(serverless);
+            _ = services.AddSingleton<InProcessFunctionEndpoint>();
+            _ = services.AddSingleton<IFunctionEndpoint>(sp => sp.GetRequiredService<InProcessFunctionEndpoint>());
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Validator is registered here in case the user wants to use the options directly. This makes sure that the options are validated.
+            // The transport still has to validate the options because options validators are only executed when the options are resolved.
+            _ = services.AddSingleton<IValidateOptions<MigrationTopologyOptions>, MigrationTopologyOptionsValidator>();
+            _ = services.AddOptions<MigrationTopologyOptions>()
+#pragma warning restore CS0618 // Type or member is obsolete
+                .BindConfiguration("AzureServiceBus:MigrationTopologyOptions");
+
+            // Validator is registered here in case the user wants to use the options directly. This makes sure that the options are validated.
+            // The transport still has to validate the options because options validators are only executed when the options are resolved.
+            _ = services.AddSingleton<IValidateOptions<TopologyOptions>, TopologyOptionsValidator>();
+            _ = services.AddOptions<TopologyOptions>().BindConfiguration("AzureServiceBus:TopologyOptions");
         }
 
         static FunctionsHostBuilderContext GetContextInternal(this IFunctionsHostBuilder functionsHostBuilder)

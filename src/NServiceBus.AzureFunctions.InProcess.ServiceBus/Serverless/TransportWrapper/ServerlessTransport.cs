@@ -2,14 +2,20 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
+    using Azure.Core;
     using Microsoft.Extensions.Azure;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Transport;
 
-    class ServerlessTransport : TransportDefinition
+    class ServerlessTransport(AzureServiceBusTransport transport, string connectionString, string connectionName) : TransportDefinition(
+        TransportTransactionMode.ReceiveOnly,
+        transport.SupportsDelayedDelivery,
+        transport.SupportsPublishSubscribe,
+        transport.SupportsTTBR)
     {
         // HINT: This constant is defined in NServiceBus but is not exposed
         const string MainReceiverId = "Main";
@@ -19,22 +25,11 @@
 
         public IServiceProvider ServiceProvider { get; set; }
 
-        public ServerlessTransport(TransportExtensions<AzureServiceBusTransport> transportExtensions, string connectionString, string connectionName) : base(
-            transportExtensions.Transport.TransportTransactionMode,
-            transportExtensions.Transport.SupportsDelayedDelivery,
-            transportExtensions.Transport.SupportsPublishSubscribe,
-            transportExtensions.Transport.SupportsTTBR)
-        {
-            this.transportExtensions = transportExtensions;
-            this.connectionString = connectionString;
-            this.connectionName = connectionName;
-        }
-
         public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers,
             string[] sendingAddresses,
             CancellationToken cancellationToken = default)
         {
-            var configuredTransport = ConfigureTransportConnection(connectionString, connectionName, ServiceProvider.GetRequiredService<IConfiguration>(), transportExtensions,
+            var configuredTransport = ConfigureTransportConnection(connectionString, connectionName, ServiceProvider.GetRequiredService<IConfiguration>(), transport,
                 ServiceProvider.GetRequiredService<AzureComponentFactory>());
 
             var baseTransportInfrastructure = await configuredTransport.Initialize(
@@ -58,16 +53,12 @@
         public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() =>
             supportedTransactionModes;
 
-        // We are deliberately using the old way of configuring a transport here because it allows us configuring
-        // the uninitialized transport with a connection string or a fully qualified name and a token provider.
-        // Once we deprecate the old way we can for example add make the internal ConnectionString, FQDN or
-        // TokenProvider properties visible to functions or the code base has already moved into a different direction.
         static AzureServiceBusTransport ConfigureTransportConnection(string connectionString, string connectionName, IConfiguration configuration,
-            TransportExtensions<AzureServiceBusTransport> transportExtensions, AzureComponentFactory azureComponentFactory)
+            AzureServiceBusTransport transport, AzureComponentFactory azureComponentFactory)
         {
             if (connectionString != null)
             {
-                _ = transportExtensions.ConnectionString(connectionString);
+                GetConnectionStringRef(transport) = connectionString;
             }
             else
             {
@@ -80,7 +71,7 @@
 
                 if (!string.IsNullOrWhiteSpace(connectionSection.Value))
                 {
-                    _ = transportExtensions.ConnectionString(connectionSection.Value);
+                    GetConnectionStringRef(transport) = connectionSection.Value;
                 }
                 else
                 {
@@ -91,22 +82,33 @@
                     }
 
                     var credential = azureComponentFactory.CreateTokenCredential(connectionSection);
-                    _ = transportExtensions.CustomTokenCredential(fullyQualifiedNamespace, credential);
+                    GetFullyQualifiedNamespaceRef(transport) = fullyQualifiedNamespace;
+                    GetTokenCredentialRef(transport) = credential;
                 }
             }
 
-            return transportExtensions.Transport;
+            return transport;
         }
+
+        // As a temporary workaround we are accessing the properties of the AzureServiceBusTransport using UnsafeAccessor
+        // This is another blocker to AoT but we are already using the execution assembly in the code base anyway
+        // Furthermore this allows us to still comply with initializing the transport as late as possible without having to
+        // expose the properties on the transport itself which would pollute the public API for not much added value.
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<ConnectionString>k__BackingField")]
+        static extern ref string GetConnectionStringRef(AzureServiceBusTransport transport);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<FullyQualifiedNamespace>k__BackingField")]
+        static extern ref string GetFullyQualifiedNamespaceRef(AzureServiceBusTransport transport);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<TokenCredential>k__BackingField")]
+        static extern ref TokenCredential GetTokenCredentialRef(AzureServiceBusTransport transport);
 
         internal const string DefaultServiceBusConnectionName = "AzureWebJobsServiceBus";
 
         readonly TransportTransactionMode[] supportedTransactionModes =
-        {
+        [
             TransportTransactionMode.ReceiveOnly,
             TransportTransactionMode.SendsAtomicWithReceive
-        };
-        readonly TransportExtensions<AzureServiceBusTransport> transportExtensions;
-        readonly string connectionString;
-        readonly string connectionName;
+        ];
     }
 }
