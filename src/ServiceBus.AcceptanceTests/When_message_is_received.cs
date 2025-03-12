@@ -31,20 +31,10 @@
 
         class FunctionHandler : FunctionEndpointComponent
         {
-            public FunctionHandler(TransportTransactionMode transactionMode) : base(transactionMode)
+            public FunctionHandler(TransportTransactionMode transactionMode) : base(transactionMode) => Messages.Add(new HappyDayMessage());
+
+            public class HappyDayMessageHandler(Context testContext) : IHandleMessages<HappyDayMessage>
             {
-                Messages.Add(new HappyDayMessage());
-            }
-
-            public class HappyDayMessageHandler : IHandleMessages<HappyDayMessage>
-            {
-                Context testContext;
-
-                public HappyDayMessageHandler(Context testContext)
-                {
-                    this.testContext = testContext;
-                }
-
                 public Task Handle(HappyDayMessage message, IMessageHandlerContext context)
                 {
                     testContext.HandlerInvoked();
@@ -53,8 +43,6 @@
             }
         }
 
-        class HappyDayMessage : IMessage
-        {
-        }
+        class HappyDayMessage : IMessage;
     }
 }

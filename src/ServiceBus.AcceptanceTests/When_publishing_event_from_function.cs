@@ -27,20 +27,10 @@
 
         class InsideEndpoint : EndpointConfigurationBuilder
         {
-            public InsideEndpoint()
+            public InsideEndpoint() => EndpointSetup<DefaultEndpoint>(_ => { }, metadata => metadata.RegisterPublisherFor<InsideEvent>(typeof(PublishingFunction)));
+
+            public class EventHandler(Context testContext) : IHandleMessages<InsideEvent>
             {
-                EndpointSetup<DefaultEndpoint>();
-            }
-
-            public class EventHandler : IHandleMessages<InsideEvent>
-            {
-                Context testContext;
-
-                public EventHandler(Context testContext)
-                {
-                    this.testContext = testContext;
-                }
-
                 public Task Handle(InsideEvent message, IMessageHandlerContext context)
                 {
                     testContext.EventReceived = true;
@@ -53,24 +43,18 @@
         {
             public PublishingFunction(TransportTransactionMode transactionMode) : base(transactionMode)
             {
+                PublisherMetadata.RegisterPublisherFor<InsideEvent>(typeof(PublishingFunction));
                 Messages.Add(new TriggerMessage());
             }
 
             public class PublishingHandler : IHandleMessages<TriggerMessage>
             {
-                public Task Handle(TriggerMessage message, IMessageHandlerContext context)
-                {
-                    return context.Publish(new InsideEvent());
-                }
+                public Task Handle(TriggerMessage message, IMessageHandlerContext context) => context.Publish(new InsideEvent());
             }
         }
 
-        class TriggerMessage : IMessage
-        {
-        }
+        class TriggerMessage : IMessage;
 
-        class InsideEvent : IEvent
-        {
-        }
+        class InsideEvent : IEvent;
     }
 }

@@ -36,8 +36,6 @@
             }
         }
 
-        class TestMessage : IMessage
-        {
-        }
+        class TestMessage : IMessage;
     }
 }

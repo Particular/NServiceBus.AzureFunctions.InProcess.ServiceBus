@@ -62,20 +62,10 @@
 
         class SpyEndpoint : EndpointConfigurationBuilder
         {
-            public SpyEndpoint()
+            public SpyEndpoint() => EndpointSetup<DefaultEndpoint>();
+
+            public class EventHandler(Context testContext) : IHandleMessages<FollowUpMessage>
             {
-                EndpointSetup<DefaultEndpoint>();
-            }
-
-            public class EventHandler : IHandleMessages<FollowUpMessage>
-            {
-                Context testContext;
-
-                public EventHandler(Context testContext)
-                {
-                    this.testContext = testContext;
-                }
-
                 public Task Handle(FollowUpMessage message, IMessageHandlerContext context)
                 {
                     testContext.MessageReceived = true;
@@ -84,15 +74,9 @@
             }
         }
 
-        class FailBeforeAckBehavior : Behavior<ITransportReceiveContext>
+        class FailBeforeAckBehavior(Context testContext) : Behavior<ITransportReceiveContext>
         {
             bool failed;
-            Context testContext;
-
-            public FailBeforeAckBehavior(Context testContext)
-            {
-                this.testContext = testContext;
-            }
 
             public override async Task Invoke(ITransportReceiveContext context, Func<Task> next)
             {
@@ -110,13 +94,8 @@
             }
         }
 
+        class HappyDayMessage : IMessage;
 
-        class HappyDayMessage : IMessage
-        {
-        }
-
-        class FollowUpMessage : IMessage
-        {
-        }
+        class FollowUpMessage : IMessage;
     }
 }

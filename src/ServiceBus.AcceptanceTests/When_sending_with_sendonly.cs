@@ -28,12 +28,8 @@
         {
             public ReceivingEndpoint() => EndpointSetup<DefaultEndpoint>();
 
-            public class TestMessageHandler : IHandleMessages<TestMessage>
+            public class TestMessageHandler(Context testContext) : IHandleMessages<TestMessage>
             {
-                readonly Context testContext;
-
-                public TestMessageHandler(Context testContext) => this.testContext = testContext;
-
                 public Task Handle(TestMessage message, IMessageHandlerContext context)
                 {
                     testContext.HandlerReceivedMessage = true;
@@ -56,8 +52,6 @@
                 => endpoint.Send(new TestMessage(), executionContext);
         }
 
-        class TestMessage : IMessage
-        {
-        }
+        class TestMessage : IMessage;
     }
 }

@@ -42,8 +42,6 @@
             }
         }
 
-        class TriggerMessage : IMessage
-        {
-        }
+        class TriggerMessage : IMessage;
     }
 }

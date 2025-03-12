@@ -39,8 +39,6 @@
 
         string originalConnectionString;
 
-        class FunctionWithoutConnectionString : FunctionEndpointComponent
-        {
-        }
+        class FunctionWithoutConnectionString : FunctionEndpointComponent;
     }
 }
