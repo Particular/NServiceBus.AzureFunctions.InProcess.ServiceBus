@@ -7,7 +7,5 @@ using NServiceBus;
 public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
-    {
-        builder.UseNServiceBus(c => c.AdvancedConfiguration.EnableInstallers());
-    }
+        => builder.UseNServiceBus(c => c.AdvancedConfiguration.EnableInstallers());
 }
