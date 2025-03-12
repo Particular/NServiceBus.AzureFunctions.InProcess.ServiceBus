@@ -9,7 +9,7 @@
     public class ConfigurationAnalyzerTestsCSharp8 : AnalyzerTestFixture<ConfigurationAnalyzer>
     {
         // HINT: In C# 7 this call is ambiguous with the LearningTransport version as the compiler cannot differentiate method calls via generic type constraints
-        [TestCase("UseTransport<AzureServiceBusTransport>()", UseTransportNotAllowedId)]
+        [TestCase("UseTransport<AzureServiceBusTransport>(null)", UseTransportNotAllowedId)]
         public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId)
         {
             var source =
