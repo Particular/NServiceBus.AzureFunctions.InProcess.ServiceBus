@@ -287,14 +287,14 @@
 
                 public IHost Build()
                 {
-                    hostBuilder.ConfigureHostConfiguration(configuration =>
+                    _ = hostBuilder.ConfigureHostConfiguration(configuration =>
                     {
-                        configuration.AddEnvironmentVariables();
+                        configuration.AddConfiguration(Context.Configuration);
                     });
                     // Forwarding all the service registrations to the host builder
-                    hostBuilder.ConfigureServices(services =>
+                    _ = hostBuilder.ConfigureServices(services =>
                     {
-                        services.AddHostedService<InitializationHost>();
+                        _ = services.AddHostedService<InitializationHost>();
                         foreach (var service in Services)
                         {
                             services.Add(service);
