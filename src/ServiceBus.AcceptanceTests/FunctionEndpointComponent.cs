@@ -19,6 +19,7 @@
     using NServiceBus.AcceptanceTesting.Support;
     using NServiceBus.AzureFunctions.InProcess.ServiceBus;
     using NServiceBus.MessageMutator;
+    using NServiceBus.Transport.AzureServiceBus;
     using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
     using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -39,8 +40,10 @@
                 new FunctionRunner(
                     Messages,
                     CustomizeConfiguration,
+                    HostConfigurationCustomization,
                     OnStartCore,
                     runDescriptor.ScenarioContext,
+                    PublisherMetadata,
                     GetType(),
                     DoNotFailOnErrorMessages,
                     TypesScopedByTestClassAssemblyScanningEnabled,
@@ -53,9 +56,13 @@
 
         protected bool TypesScopedByTestClassAssemblyScanningEnabled { get; init; } = true;
 
-        protected Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; set; } = (r, _) => new TestableServiceBusMessageActions(r);
+        protected Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> ServiceBusMessageActionsFactory { get; init; } = (r, _) => new TestableServiceBusMessageActions(r);
 
         protected Action<ServiceBusTriggeredEndpointConfiguration> CustomizeConfiguration { private get; init; } = _ => { };
+
+        protected Action<IConfigurationBuilder> HostConfigurationCustomization { private get; init; } = _ => { };
+
+        protected PublisherMetadata PublisherMetadata { get; } = new PublisherMetadata();
 
         protected virtual Task OnStart(IFunctionEndpoint functionEndpoint, ExecutionContext executionContext) => Task.CompletedTask;
 
@@ -63,36 +70,23 @@
 
         readonly bool sendsAtomicWithReceive;
 
-        class FunctionRunner : ComponentRunner
+        class FunctionRunner(IList<object> messages,
+            Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization,
+            Action<IConfigurationBuilder> hostConfigurationCustomization,
+            Func<IFunctionEndpoint, ExecutionContext, Task> onStart,
+            ScenarioContext scenarioContext,
+            PublisherMetadata publisherMetadata,
+            Type functionComponentType,
+            bool doNotFailOnErrorMessages,
+            bool typesScopedByTestClassAssemblyScanningEnabled,
+            bool sendsAtomicWithReceive,
+            Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory) : ComponentRunner
         {
-            public FunctionRunner(IList<object> messages,
-                Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization,
-                Func<IFunctionEndpoint, ExecutionContext, Task> onStart,
-                ScenarioContext scenarioContext,
-                Type functionComponentType,
-                bool doNotFailOnErrorMessages,
-                bool typesScopedByTestClassAssemblyScanningEnabled,
-                bool sendsAtomicWithReceive,
-                Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory)
-            {
-                this.messages = messages;
-                this.configurationCustomization = configurationCustomization;
-                this.onStart = onStart;
-                this.scenarioContext = scenarioContext;
-                this.functionComponentType = functionComponentType;
-                this.typesScopedByTestClassAssemblyScanningEnabled = typesScopedByTestClassAssemblyScanningEnabled;
-                this.doNotFailOnErrorMessages = doNotFailOnErrorMessages;
-                this.sendsAtomicWithReceive = sendsAtomicWithReceive;
-                this.serviceBusMessageActionsFactory = serviceBusMessageActionsFactory;
-
-                Name = Conventions.EndpointNamingConvention(functionComponentType);
-            }
-
-            public override string Name { get; }
+            public override string Name { get; } = Conventions.EndpointNamingConvention(functionComponentType);
 
             public override async Task Start(CancellationToken cancellationToken = default)
             {
-                var hostBuilder = new FunctionHostBuilder();
+                var hostBuilder = new FunctionHostBuilder(hostConfigurationCustomization);
                 hostBuilder.UseNServiceBus(Name, triggerConfiguration =>
                 {
                     var endpointConfiguration = triggerConfiguration.AdvancedConfiguration;
@@ -102,21 +96,34 @@
                         endpointConfiguration.TypesToIncludeInScan(functionComponentType.GetTypesScopedByTestClass());
                     }
 
+                    if (triggerConfiguration.Transport.Topology is TopicPerEventTopology topology)
+                    {
+                        topology.OverrideSubscriptionNameFor(Name, Name.Shorten());
+
+                        foreach (var eventType in publisherMetadata.Publishers.SelectMany(p => p.Events))
+                        {
+                            topology.PublishTo(eventType, eventType.ToTopicName());
+                            topology.SubscribeTo(eventType, eventType.ToTopicName());
+                        }
+                    }
+
+                    endpointConfiguration.EnforcePublisherMetadataRegistration(Name, publisherMetadata);
+
                     endpointConfiguration.Recoverability()
                         .Immediate(i => i.NumberOfRetries(0))
                         .Delayed(d => d.NumberOfRetries(0))
                         .Failed(c => c
                             // track messages sent to the error queue to fail the test
-                            .OnMessageSentToErrorQueue((failedMessage, _) =>
+                            .OnMessageSentToErrorQueue((failedMessage, ct) =>
                             {
-                                scenarioContext.FailedMessages.AddOrUpdate(
+                                _ = scenarioContext.FailedMessages.AddOrUpdate(
                                     Name,
-                                    new[] { failedMessage },
+                                    [failedMessage],
                                     (_, fm) =>
                                     {
-                                        var messages = fm.ToList();
-                                        messages.Add(failedMessage);
-                                        return messages;
+                                        var failedMessages = fm.ToList();
+                                        failedMessages.Add(failedMessage);
+                                        return failedMessages;
                                     });
                                 return Task.CompletedTask;
                             }));
@@ -253,7 +260,7 @@
             // but the host builder used by functions is still using the lambda based approach. To work around this we
             // have to forward the service registrations to the host builder and some other things manually. This is not
             // great but once the functions host moved to the new host builder this can be simplified.
-            sealed class FunctionHostBuilder : IFunctionsHostBuilder, IFunctionsHostBuilderExt
+            sealed class FunctionHostBuilder(Action<IConfigurationBuilder> configurationCustomization) : IFunctionsHostBuilder, IFunctionsHostBuilderExt
             {
                 HostBuilderContext context;
                 readonly HostBuilder hostBuilder = new();
@@ -271,6 +278,7 @@
 
                         var configurationBuilder = new ConfigurationBuilder();
                         configurationBuilder.AddEnvironmentVariables();
+                        configurationCustomization(configurationBuilder);
                         var configurationRoot = configurationBuilder.Build();
                         context = new HostBuilderContext(new WebJobsBuilderContext { Configuration = configurationRoot, ApplicationRootPath = AppDomain.CurrentDomain.BaseDirectory });
                         return context;
@@ -296,26 +304,12 @@
                     return hostBuilder.Build();
                 }
 
-                sealed class HostBuilderContext : FunctionsHostBuilderContext
-                {
-                    public HostBuilderContext(WebJobsBuilderContext webJobsBuilderContext) : base(webJobsBuilderContext)
-                    {
-                    }
-                }
+                sealed class HostBuilderContext(WebJobsBuilderContext webJobsBuilderContext)
+                    : FunctionsHostBuilderContext(webJobsBuilderContext);
             }
 
-            IList<object> messages;
             IHost host;
             IFunctionEndpoint endpoint;
-
-            readonly Action<ServiceBusTriggeredEndpointConfiguration> configurationCustomization;
-            readonly Func<IFunctionEndpoint, ExecutionContext, Task> onStart;
-            readonly ScenarioContext scenarioContext;
-            readonly Type functionComponentType;
-            readonly bool typesScopedByTestClassAssemblyScanningEnabled;
-            readonly bool doNotFailOnErrorMessages;
-            readonly bool sendsAtomicWithReceive;
-            readonly Func<ServiceBusReceiver, ScenarioContext, ServiceBusMessageActions> serviceBusMessageActionsFactory;
         }
     }
 }
