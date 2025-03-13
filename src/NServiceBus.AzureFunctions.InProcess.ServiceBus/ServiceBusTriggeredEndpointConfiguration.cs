@@ -5,11 +5,13 @@
     using System.Threading.Tasks;
     using AzureFunctions.InProcess.ServiceBus;
     using AzureFunctions.InProcess.ServiceBus.Serverless;
+    using Configuration.AdvancedExtensibility;
     using Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Serialization;
     using Settings;
+    using Transport.AzureServiceBus;
 
     /// <summary>
     /// Represents a serverless NServiceBus endpoint.
@@ -68,16 +70,28 @@
                 endpointConfiguration.License(licenseText);
             }
 
-            // We are deliberately using the old way of creating a transport here because it allows us to create an
-            // uninitialized transport that can later be configured with a connection string or a fully qualified name and
-            // a token provider. Once we deprecate the old way we can for example add make the internal constructor
-            // visible to functions or the code base has already moved into a different direction.
-            transportExtensions = endpointConfiguration.UseTransport<AzureServiceBusTransport>();
-            // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
-            // endpoint API (calling ProcessAtomic vs ProcessNonAtomic).
-            transportExtensions.Transactions(TransportTransactionMode.ReceiveOnly);
-            Transport = transportExtensions.Transport;
-            Routing = transportExtensions.Routing();
+            TopicTopology topicTopology = TopicTopology.Default;
+            var topologyOptionsSection = configuration?.GetSection("AzureServiceBus:TopologyOptions");
+            if (topologyOptionsSection.Exists())
+            {
+                topicTopology = TopicTopology.FromOptions(topologyOptionsSection.Get<TopologyOptions>());
+            }
+            // Migration options take precedence over topology options. We are not doing additional checks here for now.
+            var migrationOptionsSection = configuration?.GetSection("AzureServiceBus:MigrationTopologyOptions");
+            if (migrationOptionsSection.Exists())
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                topicTopology = TopicTopology.FromOptions(migrationOptionsSection.Get<MigrationTopologyOptions>());
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
+            Transport = new AzureServiceBusTransport("TransportWillBeInitializedCorrectlyLater", topicTopology)
+            {
+                // This is required for the Outbox validation to work in NServiceBus 8. It does not affect the actual consistency mode because it is controlled by the functions
+                // endpoint API (calling ProcessAtomic vs ProcessNonAtomic).
+                TransportTransactionMode = TransportTransactionMode.ReceiveOnly
+            };
+            Routing = new RoutingSettings<AzureServiceBusTransport>(endpointConfiguration.GetSettings());
 
             endpointConfiguration.UseSerialization<NewtonsoftJsonSerializer>();
 
@@ -86,7 +100,7 @@
 
         internal ServerlessTransport InitializeTransport()
         {
-            var serverlessTransport = new ServerlessTransport(transportExtensions, connectionString, connectionName);
+            var serverlessTransport = new ServerlessTransport(Transport, connectionString, connectionName);
             AdvancedConfiguration.UseTransport(serverlessTransport);
             return serverlessTransport;
         }
@@ -117,6 +131,5 @@
         readonly ServerlessRecoverabilityPolicy recoverabilityPolicy = new ServerlessRecoverabilityPolicy();
         readonly string connectionString;
         readonly string connectionName;
-        readonly TransportExtensions<AzureServiceBusTransport> transportExtensions;
     }
 }

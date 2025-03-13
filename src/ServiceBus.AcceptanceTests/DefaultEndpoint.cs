@@ -1,6 +1,7 @@
 ﻿namespace ServiceBus.Tests
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using NServiceBus;
@@ -28,23 +29,21 @@
             recoverability.Immediate(immediate => immediate.NumberOfRetries(0));
             configuration.SendFailedMessagesTo("error");
 
+            configuration.EnforcePublisherMetadataRegistration(endpointConfiguration.EndpointName, endpointConfiguration.PublisherMetadata);
+
             var connectionString =
                 Environment.GetEnvironmentVariable(ServerlessTransport.DefaultServiceBusConnectionName);
 
-            var azureServiceBusTransport = new AzureServiceBusTransport(connectionString)
+            var topology = TopicTopology.Default;
+            topology.OverrideSubscriptionNameFor(endpointConfiguration.EndpointName, endpointConfiguration.EndpointName.Shorten());
+            foreach (var eventType in endpointConfiguration.PublisherMetadata.Publishers.SelectMany(p => p.Events))
             {
-                SubscriptionRuleNamingConvention = type =>
-                {
-                    if (type.FullName.Length <= 50)
-                    {
-                        return type.FullName;
-                    }
+                topology.PublishTo(eventType, eventType.ToTopicName());
+                topology.SubscribeTo(eventType, eventType.ToTopicName());
+            }
+            var azureServiceBusTransport = new AzureServiceBusTransport(connectionString, topology);
 
-                    return type.Name;
-                }
-            };
-
-            var transport = configuration.UseTransport(azureServiceBusTransport);
+            _ = configuration.UseTransport(azureServiceBusTransport);
 
             configuration.Pipeline.Register("TestIndependenceBehavior", b => new TestIndependenceSkipBehavior(runDescriptor.ScenarioContext), "Skips messages not created during the current test.");
 

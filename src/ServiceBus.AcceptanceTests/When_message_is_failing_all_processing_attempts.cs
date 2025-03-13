@@ -37,20 +37,10 @@
 
         class MoveToErrorQueueFunction : FunctionEndpointComponent
         {
-            public MoveToErrorQueueFunction(TransportTransactionMode transactionMode) : base(transactionMode)
+            public MoveToErrorQueueFunction(TransportTransactionMode transactionMode) : base(transactionMode) => Messages.Add(new TriggerMessage());
+
+            public class FailingHandler(Context testContext) : IHandleMessages<TriggerMessage>
             {
-                Messages.Add(new TriggerMessage());
-            }
-
-            public class FailingHandler : IHandleMessages<TriggerMessage>
-            {
-                Context testContext;
-
-                public FailingHandler(Context testContext)
-                {
-                    this.testContext = testContext;
-                }
-
                 public Task Handle(TriggerMessage message, IMessageHandlerContext context)
                 {
                     testContext.HandlerInvocations++;
@@ -59,8 +49,6 @@
             }
         }
 
-        public class TriggerMessage : IMessage
-        {
-        }
+        public class TriggerMessage : IMessage;
     }
 }

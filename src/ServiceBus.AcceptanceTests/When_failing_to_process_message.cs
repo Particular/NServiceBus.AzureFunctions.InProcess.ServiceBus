@@ -53,20 +53,15 @@
 
         class InsideEndpoint : EndpointConfigurationBuilder
         {
-            public InsideEndpoint()
-            {
-                EndpointSetup<DefaultEndpoint>(cfg => cfg.LimitMessageProcessingConcurrencyTo(1));
-            }
-
-            public class AbortedEventHandler : IHandleMessages<AbortedEvent>
-            {
-                Context testContext;
-
-                public AbortedEventHandler(Context testContext)
+            public InsideEndpoint() => EndpointSetup<DefaultEndpoint>(cfg => cfg.LimitMessageProcessingConcurrencyTo(1),
+                metadata =>
                 {
-                    this.testContext = testContext;
-                }
+                    metadata.RegisterPublisherFor<AbortedEvent>(typeof(PublishingFunction));
+                    metadata.RegisterPublisherFor<TerminatingEvent>(typeof(PublishingFunction));
+                });
 
+            public class AbortedEventHandler(Context testContext) : IHandleMessages<AbortedEvent>
+            {
                 public Task Handle(AbortedEvent message, IMessageHandlerContext context)
                 {
                     testContext.AbortedEventReceived = true;
@@ -74,15 +69,8 @@
                 }
             }
 
-            public class TerminatingEventHandler : IHandleMessages<TerminatingEvent>
+            public class TerminatingEventHandler(Context testContext) : IHandleMessages<TerminatingEvent>
             {
-                Context testContext;
-
-                public TerminatingEventHandler(Context testContext)
-                {
-                    this.testContext = testContext;
-                }
-
                 public Task Handle(TerminatingEvent message, IMessageHandlerContext context)
                 {
                     testContext.TerminatingEventReceived = true;
@@ -95,6 +83,8 @@
         {
             public PublishingFunction(TransportTransactionMode transportTransactionMode) : base(transportTransactionMode)
             {
+                PublisherMetadata.RegisterPublisherFor<AbortedEvent>(typeof(PublishingFunction));
+                PublisherMetadata.RegisterPublisherFor<TerminatingEvent>(typeof(PublishingFunction));
                 Messages.Add(new TriggerMessage());
                 Messages.Add(new TerminatingMessage());
                 DoNotFailOnErrorMessages = true;
@@ -103,31 +93,21 @@
 
             public class PublishingHandler : IHandleMessages<TriggerMessage>
             {
-                public Task Handle(TriggerMessage message, IMessageHandlerContext context)
-                {
-                    return context.Publish(new AbortedEvent());
-                }
+                public Task Handle(TriggerMessage message, IMessageHandlerContext context) => context.Publish(new AbortedEvent());
             }
 
             public class TerminatingMessageHandler : IHandleMessages<TerminatingMessage>
             {
-                public Task Handle(TerminatingMessage message, IMessageHandlerContext context)
-                {
-                    return context.Publish(new TerminatingEvent());
-                }
+                public Task Handle(TerminatingMessage message, IMessageHandlerContext context) => context.Publish(new TerminatingEvent());
             }
         }
 
-        class FirstCompleteFailingServiceBusMessageActions : ServiceBusMessageActions
+        class FirstCompleteFailingServiceBusMessageActions(
+            ServiceBusReceiver serviceBusReceiver,
+            ScenarioContext scenarioContext)
+            : ServiceBusMessageActions
         {
-            readonly ServiceBusReceiver serviceBusReceiver;
-            readonly Context scenarioContext;
-
-            public FirstCompleteFailingServiceBusMessageActions(ServiceBusReceiver serviceBusReceiver, ScenarioContext scenarioContext)
-            {
-                this.serviceBusReceiver = serviceBusReceiver;
-                this.scenarioContext = (Context)scenarioContext;
-            }
+            readonly Context scenarioContext = (Context)scenarioContext;
 
             public override async Task CompleteMessageAsync(ServiceBusReceivedMessage message, CancellationToken cancellationToken = default)
             {
@@ -142,25 +122,15 @@
             }
 
             public override Task AbandonMessageAsync(ServiceBusReceivedMessage message, IDictionary<string, object> propertiesToModify = null, CancellationToken cancellationToken = default)
-            {
-                return serviceBusReceiver.AbandonMessageAsync(message, propertiesToModify, cancellationToken);
-            }
+                => serviceBusReceiver.AbandonMessageAsync(message, propertiesToModify, cancellationToken);
         }
 
-        class TriggerMessage : IMessage
-        {
-        }
+        class TriggerMessage : IMessage;
 
-        class TerminatingMessage : IMessage
-        {
-        }
+        class TerminatingMessage : IMessage;
 
-        class AbortedEvent : IEvent
-        {
-        }
+        class AbortedEvent : IEvent;
 
-        class TerminatingEvent : IEvent
-        {
-        }
+        class TerminatingEvent : IEvent;
     }
 }

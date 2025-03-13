@@ -4,12 +4,8 @@ namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
     using System.Threading.Tasks;
     using Microsoft.Extensions.Hosting;
 
-    class InitializationHost : IHostedService
+    class InitializationHost(InProcessFunctionEndpoint functionEndpoint) : IHostedService
     {
-        readonly InProcessFunctionEndpoint functionEndpoint;
-
-        public InitializationHost(InProcessFunctionEndpoint functionEndpoint) => this.functionEndpoint = functionEndpoint;
-
         public Task StartAsync(CancellationToken cancellationToken = default) => functionEndpoint.InitializeEndpointIfNecessary(cancellationToken);
 
         public Task StopAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;

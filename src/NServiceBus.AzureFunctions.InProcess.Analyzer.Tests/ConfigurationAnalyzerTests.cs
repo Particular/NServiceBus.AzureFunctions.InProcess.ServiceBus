@@ -13,7 +13,7 @@ namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
         [TestCase("OverrideLocalAddress(null)", OverrideLocalAddressNotAllowedId)]
         [TestCase("PurgeOnStartup(true)", PurgeOnStartupNotAllowedId)]
         [TestCase("SetDiagnosticsPath(null)", SetDiagnosticsPathNotAllowedId)]
-        [TestCase("UseTransport(new AzureServiceBusTransport(null))", UseTransportNotAllowedId)]
+        [TestCase("UseTransport(new AzureServiceBusTransport(null, default(TopicTopology)))", UseTransportNotAllowedId)]
         public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId)
         {
             var source =
@@ -40,7 +40,7 @@ class Foo
         [TestCase("OverrideLocalAddress(null)", OverrideLocalAddressNotAllowedId)]
         [TestCase("PurgeOnStartup(true)", PurgeOnStartupNotAllowedId)]
         [TestCase("SetDiagnosticsPath(null)", SetDiagnosticsPathNotAllowedId)]
-        [TestCase("UseTransport(new AzureServiceBusTransport(null))", UseTransportNotAllowedId)]
+        [TestCase("UseTransport(new AzureServiceBusTransport(null, default(TopicTopology)))", UseTransportNotAllowedId)]
         public Task DiagnosticIsNotReportedForOtherEndpointConfiguration(string configuration, string diagnosticId)
         {
             var source =

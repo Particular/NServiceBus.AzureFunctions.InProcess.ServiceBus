@@ -38,26 +38,16 @@
                 Messages.Add(new ReadSagaDataValueMessage { CorrelationProperty = correlationProperty });
             }
 
-            public class DemoSaga : Saga<DemoSagaData>,
+            public class DemoSaga(Context testContext) : Saga<DemoSagaData>,
                 IAmStartedByMessages<StartSagaMessage>,
                 IHandleMessages<UpdateSagaMessage>,
                 IHandleMessages<ReadSagaDataValueMessage>
             {
-                Context testContext;
-
-                public DemoSaga(Context testContext)
-                {
-                    this.testContext = testContext;
-                }
-
-                protected override void ConfigureHowToFindSaga(SagaPropertyMapper<DemoSagaData> mapper)
-                {
+                protected override void ConfigureHowToFindSaga(SagaPropertyMapper<DemoSagaData> mapper) =>
                     mapper.MapSaga(saga => saga.CorrelationProperty)
-                            .ToMessage<StartSagaMessage>(m => m.CorrelationProperty)
-                            .ToMessage<UpdateSagaMessage>(m => m.CorrelationProperty)
-                            .ToMessage<ReadSagaDataValueMessage>(m => m.CorrelationProperty);
-
-                }
+                        .ToMessage<StartSagaMessage>(m => m.CorrelationProperty)
+                        .ToMessage<UpdateSagaMessage>(m => m.CorrelationProperty)
+                        .ToMessage<ReadSagaDataValueMessage>(m => m.CorrelationProperty);
 
                 public Task Handle(StartSagaMessage message, IMessageHandlerContext context)
                 {
