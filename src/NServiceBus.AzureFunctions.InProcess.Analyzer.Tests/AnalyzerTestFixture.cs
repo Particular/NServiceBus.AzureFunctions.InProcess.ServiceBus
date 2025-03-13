@@ -21,10 +21,10 @@ public class AnalyzerTestFixture<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
     protected virtual LanguageVersion AnalyzerLanguageVersion => LanguageVersion.CSharp7;
 
     protected Task Assert(string markupCode, CancellationToken cancellationToken = default) =>
-        Assert(Array.Empty<string>(), markupCode, Array.Empty<string>(), cancellationToken);
+        Assert([], markupCode, [], cancellationToken);
 
     protected Task Assert(string expectedDiagnosticId, string markupCode, CancellationToken cancellationToken = default) =>
-        Assert(new[] { expectedDiagnosticId }, markupCode, Array.Empty<string>(), cancellationToken);
+        Assert([expectedDiagnosticId], markupCode, [], cancellationToken);
 
     protected async Task Assert(string[] expectedDiagnosticIds, string markupCode, string[] ignoreDiagnosticIds, CancellationToken cancellationToken = default)
     {
@@ -163,7 +163,7 @@ public class AnalyzerTestFixture<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
     {
         if (markupCode == null)
         {
-            return (Array.Empty<string>(), new List<(string, TextSpan)>());
+            return ([], []);
         }
 
         var documents = SplitMarkupCodeIntoFiles(markupCode);
@@ -180,7 +180,7 @@ public class AnalyzerTestFixture<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
 
             while (remainingCode.Length > 0)
             {
-                var beforeAndAfterOpening = remainingCode.Split(new[] { "[|" }, 2, StringSplitOptions.None);
+                var beforeAndAfterOpening = remainingCode.Split(["[|"], 2, StringSplitOptions.None);
 
                 if (beforeAndAfterOpening.Length == 1)
                 {
@@ -188,7 +188,7 @@ public class AnalyzerTestFixture<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
                     break;
                 }
 
-                var midAndAfterClosing = beforeAndAfterOpening[1].Split(new[] { "|]" }, 2, StringSplitOptions.None);
+                var midAndAfterClosing = beforeAndAfterOpening[1].Split(["|]"], 2, StringSplitOptions.None);
 
                 if (midAndAfterClosing.Length == 1)
                 {

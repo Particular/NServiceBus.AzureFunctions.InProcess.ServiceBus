@@ -137,7 +137,8 @@ class InProcessFunctionEndpoint : IFunctionEndpoint
         return Unsubscribe(eventType, new UnsubscribeOptions(), executionContext, functionsLogger, cancellationToken);
     }
 
-    internal static readonly string[] AssembliesToExcludeFromScanning = {
+    internal static readonly string[] AssembliesToExcludeFromScanning =
+    [
         "Azure.Core.dll",
         "Azure.Identity.dll",
         "Azure.Security.KeyVault.Secrets.dll",
@@ -156,7 +157,7 @@ class InProcessFunctionEndpoint : IFunctionEndpoint
         "NCrontab.Signed.dll",
         "NServiceBus.Extensions.DependencyInjection.dll",
         "System.ClientModel.dll"
-    };
+    ];
 
     internal async Task InitializeEndpointIfNecessary(CancellationToken cancellationToken = default)
     {

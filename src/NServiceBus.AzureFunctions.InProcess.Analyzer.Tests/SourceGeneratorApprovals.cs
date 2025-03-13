@@ -197,10 +197,9 @@ public class Startup
             }
         }
 
-        var compilation = Compile(new[]
-        {
+        var compilation = Compile([
             syntaxTree
-        }, references);
+        ], references);
 
         var generator = new TriggerFunctionGenerator();
 
