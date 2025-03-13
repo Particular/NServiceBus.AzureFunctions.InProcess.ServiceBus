@@ -1,28 +1,27 @@
-﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
+﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus;
+
+using System;
+using Transport;
+
+class ServerlessRecoverabilityPolicy
 {
-    using System;
-    using Transport;
+    public bool SendFailedMessagesToErrorQueue { get; set; }
 
-    class ServerlessRecoverabilityPolicy
+    public RecoverabilityAction Invoke(RecoverabilityConfig config, ErrorContext errorContext)
     {
-        public bool SendFailedMessagesToErrorQueue { get; set; }
+        var action = DefaultRecoverabilityPolicy.Invoke(config, errorContext);
 
-        public RecoverabilityAction Invoke(RecoverabilityConfig config, ErrorContext errorContext)
+        if (action is MoveToError)
         {
-            var action = DefaultRecoverabilityPolicy.Invoke(config, errorContext);
-
-            if (action is MoveToError)
+            if (SendFailedMessagesToErrorQueue)
             {
-                if (SendFailedMessagesToErrorQueue)
-                {
-                    return action;
-                }
-
-                // 7.2 offers a Discard option, but we want to bubble up the exception so it can fail the function invocation.
-                throw new Exception("Failed to process message.", errorContext.Exception);
+                return action;
             }
 
-            return action;
+            // 7.2 offers a Discard option, but we want to bubble up the exception so it can fail the function invocation.
+            throw new Exception("Failed to process message.", errorContext.Exception);
         }
+
+        return action;
     }
 }

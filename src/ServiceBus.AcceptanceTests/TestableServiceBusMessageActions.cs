@@ -1,22 +1,21 @@
-﻿namespace ServiceBus.Tests
+﻿namespace ServiceBus.Tests;
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.WebJobs.ServiceBus;
+
+class TestableServiceBusMessageActions : ServiceBusMessageActions
 {
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Azure.Messaging.ServiceBus;
-    using Microsoft.Azure.WebJobs.ServiceBus;
+    readonly ServiceBusReceiver serviceBusReceiver;
 
-    class TestableServiceBusMessageActions : ServiceBusMessageActions
-    {
-        readonly ServiceBusReceiver serviceBusReceiver;
+    public TestableServiceBusMessageActions(ServiceBusReceiver serviceBusReceiver)
+        => this.serviceBusReceiver = serviceBusReceiver;
 
-        public TestableServiceBusMessageActions(ServiceBusReceiver serviceBusReceiver)
-            => this.serviceBusReceiver = serviceBusReceiver;
+    public override Task CompleteMessageAsync(ServiceBusReceivedMessage message, CancellationToken cancellationToken = default)
+        => serviceBusReceiver.CompleteMessageAsync(message, cancellationToken);
 
-        public override Task CompleteMessageAsync(ServiceBusReceivedMessage message, CancellationToken cancellationToken = default)
-            => serviceBusReceiver.CompleteMessageAsync(message, cancellationToken);
-
-        public override Task AbandonMessageAsync(ServiceBusReceivedMessage message, IDictionary<string, object> propertiesToModify = null, CancellationToken cancellationToken = default)
-            => serviceBusReceiver.AbandonMessageAsync(message, propertiesToModify, cancellationToken);
-    }
+    public override Task AbandonMessageAsync(ServiceBusReceivedMessage message, IDictionary<string, object> propertiesToModify = null, CancellationToken cancellationToken = default)
+        => serviceBusReceiver.AbandonMessageAsync(message, propertiesToModify, cancellationToken);
 }
