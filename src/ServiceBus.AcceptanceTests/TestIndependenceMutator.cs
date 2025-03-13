@@ -1,22 +1,21 @@
-﻿namespace ServiceBus.Tests
+﻿namespace ServiceBus.Tests;
+
+using System.Threading.Tasks;
+using NServiceBus.AcceptanceTesting;
+using NServiceBus.MessageMutator;
+
+class TestIndependenceMutator : IMutateOutgoingTransportMessages
 {
-    using System.Threading.Tasks;
-    using NServiceBus.AcceptanceTesting;
-    using NServiceBus.MessageMutator;
+    readonly string testRunId;
 
-    class TestIndependenceMutator : IMutateOutgoingTransportMessages
+    public TestIndependenceMutator(ScenarioContext scenarioContext)
     {
-        readonly string testRunId;
+        testRunId = scenarioContext.TestRunId.ToString();
+    }
 
-        public TestIndependenceMutator(ScenarioContext scenarioContext)
-        {
-            testRunId = scenarioContext.TestRunId.ToString();
-        }
-
-        public Task MutateOutgoing(MutateOutgoingTransportMessageContext context)
-        {
-            context.OutgoingHeaders["$AcceptanceTesting.TestRunId"] = testRunId;
-            return Task.CompletedTask;
-        }
+    public Task MutateOutgoing(MutateOutgoingTransportMessageContext context)
+    {
+        context.OutgoingHeaders["$AcceptanceTesting.TestRunId"] = testRunId;
+        return Task.CompletedTask;
     }
 }

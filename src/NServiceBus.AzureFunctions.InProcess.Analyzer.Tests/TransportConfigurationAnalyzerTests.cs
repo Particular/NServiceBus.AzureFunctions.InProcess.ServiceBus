@@ -1,23 +1,23 @@
-namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
-{
-    using System.Threading.Tasks;
-    using NUnit.Framework;
-    using static AzureFunctionsDiagnostics;
+namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests;
 
-    [TestFixture]
-    public class TransportConfigurationAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
+using System.Threading.Tasks;
+using NUnit.Framework;
+using static AzureFunctionsDiagnostics;
+
+[TestFixture]
+public class TransportConfigurationAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
+{
+    [TestCase("TransportTransactionMode", "TransportTransactionMode.None", TransportTransactionModeNotAllowedId)]
+    [TestCase("EnablePartitioning", "true", EnablePartitioningNotAllowedId)]
+    [TestCase("EntityMaximumSize", "5", EntityMaximumSizeNotAllowedId)]
+    [TestCase("MaxAutoLockRenewalDuration", "new System.TimeSpan(0, 0, 5, 0)", MaxAutoLockRenewalDurationNotAllowedId)]
+    [TestCase("PrefetchCount", "5", PrefetchCountNotAllowedId)]
+    [TestCase("PrefetchMultiplier", "5", PrefetchMultiplierNotAllowedId)]
+    [TestCase("TimeToWaitBeforeTriggeringCircuitBreaker", "new System.TimeSpan(0, 0, 5, 0)", TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId)]
+    public Task DiagnosticIsReportedTransportConfigurationDirect(string configName, string configValue, string diagnosticId)
     {
-        [TestCase("TransportTransactionMode", "TransportTransactionMode.None", TransportTransactionModeNotAllowedId)]
-        [TestCase("EnablePartitioning", "true", EnablePartitioningNotAllowedId)]
-        [TestCase("EntityMaximumSize", "5", EntityMaximumSizeNotAllowedId)]
-        [TestCase("MaxAutoLockRenewalDuration", "new System.TimeSpan(0, 0, 5, 0)", MaxAutoLockRenewalDurationNotAllowedId)]
-        [TestCase("PrefetchCount", "5", PrefetchCountNotAllowedId)]
-        [TestCase("PrefetchMultiplier", "5", PrefetchMultiplierNotAllowedId)]
-        [TestCase("TimeToWaitBeforeTriggeringCircuitBreaker", "new System.TimeSpan(0, 0, 5, 0)", TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId)]
-        public Task DiagnosticIsReportedTransportConfigurationDirect(string configName, string configValue, string diagnosticId)
-        {
-            var source =
-                $@"using NServiceBus;
+        var source =
+            $@"using NServiceBus;
 using System;
 using System.Threading.Tasks;
 class Foo
@@ -31,20 +31,20 @@ class Foo
     }}
 }}";
 
-            return Assert(diagnosticId, source);
-        }
+        return Assert(diagnosticId, source);
+    }
 
-        [TestCase("Transactions", "TransportTransactionMode.None", TransportTransactionModeNotAllowedId)]
-        [TestCase("EnablePartitioning", "", EnablePartitioningNotAllowedId)]
-        [TestCase("EntityMaximumSize", "5", EntityMaximumSizeNotAllowedId)]
-        [TestCase("MaxAutoLockRenewalDuration", "new System.TimeSpan(0, 0, 5, 0)", MaxAutoLockRenewalDurationNotAllowedId)]
-        [TestCase("PrefetchCount", "5", PrefetchCountNotAllowedId)]
-        [TestCase("PrefetchMultiplier", "5", PrefetchMultiplierNotAllowedId)]
-        [TestCase("TimeToWaitBeforeTriggeringCircuitBreaker", "new System.TimeSpan(0, 0, 5, 0)", TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId)]
-        public Task DiagnosticIsReportedTransportConfigurationExtension(string configName, string configValue, string diagnosticId)
-        {
-            var source =
-                $@"using NServiceBus;
+    [TestCase("Transactions", "TransportTransactionMode.None", TransportTransactionModeNotAllowedId)]
+    [TestCase("EnablePartitioning", "", EnablePartitioningNotAllowedId)]
+    [TestCase("EntityMaximumSize", "5", EntityMaximumSizeNotAllowedId)]
+    [TestCase("MaxAutoLockRenewalDuration", "new System.TimeSpan(0, 0, 5, 0)", MaxAutoLockRenewalDurationNotAllowedId)]
+    [TestCase("PrefetchCount", "5", PrefetchCountNotAllowedId)]
+    [TestCase("PrefetchMultiplier", "5", PrefetchMultiplierNotAllowedId)]
+    [TestCase("TimeToWaitBeforeTriggeringCircuitBreaker", "new System.TimeSpan(0, 0, 5, 0)", TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId)]
+    public Task DiagnosticIsReportedTransportConfigurationExtension(string configName, string configValue, string diagnosticId)
+    {
+        var source =
+            $@"using NServiceBus;
 using System;
 using System.Threading.Tasks;
 class Foo
@@ -55,19 +55,19 @@ class Foo
     }}
 }}";
 
-            return Assert(diagnosticId, source);
-        }
+        return Assert(diagnosticId, source);
+    }
 
-        [TestCase("EnablePartitioning", "true", EnablePartitioningNotAllowedId)]
-        [TestCase("EntityMaximumSize", "5", EntityMaximumSizeNotAllowedId)]
-        [TestCase("MaxAutoLockRenewalDuration", "new System.TimeSpan(0, 0, 5, 0)", MaxAutoLockRenewalDurationNotAllowedId)]
-        [TestCase("PrefetchCount", "5", PrefetchCountNotAllowedId)]
-        [TestCase("PrefetchMultiplier", "5", PrefetchMultiplierNotAllowedId)]
-        [TestCase("TimeToWaitBeforeTriggeringCircuitBreaker", "new System.TimeSpan(0, 0, 5, 0)", TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId)]
-        public Task DiagnosticIsNotReportedForNonTransportConfiguration(string configName, string configValue, string diagnosticId)
-        {
-            var source =
-                $@"using NServiceBus;
+    [TestCase("EnablePartitioning", "true", EnablePartitioningNotAllowedId)]
+    [TestCase("EntityMaximumSize", "5", EntityMaximumSizeNotAllowedId)]
+    [TestCase("MaxAutoLockRenewalDuration", "new System.TimeSpan(0, 0, 5, 0)", MaxAutoLockRenewalDurationNotAllowedId)]
+    [TestCase("PrefetchCount", "5", PrefetchCountNotAllowedId)]
+    [TestCase("PrefetchMultiplier", "5", PrefetchMultiplierNotAllowedId)]
+    [TestCase("TimeToWaitBeforeTriggeringCircuitBreaker", "new System.TimeSpan(0, 0, 5, 0)", TimeToWaitBeforeTriggeringCircuitBreakerNotAllowedId)]
+    public Task DiagnosticIsNotReportedForNonTransportConfiguration(string configName, string configValue, string diagnosticId)
+    {
+        var source =
+            $@"using NServiceBus;
 using System;
 using System.Threading.Tasks;
 
@@ -89,7 +89,6 @@ class Foo
     }}
 }}";
 
-            return Assert(diagnosticId, source);
-        }
+        return Assert(diagnosticId, source);
     }
 }

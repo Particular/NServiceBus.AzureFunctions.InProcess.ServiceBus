@@ -1,28 +1,27 @@
-﻿namespace ServiceBus.Tests
+﻿namespace ServiceBus.Tests;
+
+using System;
+using System.Threading.Tasks;
+using NServiceBus.AcceptanceTesting;
+using NServiceBus.Pipeline;
+using NUnit.Framework;
+
+class TestIndependenceSkipBehavior : IBehavior<ITransportReceiveContext, ITransportReceiveContext>
 {
-    using System;
-    using System.Threading.Tasks;
-    using NServiceBus.AcceptanceTesting;
-    using NServiceBus.Pipeline;
-    using NUnit.Framework;
+    readonly string testRunId;
 
-    class TestIndependenceSkipBehavior : IBehavior<ITransportReceiveContext, ITransportReceiveContext>
+    public TestIndependenceSkipBehavior(ScenarioContext scenarioContext)
     {
-        readonly string testRunId;
+        testRunId = scenarioContext.TestRunId.ToString();
+    }
 
-        public TestIndependenceSkipBehavior(ScenarioContext scenarioContext)
+    public Task Invoke(ITransportReceiveContext context, Func<ITransportReceiveContext, Task> next)
+    {
+        if (context.Message.Headers.TryGetValue("$AcceptanceTesting.TestRunId", out var runId) && runId != testRunId)
         {
-            testRunId = scenarioContext.TestRunId.ToString();
+            return TestContext.Out.WriteLineAsync($"Skipping message {context.Message.MessageId} from previous test run");
         }
 
-        public Task Invoke(ITransportReceiveContext context, Func<ITransportReceiveContext, Task> next)
-        {
-            if (context.Message.Headers.TryGetValue("$AcceptanceTesting.TestRunId", out var runId) && runId != testRunId)
-            {
-                return TestContext.Out.WriteLineAsync($"Skipping message {context.Message.MessageId} from previous test run");
-            }
-
-            return next(context);
-        }
+        return next(context);
     }
 }

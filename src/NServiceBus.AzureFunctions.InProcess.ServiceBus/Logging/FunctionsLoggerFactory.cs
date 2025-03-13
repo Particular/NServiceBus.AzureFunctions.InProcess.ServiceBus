@@ -1,41 +1,40 @@
-﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus
+﻿namespace NServiceBus.AzureFunctions.InProcess.ServiceBus;
+
+using System;
+using System.Threading;
+using Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using ILoggerFactory = Logging.ILoggerFactory;
+
+class FunctionsLoggerFactory : ILoggerFactory
 {
-    using System;
-    using System.Threading;
-    using Logging;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Abstractions;
-    using ILoggerFactory = Logging.ILoggerFactory;
+    public static FunctionsLoggerFactory Instance { get; } = new FunctionsLoggerFactory();
 
-    class FunctionsLoggerFactory : ILoggerFactory
+    Logger log;
+
+    AsyncLocal<ILogger> logger = new AsyncLocal<ILogger>();
+
+    FunctionsLoggerFactory()
     {
-        public static FunctionsLoggerFactory Instance { get; } = new FunctionsLoggerFactory();
+        log = new Logger(logger);
+    }
 
-        Logger log;
+    public void SetCurrentLogger(ILogger currentLogger)
+    {
+        var newLogger = currentLogger ?? NullLogger.Instance;
 
-        AsyncLocal<ILogger> logger = new AsyncLocal<ILogger>();
+        logger.Value = newLogger;
+        log.Flush(newLogger);
+    }
 
-        FunctionsLoggerFactory()
-        {
-            log = new Logger(logger);
-        }
+    public ILog GetLogger(Type type)
+    {
+        return log;
+    }
 
-        public void SetCurrentLogger(ILogger currentLogger)
-        {
-            var newLogger = currentLogger ?? NullLogger.Instance;
-
-            logger.Value = newLogger;
-            log.Flush(newLogger);
-        }
-
-        public ILog GetLogger(Type type)
-        {
-            return log;
-        }
-
-        public ILog GetLogger(string name)
-        {
-            return log;
-        }
+    public ILog GetLogger(string name)
+    {
+        return log;
     }
 }

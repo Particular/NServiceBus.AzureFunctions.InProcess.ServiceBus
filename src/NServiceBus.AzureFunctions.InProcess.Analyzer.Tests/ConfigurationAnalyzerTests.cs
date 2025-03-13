@@ -1,23 +1,23 @@
-namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
-{
-    using System.Threading.Tasks;
-    using NUnit.Framework;
-    using static AzureFunctionsDiagnostics;
+namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests;
 
-    [TestFixture]
-    public class ConfigurationAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
+using System.Threading.Tasks;
+using NUnit.Framework;
+using static AzureFunctionsDiagnostics;
+
+[TestFixture]
+public class ConfigurationAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
+{
+    [TestCase("DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)", DefineCriticalErrorActionNotAllowedId)]
+    [TestCase("LimitMessageProcessingConcurrencyTo(5)", LimitMessageProcessingToNotAllowedId)]
+    [TestCase("MakeInstanceUniquelyAddressable(null)", MakeInstanceUniquelyAddressableNotAllowedId)]
+    [TestCase("OverrideLocalAddress(null)", OverrideLocalAddressNotAllowedId)]
+    [TestCase("PurgeOnStartup(true)", PurgeOnStartupNotAllowedId)]
+    [TestCase("SetDiagnosticsPath(null)", SetDiagnosticsPathNotAllowedId)]
+    [TestCase("UseTransport(new AzureServiceBusTransport(null, default(TopicTopology)))", UseTransportNotAllowedId)]
+    public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId)
     {
-        [TestCase("DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)", DefineCriticalErrorActionNotAllowedId)]
-        [TestCase("LimitMessageProcessingConcurrencyTo(5)", LimitMessageProcessingToNotAllowedId)]
-        [TestCase("MakeInstanceUniquelyAddressable(null)", MakeInstanceUniquelyAddressableNotAllowedId)]
-        [TestCase("OverrideLocalAddress(null)", OverrideLocalAddressNotAllowedId)]
-        [TestCase("PurgeOnStartup(true)", PurgeOnStartupNotAllowedId)]
-        [TestCase("SetDiagnosticsPath(null)", SetDiagnosticsPathNotAllowedId)]
-        [TestCase("UseTransport(new AzureServiceBusTransport(null, default(TopicTopology)))", UseTransportNotAllowedId)]
-        public Task DiagnosticIsReportedForEndpointConfiguration(string configuration, string diagnosticId)
-        {
-            var source =
-                $@"using NServiceBus;
+        var source =
+            $@"using NServiceBus;
 using System;
 using System.Threading.Tasks;
 class Foo
@@ -31,20 +31,20 @@ class Foo
     }}
 }}";
 
-            return Assert(diagnosticId, source);
-        }
+        return Assert(diagnosticId, source);
+    }
 
-        [TestCase("DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)", DefineCriticalErrorActionNotAllowedId)]
-        [TestCase("LimitMessageProcessingConcurrencyTo(5)", LimitMessageProcessingToNotAllowedId)]
-        [TestCase("MakeInstanceUniquelyAddressable(null)", MakeInstanceUniquelyAddressableNotAllowedId)]
-        [TestCase("OverrideLocalAddress(null)", OverrideLocalAddressNotAllowedId)]
-        [TestCase("PurgeOnStartup(true)", PurgeOnStartupNotAllowedId)]
-        [TestCase("SetDiagnosticsPath(null)", SetDiagnosticsPathNotAllowedId)]
-        [TestCase("UseTransport(new AzureServiceBusTransport(null, default(TopicTopology)))", UseTransportNotAllowedId)]
-        public Task DiagnosticIsNotReportedForOtherEndpointConfiguration(string configuration, string diagnosticId)
-        {
-            var source =
-                $@"using NServiceBus;
+    [TestCase("DefineCriticalErrorAction((errorContext, cancellationToken) => Task.CompletedTask)", DefineCriticalErrorActionNotAllowedId)]
+    [TestCase("LimitMessageProcessingConcurrencyTo(5)", LimitMessageProcessingToNotAllowedId)]
+    [TestCase("MakeInstanceUniquelyAddressable(null)", MakeInstanceUniquelyAddressableNotAllowedId)]
+    [TestCase("OverrideLocalAddress(null)", OverrideLocalAddressNotAllowedId)]
+    [TestCase("PurgeOnStartup(true)", PurgeOnStartupNotAllowedId)]
+    [TestCase("SetDiagnosticsPath(null)", SetDiagnosticsPathNotAllowedId)]
+    [TestCase("UseTransport(new AzureServiceBusTransport(null, default(TopicTopology)))", UseTransportNotAllowedId)]
+    public Task DiagnosticIsNotReportedForOtherEndpointConfiguration(string configuration, string diagnosticId)
+    {
+        var source =
+            $@"using NServiceBus;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,7 +68,6 @@ class Foo
     }}
 }}";
 
-            return Assert(diagnosticId, source);
-        }
+        return Assert(diagnosticId, source);
     }
 }

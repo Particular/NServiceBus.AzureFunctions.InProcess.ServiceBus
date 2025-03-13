@@ -1,19 +1,19 @@
-namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests
-{
-    using System.Threading.Tasks;
-    using NUnit.Framework;
-    using static AzureFunctionsDiagnostics;
+namespace NServiceBus.AzureFunctions.InProcess.Analyzer.Tests;
 
-    [TestFixture]
-    public class OptionsAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
+using System.Threading.Tasks;
+using NUnit.Framework;
+using static AzureFunctionsDiagnostics;
+
+[TestFixture]
+public class OptionsAnalyzerTests : AnalyzerTestFixture<ConfigurationAnalyzer>
+{
+    [TestCase("SendOptions", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
+    [TestCase("SendOptions", "RouteToThisInstance", RouteToThisInstanceNotAllowedId)]
+    [TestCase("ReplyOptions", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
+    public Task DiagnosticIsReportedForOptions(string optionsType, string method, string diagnosticId)
     {
-        [TestCase("SendOptions", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
-        [TestCase("SendOptions", "RouteToThisInstance", RouteToThisInstanceNotAllowedId)]
-        [TestCase("ReplyOptions", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
-        public Task DiagnosticIsReportedForOptions(string optionsType, string method, string diagnosticId)
-        {
-            var source =
-                $@"using NServiceBus;
+        var source =
+            $@"using NServiceBus;
 class Foo
 {{
     void Bar({optionsType} options)
@@ -22,15 +22,15 @@ class Foo
     }}
 }}";
 
-            return Assert(diagnosticId, source);
-        }
+        return Assert(diagnosticId, source);
+    }
 
-        [TestCase("SomeOtherClass", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
-        [TestCase("SomeOtherClass", "RouteToThisInstance", RouteToThisInstanceNotAllowedId)]
-        public Task DiagnosticIsNotReportedForOtherOptions(string optionsType, string method, string diagnosticId)
-        {
-            var source =
-                $@"using NServiceBus;
+    [TestCase("SomeOtherClass", "RouteReplyToThisInstance", RouteReplyToThisInstanceNotAllowedId)]
+    [TestCase("SomeOtherClass", "RouteToThisInstance", RouteToThisInstanceNotAllowedId)]
+    public Task DiagnosticIsNotReportedForOtherOptions(string optionsType, string method, string diagnosticId)
+    {
+        var source =
+            $@"using NServiceBus;
 using System;
 using System.Threading.Tasks;
 
@@ -49,7 +49,6 @@ class Foo
     }}
 }}";
 
-            return Assert(diagnosticId, source);
-        }
+        return Assert(diagnosticId, source);
     }
 }
