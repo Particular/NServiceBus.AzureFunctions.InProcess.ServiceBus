@@ -229,7 +229,11 @@ public class Startup
             // Verify the code compiled:
             var compilationErrors = compilation
                 .GetDiagnostics()
-                .Where(d => d.Severity >= DiagnosticSeverity.Warning);
+                .Where(d => d.Severity >= DiagnosticSeverity.Warning)
+                // Ignoring warning CS1701: Assuming Microsoft.Extensions.Logging.Abstractions v6 and v8 are the same thing
+                // because component targets net6 while tests are now net8. SDK suppresses this for you but hits here due
+                // to direct compiler invocation. See https://github.com/dotnet/roslyn/issues/19640
+                .Where(d => d.Id != "CS1701"); //
             Assert.IsEmpty(compilationErrors, compilationErrors.FirstOrDefault()?.GetMessage());
 
             return compilation;
