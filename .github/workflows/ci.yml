@@ -18,9 +18,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-2022
+          - os: windows-latest
             name: Windows
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             name: Linux
       fail-fast: false
     steps:
@@ -51,7 +51,7 @@ jobs:
         shell: bash
       - name: Fix Azure Functions Core Tools permissions - Linux
         if: runner.os == 'Linux'
-        run: sudo chmod +x /usr/lib/azure-functions-core-tools/in-proc6/func
+        run: sudo chmod +x /usr/lib/azure-functions-core-tools/in-proc8/func
       - name: Build
         run: dotnet build src --configuration Release
       - name: Upload packages
