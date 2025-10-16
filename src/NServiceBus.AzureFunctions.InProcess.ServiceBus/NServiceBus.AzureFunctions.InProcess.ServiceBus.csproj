@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.16.4" />
     <PackageReference Include="NServiceBus" Version="9.2.6" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="4.0.1" />
-    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="5.0.0" />
+    <PackageReference Include="NServiceBus.Transport.AzureServiceBus" Version="5.1.1" />
   </ItemGroup>
 
   <ItemGroup>
