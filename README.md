@@ -1,3 +1,8 @@
+> [!CAUTION] 
+> **NServiceBus.AzureFunctions.InProcess.ServiceBus has been officially sunsetted.**  
+> Microsoft announced that .NET 8 will be [the last release supporting the in-process hosting model](https://techcommunity.microsoft.com/t5/apps-on-azure-blog/net-on-azure-functions-august-2023-roadmap-update/ba-p/3910098).  
+> New projects should use the [isolated worker model](https://docs.particular.net/nservicebus/hosting/azure-functions-service-bus/) instead. Follow [these instructions](https://docs.particular.net/nservicebus/upgrades/azure-functions-service-bus-in-process-isolated-worker) to migrate.
+
 # NServiceBus.AzureFunctions.InProcess.ServiceBus
 
 NServiceBus.AzureFunctions.InProcess.ServiceBus supports processing messages in AzureFunctions using the Azure Service Bus trigger and the NServiceBus message pipeline.
