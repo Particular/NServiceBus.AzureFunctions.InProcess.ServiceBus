@@ -1,1 +1,2 @@
-
+exclusions:
+- .github/workflows/update-dependencies.yml
