@@ -15,14 +15,14 @@ public class When_using_processatomic_with_outbox
     [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
     public void Should_dispatch_outgoing_messages_from_the_outbox(TransportTransactionMode transactionMode)
     {
-        var exception = Assert.ThrowsAsync<MessageFailedException>(() =>
+        var exception = Assert.ThrowsAsync<MessageFailedException>((Func<Task>)(() =>
         {
             return Scenario.Define<Context>()
                 .WithComponent(new FunctionHandler(transactionMode))
                 .WithEndpoint<SpyEndpoint>()
                 .Done(c => c.MessageReceived && c.MessageRetried)
                 .Run();
-        });
+        }));
 
         Assert.That(exception.InnerException.Message, Does.Contain("Atomic sends with receive is not supported when the Outbox is enabled as it would risk message loss. Set `SendsAtomicWithReceive` to `false` on the `NServiceBusTriggerFunction` attribute or make sure to call `ProcessNonAtomic` instead of `ProcessAtomic` if using a custom trigger."));
     }

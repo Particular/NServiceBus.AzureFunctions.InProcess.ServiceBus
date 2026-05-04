@@ -192,12 +192,12 @@ public class When_starting_the_function_host
             }
         }
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(hostFailed, Is.False, "Host should startup without errors");
             Assert.That(hasResult, Is.True, "Http trigger should respond successfully");
             Assert.That(commandHandlerCalled, Is.True, $"{nameof(SomeOtherMessageHandler)} should have been called");
             Assert.That(eventHandlerCalled, Is.True, $"{nameof(SomeEventMessageHandler)} should have been called");
-        });
+        };
     }
 }
