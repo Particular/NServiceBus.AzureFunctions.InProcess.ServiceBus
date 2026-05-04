@@ -21,11 +21,11 @@ public class When_failing_to_process_message
             .Done(c => c.TerminatingEventReceived)
             .Run();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(context.TerminatingEventReceived, Is.True);
             Assert.That(context.AbortedEventReceived, Is.False);
-        });
+        };
     }
 
     [TestCase(TransportTransactionMode.ReceiveOnly)]
@@ -37,11 +37,11 @@ public class When_failing_to_process_message
             .Done(c => c.TerminatingEventReceived)
             .Run();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(context.TerminatingEventReceived, Is.True);
             Assert.That(context.AbortedEventReceived, Is.True);
-        });
+        };
     }
 
     class Context : ScenarioContext

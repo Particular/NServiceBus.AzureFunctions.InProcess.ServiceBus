@@ -36,13 +36,13 @@ public class When_shipping_handlers_in_dedicated_assembly
         var dummyMessageType = registry.GetMessageTypes().FirstOrDefault(t => t.FullName == "Testing.Handlers.DummyMessage");
         Assert.That(dummyMessageType, Is.Not.Null);
         var dummyMessageHandler = registry.GetHandlersFor(dummyMessageType).SingleOrDefault();
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(dummyMessageHandler.HandlerType.FullName, Is.EqualTo("Testing.Handlers.DummyMessageHandler"));
 
             // ensure the assembly is loaded into the right context
             Assert.That(AssemblyLoadContext.GetLoadContext(dummyMessageType.Assembly), Is.EqualTo(AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())));
-        });
+        };
     }
 
     class FunctionWithHandlersInDedicatedAssembly : FunctionEndpointComponent

@@ -12,13 +12,13 @@ public class When_message_fails_with_disabled_error_queue
     [TestCase(TransportTransactionMode.SendsAtomicWithReceive)]
     public void Should_throw_exception(TransportTransactionMode transactionMode)
     {
-        var exception = Assert.ThrowsAsync<Exception>(() =>
+        var exception = Assert.ThrowsAsync<Exception>((Func<Task>)(() =>
         {
             return Scenario.Define<ScenarioContext>()
                 .WithComponent(new DisabledErrorQueueFunction(transactionMode))
                 .Done(c => c.EndpointsStarted)
                 .Run();
-        });
+        }));
 
         Assert.That(exception.Message, Does.Contain("Failed to process message"));
         Assert.That(exception.InnerException, Is.InstanceOf<SimulatedException>());

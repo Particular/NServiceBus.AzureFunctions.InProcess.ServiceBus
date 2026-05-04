@@ -1,5 +1,6 @@
 ﻿namespace ServiceBus.Tests;
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NServiceBus;
@@ -14,20 +15,20 @@ public class When_message_is_failing_all_processing_attempts
     public void Should_be_moved_to_the_error_queue(TransportTransactionMode transactionMode)
     {
         Context testContext = null;
-        var exception = Assert.ThrowsAsync<MessageFailedException>(() =>
+        var exception = Assert.ThrowsAsync<MessageFailedException>((Func<Task>)(() =>
         {
             return Scenario.Define<Context>(c => testContext = c)
                 .WithComponent(new MoveToErrorQueueFunction(transactionMode))
                 .Done(c => c.EndpointsStarted)
                 .Run();
-        });
+        }));
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(testContext.HandlerInvocations, Is.EqualTo(1), "the handler should only be invoked once");
             Assert.That(exception.InnerException, Is.InstanceOf<SimulatedException>(), "it should be the exception from the handler");
             Assert.That(testContext.FailedMessages.Single().Value, Has.Count.EqualTo(1), "there should be only one failed message");
-        });
+        };
     }
 
     class Context : ScenarioContext

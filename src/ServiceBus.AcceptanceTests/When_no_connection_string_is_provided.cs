@@ -1,6 +1,7 @@
 ﻿namespace ServiceBus.Tests;
 
 using System;
+using System.Threading.Tasks;
 using NServiceBus.AcceptanceTesting;
 using NServiceBus.AzureFunctions.InProcess.ServiceBus;
 using NUnit.Framework;
@@ -20,10 +21,10 @@ public class When_no_connection_string_is_provided
     [Test]
     public void Should_guide_user_towards_success()
     {
-        var exception = Assert.ThrowsAsync<Exception>(async () => await Scenario.Define<ScenarioContext>()
+        var exception = Assert.ThrowsAsync<Exception>((Func<Task>)(async () => await Scenario.Define<ScenarioContext>()
                 .WithComponent(new FunctionWithoutConnectionString())
                 .Done(c => c.EndpointsStarted)
-                .Run(),
+                .Run()),
             "Exception should be thrown at endpoint creation so that the error will be found during functions startup"
         );
 
