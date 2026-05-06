@@ -20,11 +20,11 @@ public class When_incoming_message_is_not_acknowledged
             .Done(c => c.MessageReceived && c.MessageRetried)
             .Run();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(context.MessageRetried, Is.True);
             Assert.That(context.MessageReceived, Is.True);
-        });
+        };
     }
 
     public class Context : ScenarioContext
