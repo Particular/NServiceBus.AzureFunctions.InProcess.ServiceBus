@@ -64,11 +64,11 @@ class LoggingTests
         FunctionsLoggerFactory.Instance.SetCurrentLogger(firstLogger);
         FunctionsLoggerFactory.Instance.SetCurrentLogger(secondLogger);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(firstLogger.CapturedLogs, Has.Count.EqualTo(1));
             Assert.That(secondLogger.CapturedLogs.Count, Is.EqualTo(0));
-        });
+        };
     }
 
     [Test]
@@ -83,11 +83,11 @@ class LoggingTests
         var firstLogger = firstLoggerTask.Result;
         var secondLogger = secondLoggerTask.Result;
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(firstLogger.CapturedLogs, Has.Count.EqualTo(1));
             Assert.That(secondLogger.CapturedLogs, Has.Count.EqualTo(1));
-        });
+        };
 
         firstLogger.CapturedLogs.TryDequeue(out var firstLog);
         Assert.That(firstLog.message, Is.EqualTo("Running task 1"));
