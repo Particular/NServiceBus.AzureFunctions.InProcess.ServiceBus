@@ -2,13 +2,22 @@
 > **NServiceBus.AzureFunctions.InProcess.ServiceBus has been officially sunsetted.**  
 > Microsoft announced that .NET 8 will be [the last release supporting the in-process hosting model](https://techcommunity.microsoft.com/t5/apps-on-azure-blog/net-on-azure-functions-august-2023-roadmap-update/ba-p/3910098).
 > We will continue to provide support and address critical fixes during the sunset period, but no new features will be added.  
-> New projects should use the [isolated worker model](https://docs.particular.net/nservicebus/hosting/azure-functions-service-bus/) instead. Follow [these instructions](https://docs.particular.net/nservicebus/upgrades/azure-functions-service-bus-in-process-isolated-worker) to migrate.
+> New projects should use the [isolated worker model](https://docs.particular.net/nservicebus/hosting/azure/functions/) instead, see [migration instructions below](#migration).
 
 # NServiceBus.AzureFunctions.InProcess.ServiceBus
 
-NServiceBus.AzureFunctions.InProcess.ServiceBus supports processing messages in AzureFunctions using the Azure Service Bus trigger and the NServiceBus message pipeline.
+NServiceBus.AzureFunctions.InProcess.ServiceBus supports processing messages in Azure Functions using the Azure Service Bus trigger and the NServiceBus message pipeline.
 
 It is part of the [Particular Service Platform](https://particular.net/service-platform), which includes [NServiceBus](https://particular.net/nservicebus) and tools to build, monitor, and debug distributed systems.
+
+## Migration
+
+To prepare for migration, please review:
+
+- [Migration instructions from InProcess to the Isolated model](https://docs.particular.net/nservicebus/upgrades/azure-functions-service-bus-in-process-isolated-worker).
+- [Migration instructions from the old isolated package to the new multi-endpoint isolated package](https://docs.particular.net/nservicebus/upgrades/azure-functions-service-bus-isolated-to-azure-functions).
+
+Review both migration guides and decide whether the safer approach is to first migrate from InProcess to the isolated package and then upgrade to the latest multi-endpoint package, or whether a direct migration from InProcess to the latest multi-endpoint package is acceptable.
 
 ## Documentation
 
