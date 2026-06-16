@@ -17,7 +17,7 @@ To prepare for migration, please review:
 - [Migration instructions from InProcess to the Isolated model](https://docs.particular.net/nservicebus/upgrades/azure-functions-service-bus-in-process-isolated-worker).
 - [Migration instructions from the old isolated package to the new multi-endpoint isolated package](https://docs.particular.net/nservicebus/upgrades/azure-functions-service-bus-isolated-to-azure-functions).
 
-Decide whether going straight to the new package is the best course of action, or whether going straight to the latest multi-endpoint package is acceptable from a migration-risk perspective.
+Review both migration guides and decide whether the safer approach is to first migrate from InProcess to the isolated package and then upgrade to the latest multi-endpoint package, or whether a direct migration from InProcess to the latest multi-endpoint package is acceptable.
 
 ## Documentation
 
